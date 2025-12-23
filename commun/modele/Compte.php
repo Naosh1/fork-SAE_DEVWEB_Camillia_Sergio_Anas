@@ -6,14 +6,16 @@
         private $email;
         private $mdp;
         private $solde;
+        private $role;
 
-        public function __construct($id, $nom, $prenom, $email, $mdp, $solde)  {
+        public function __construct($id, $nom, $prenom, $email, $mdp, $solde, $role)  {
             $this->id = $id;
             $this->nom = $nom;
             $this->prenom = $prenom;
             $this->email = $email;
             $this->mdp = $mdp;
             $this->solde = $solde;
+            $this->role = $role;
         }
 
         public function getId() {
@@ -40,7 +42,15 @@
             return $this->solde;
         }
 
+        public function getRole() {
+            return $this->role;
+        }
+
         public function setSolde($solde) {
             $this->solde = $solde;
+        }
+
+        public function setRole($role) {
+            $this->role = $role;
         }
     }
