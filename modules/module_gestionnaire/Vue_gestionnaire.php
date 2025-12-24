@@ -11,6 +11,7 @@ class VueGestionnaire
         echo '<a href="index.php?action=ventes">Ventes</a> | ';
         echo '<a href="index.php?action=utilisateurs">Utilisateurs</a> | ';
         echo '<a href="index.php?action=statistiques">Statistiques</a>';
+        echo '<a href=index.php?action=associations">Associations</a>';
     }
 
     public function afficherProduits($produits)
@@ -27,7 +28,7 @@ class VueGestionnaire
         echo '<a href="index.php?action=ajouterProduit"><button>Ajouter un produit</button></a>';
     }
 
-    public function formulaireAjoutProduit()
+    public function formulaireAjoutProduit($associations)
     {
 
         echo '<form action="index.php?action=ajouterProduit" method="post">
@@ -40,6 +41,15 @@ class VueGestionnaire
               <label for="stock">Stock : </label>
               <input type="number" name="stock" required><br>
               
+              <label for="association">Association : </label>
+              <select name="association" id="assos-select">
+              <option value="">Choisir une association</option>';
+
+        foreach ($associations as $association) {
+            echo '<option value=""' . $association['id'] . '">' . htmlspecialchars($association['nom']) . '</option>';
+        }
+
+        echo '</select><br>
               <input type="submit" value="Ajouter">
             </form>';
 
@@ -57,7 +67,7 @@ class VueGestionnaire
     public function afficherVentes($ventes)
     {
         foreach ($ventes as $vente) {
-            echo 'Produit : ' . $vente['produit'] . '<br>'.'Quantite : ' . $vente['quantite'] . '<br>'.'Date : ' . $vente['date'] . '<br>';
+            echo 'Produit : ' . $vente['produit'] . '<br>' . 'Quantite : ' . $vente['quantite'] . '<br>' . 'Date : ' . $vente['date'] . '<br>';
         }
     }
 
@@ -68,7 +78,8 @@ class VueGestionnaire
         }
     }
 
-    public function afficherStatistiques($stats){
-        echo 'Total ventes : '.$stats['totalVentes'].'<br>';
+    public function afficherStatistiques($stats)
+    {
+        echo 'Total ventes : ' . $stats['totalVentes'] . '<br>';
     }
 }

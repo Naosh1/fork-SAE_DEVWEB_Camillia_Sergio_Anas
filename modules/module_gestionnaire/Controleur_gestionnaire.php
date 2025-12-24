@@ -28,11 +28,11 @@ class ControleurGestionnaire
 
             case 'statistiques':
                 $totalVentes = $this->modele->getTotalVentes();
-
                 $stats = ['totalVentes' => $totalVentes];
-
                 $this->vue->afficherStatistiques($stats);
                 break;
+            case 'associations':
+                $associations = $this->modele->getAssociations();
 
             default:
                 echo 'Page introuvable';
