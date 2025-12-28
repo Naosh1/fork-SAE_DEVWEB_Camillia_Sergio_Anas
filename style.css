@@ -1,0 +1,98 @@
+/* =========================
+   Palette du style guide
+   ========================= */
+:root {
+    --color-primary:   #201A3E;
+    --color-secondary: #0001EE;
+    --color-tertiary:  #3B2C74;
+    --color-blue-grey: #EEF2FF;
+    --color-link:      #6F70FF;
+
+    --color-white: #FFFFFF;
+    --color-text:  #201A3E;
+}
+
+/* =========================
+   Mise en page générale
+   ========================= */
+body {
+    padding: 10px;
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    background: var(--color-blue-grey);
+    color: var(--color-text);
+
+}
+
+/* =========================
+   Header
+   ========================= */
+header {
+    margin-bottom: 12px;
+}
+
+header h1 {
+    margin: 0;
+    color: var(--color-secondary);
+}
+
+/* =========================
+   Card (bloc blanc)
+   ========================= */
+.card {
+    background: var(--color-white);
+    border-radius: 10px;
+    padding: 16px 20px;
+    box-shadow: 0 6px 18px rgba(0,0,0,.06);
+}
+
+/* =========================
+   Section blanche
+   ========================= */
+.section-white {
+    background: var(--color-white);
+    padding: 20px;
+}
+
+/* =========================
+   Navigation
+   ========================= */
+nav {
+    margin-top: 8px;
+}
+
+nav a {
+    color: var(--color-link);
+    text-decoration: none;
+    font-weight: 500;
+    margin-right: 12px;
+}
+
+nav a:hover {
+    text-decoration: underline;
+}
+
+/* =========================
+   Liens généraux
+   ========================= */
+a {
+    color: var(--color-link);
+}
+
+/* =========================
+   Footer
+   ========================= */
+footer {
+    text-align: center;
+    padding: 20px;
+    color: var(--color-primary);
+}
+
+/* =========================
+   Typographie style-guide
+   ========================= */
+h1 { font-size: 2.6rem; font-weight: 700; }
+h2 { font-size: 2rem;   font-weight: 700; }
+h3 { font-size: 1.6rem; font-weight: 500; }
+h4 { font-size: 1.3rem; font-weight: 400; }
+h5 { font-size: 1.1rem; font-weight: 400; }
+h6 { font-size: .95rem; font-weight: 500; }
