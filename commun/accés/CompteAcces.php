@@ -14,21 +14,39 @@
             $solde = $_POST["soldeUtilisateur"];
             $role = $_POST["roleUtilisateur"];
 
-            $stmt = $this->bdd->prepare(
-                "INSERT INTO compte (nom, prenom, email, mdp, solde, role)
-             VALUES (:nom, :prenom, :email, :mdp, :solde, :role)"
-            );
+            $sql = "SELECT COUNT(*) FROM compte WHERE email = :login";
+            $stmt = $this->bdd->prepare($sql);
+            $stmt->execute([':login' => $_POST['emailUtilisateur']]);
+            $dejaExistant = $stmt->fetchColumn();
 
-            $stmt->execute([
-                ":nom"   => $nom,
-                ":prenom" => $prenom,
-                ":email"  => $email,
-                ":mdp"    => $mdp,
-                ":solde"  => $solde,
-                ":role"   => $role
-            ]);
+            if ($dejaExistant > 0) {
+                header("Location: index.php?module=client&action=erreur&erreur=loginPasBon_utilisateur");
+                exit;
+            }
 
-            echo "Utilisateur ajouté";
+            if ($mdp !== $_POST["mdpUtilisateurConfirmation"]) {
+                header("Location: index.php?module=client&action=erreur&erreur=mdpPasBon_utilisateur");
+                exit;
+            }
+
+            else {
+                $sql = "INSERT INTO compte (nom, prenom, email, mdp, solde, role) VALUES (:nom, :prenom, :email, :mdp, :solde, :role)";
+
+                $mdpHasher = password_hash($mdp, PASSWORD_DEFAULT);
+
+                $stmt = $this->bdd->prepare($sql);
+
+                $stmt->execute([
+                    ":nom"   => $nom,
+                    ":prenom" => $prenom,
+                    ":email"  => $email,
+                    ":mdp"    => $mdpHasher,
+                    ":solde"  => $solde,
+                    ":role"   => $role
+                ]);
+
+                header("Location: index.php?module=client&action=form_compteBonLogin_utilisateur");
+            }
         }
 
         public function supprimerCompteParID($id) {
