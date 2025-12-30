@@ -9,7 +9,7 @@
 
     Connexion::initConnexion();
 
-    $mod = isset($_GET['module']) ? $_GET['module'] : "bienvenue";
+    $mod = isset($_GET['module']) ? $_GET['module'] : "client";
 
     $vueGen = new VueGenerique();
 

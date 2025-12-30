@@ -9,7 +9,7 @@
 
         public function __construct() {
             $this->controleur = new Controleur_client();
-            $this->action = isset($_GET["action"]) ? $_GET["action"] : " ";
+            $this->action = isset($_GET["action"]) ? $_GET["action"] : "menu";
             $this->erreur = isset($_GET["erreur"]) ? $_GET["erreur"] : " ";
 
             switch($this->action) {
