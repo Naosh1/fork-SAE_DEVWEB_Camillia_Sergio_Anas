@@ -29,8 +29,15 @@
                     $contenu = $this->controleur->getVue()->form_compteBon();
                     VueGenerique::setAffichage($contenu);
                     break;
+                case "form_connexionReussie_utilisateur":
+                    $contenu = $this->controleur->getVue()->form_connexionReussie();
+                    VueGenerique::setAffichage($contenu);
+                    break;
                 case "ajout_utilisateur":
                     $this->controleur->ajout();
+                    break;
+                case "verif_connexion" :
+                    $this->controleur->connexion();
                     break;
                 case "erreur":
                      switch ($this->erreur) {
@@ -41,6 +48,14 @@
 
                          case "mdpPasBon_utilisateur" :
                              $contenu = $this->controleur->getVue()->form_mdpPasBon();
+                             VueGenerique::setAffichage($contenu);
+                             break;
+                         case "connexionPasBon_utilisateur" :
+                             $contenu = $this->controleur->getVue()->connexionPasBon();
+                             VueGenerique::setAffichage($contenu);
+                             break;
+                         case "personneEstConnectee_utilisateur" :
+                             $contenu = $this->controleur->getVue()->personneEstConnectee();
                              VueGenerique::setAffichage($contenu);
                              break;
                      }

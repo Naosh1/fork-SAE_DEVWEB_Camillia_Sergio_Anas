@@ -42,10 +42,40 @@
                     ":email"  => $email,
                     ":mdp"    => $mdpHasher,
                     ":solde"  => $solde,
-                    ":role"   => $role
-                ]);
+                    ":role"   => $role]);
 
                 header("Location: index.php?module=client&action=form_compteBonLogin_utilisateur");
+            }
+        }
+
+        public function connexion() {
+            if (!isset($_POST['emailUtilisateur'], $_POST['mdpUtilisateur'])) {
+                echo "Personne est connectée ! <br>";
+                header("Location: index.php?module=client&action=erreur&erreur=personneEstConnectee_utilisateur");
+                exit;
+
+            }
+            else {
+                $sql = "SELECT email, mdp FROM compte WHERE email = :login";
+
+                $stmt = $this->bdd->prepare($sql);
+
+                $stmt->execute([':login' => $_POST['emailUtilisateur']]);
+
+                $user = $stmt->fetch();
+
+                if ($user && password_verify($_POST['mdpUtilisateur'], $user['mdp'])) {
+                    if (session_status() == PHP_SESSION_NONE) {
+                        session_start();
+                    }
+                    $_SESSION['id'] = $user['id'];
+                    $_SESSION['login'] = $_POST['emailUtilisateur'];
+
+                    header("Location: index.php?module=client&action=form_connexionReussie_utilisateur");
+                }
+                else {
+                    header("Location: index.php?module=client&action=erreur&erreur=connexionPasBon_utilisateur");
+                }
             }
         }
 

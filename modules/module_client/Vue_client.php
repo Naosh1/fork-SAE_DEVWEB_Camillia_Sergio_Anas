@@ -27,8 +27,9 @@
             ob_start();
 
             echo '<form method="post" action="/SaeWeb/index.php?module=client&action=verif_connexion">';
-            echo    'Email : ' . '<input type="text" name="emailUtilisateur" required> <br>';
+            echo    'Email : ' . '<input type="email"  name="emailUtilisateur" placeholder="votreEmail@gmail.com" required> <br>';
             echo    'Mot de passe : ' . '<input type="password" name="mdpUtilisateur" required> <br>';
+            echo    '<input type="submit" name="bouton" value="Inscription"> <br>';
             echo '</form>';
 
             return ob_get_clean();
@@ -54,6 +55,30 @@
             ob_start();
 
             echo "Le mdp n'est pas le meme !!! Recommencer";
+
+            return ob_get_clean();
+        }
+
+        public function form_connexionReussie() {
+            ob_start();
+
+            echo "Bienvenue " . htmlspecialchars($_SESSION['login']) . "<br>";
+
+            return ob_get_clean();
+        }
+
+        public function connexionPasBon() {
+            ob_start();
+
+            echo "Login ou mot de passe incorrect" . "<br>";
+
+            return ob_get_clean();
+        }
+
+        public function personneEstConnectee() {
+            ob_start();
+
+            echo "Personne est connectée !" . "<br>";
 
             return ob_get_clean();
         }

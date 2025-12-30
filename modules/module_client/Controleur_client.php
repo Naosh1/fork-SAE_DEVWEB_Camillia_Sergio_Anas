@@ -20,4 +20,8 @@
             $this->modele->enregistrerCompte();
         }
 
+        public function connexion() {
+            $this->modele->connexion();
+        }
+
     }
