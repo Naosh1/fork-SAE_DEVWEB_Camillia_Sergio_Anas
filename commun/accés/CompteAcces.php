@@ -54,7 +54,7 @@
                 exit;
             }
             else {
-                $sql = "SELECT email, mdp, prenom FROM compte WHERE email = :login";
+                $sql = "SELECT mdp FROM compte WHERE email = :login";
 
                 $stmt = $this->bdd->prepare($sql);
 
@@ -66,8 +66,8 @@
                     if (session_status() == PHP_SESSION_NONE) {
                         session_start();
                     }
-                    $_SESSION['id'] = $user['id'];
-                    $_SESSION['login'] = $user["prenomUtilisateur"];
+                    $_SESSION['prenom'] = $user['prenomUtilisateur'];
+                    $_SESSION['login'] = $_POST["emailUtilisateur"];
 
                     header("Location: index.php?module=client&action=form_connexionReussie_utilisateur");
                 }
