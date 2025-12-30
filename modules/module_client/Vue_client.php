@@ -29,8 +29,7 @@
             echo '<form method="post" action="/SaeWeb/index.php?module=client&action=verif_connexion">';
             echo    'Email : ' . '<input type="email"  name="emailUtilisateur" placeholder="votreEmail@gmail.com" required> <br>';
             echo    'Mot de passe : ' . '<input type="password" name="mdpUtilisateur" required> <br>';
-            echo    '<input type="submit" name="bouton" value="Inscription"> <br>';
-            echo '</form>';
+            echo '<input type="submit" name="bouton" value="Inscription"> <br>';
 
             return ob_get_clean();
         }
@@ -67,7 +66,7 @@
             return ob_get_clean();
         }
 
-        public function connexionPasBon() {
+        public function form_connexionPasBon() {
             ob_start();
 
             echo "Login ou mot de passe incorrect" . "<br>";
@@ -75,7 +74,7 @@
             return ob_get_clean();
         }
 
-        public function personneEstConnectee() {
+        public function form_personneEstConnectee() {
             ob_start();
 
             echo "Personne est connectée !" . "<br>";

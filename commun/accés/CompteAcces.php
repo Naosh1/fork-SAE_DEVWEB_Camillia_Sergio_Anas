@@ -50,13 +50,11 @@
 
         public function connexion() {
             if (!isset($_POST['emailUtilisateur'], $_POST['mdpUtilisateur'])) {
-                echo "Personne est connectée ! <br>";
                 header("Location: index.php?module=client&action=erreur&erreur=personneEstConnectee_utilisateur");
                 exit;
-
             }
             else {
-                $sql = "SELECT email, mdp FROM compte WHERE email = :login";
+                $sql = "SELECT email, mdp, prenom FROM compte WHERE email = :login";
 
                 $stmt = $this->bdd->prepare($sql);
 
@@ -69,7 +67,7 @@
                         session_start();
                     }
                     $_SESSION['id'] = $user['id'];
-                    $_SESSION['login'] = $_POST['emailUtilisateur'];
+                    $_SESSION['login'] = $user["prenomUtilisateur"];
 
                     header("Location: index.php?module=client&action=form_connexionReussie_utilisateur");
                 }
