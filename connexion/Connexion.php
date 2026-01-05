@@ -13,7 +13,7 @@
             self::$bdd = new PDO(self::$dsn,self::$user,self::$password);
         }
 
-        public static function getBdd() {
+        protected static function getBdd() {
             if (!isset(self::$bdd)) {
                 self::initConnexion();
             }
