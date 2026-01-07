@@ -27,8 +27,8 @@
             ob_start();
 
             echo '<form method="post" action="/SaeWeb/index.php?module=client&action=verif_connexion">';
-            echo    'Email : ' . '<input type="email"  name="emailUtilisateur" placeholder="votreEmail@gmail.com" required> <br>';
-            echo    'Mot de passe : ' . '<input type="password" name="mdpUtilisateur" required> <br>';
+            echo    'Email : ' . '<input type="email"  name="emailUtilisateurConnexion" placeholder="votreEmail@gmail.com" required> <br>';
+            echo    'Mot de passe : ' . '<input type="password" name="mdpUtilisateurConnexion" required> <br>';
             echo '<input type="submit" name="bouton" value="Inscription"> <br>';
 
             return ob_get_clean();
@@ -75,7 +75,7 @@
         public function form_connexionReussie() {
             ob_start();
 
-            echo "Bienvenue " . htmlspecialchars($_SESSION['login']) . "<br>";
+            echo "Bienvenue " . htmlspecialchars($_SESSION['prenom']) . "<br>";
 
             return ob_get_clean();
         }

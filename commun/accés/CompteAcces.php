@@ -50,25 +50,25 @@
         }
 
         public function connexion() {
-            if (!isset($_POST['emailUtilisateur'], $_POST['mdpUtilisateur'])) {
+            if (!isset($_POST['emailUtilisateurConnexion'], $_POST['mdpUtilisateurConnexion'])) {
                 header("Location: index.php?module=client&action=erreur&erreur=personneEstConnectee_utilisateur");
                 exit;
             }
             else {
-                $sql = "SELECT id, mdp FROM compte WHERE email = :login";
+                $sql = "SELECT id, prenom, mdp FROM compte WHERE email = :login";
 
                 $stmt = $this->bdd->prepare($sql);
 
-                $stmt->execute([':login' => $_POST['emailUtilisateur']]);
+                $stmt->execute([':login' => $_POST['emailUtilisateurConnexion']]);
 
                 $user = $stmt->fetch();
 
-                if ($user && password_verify($_POST['mdpUtilisateur'], $user['mdp'])) {
-                    if (session_status() == PHP_SESSION_NONE) {
+                if ($user && password_verify($_POST['mdpUtilisateurConnexion'], $user['mdp'])) {
+                    if (session_status() === PHP_SESSION_NONE) {
                         session_start();
                     }
-                    $_SESSION['prenom'] = $user['prenomUtilisateur'];
-                    $_SESSION['login'] = $_POST["emailUtilisateur"];
+                    $_SESSION['prenom'] = $user['prenom'];
+                    $_SESSION['login'] = $_POST["emailUtilisateurConnexion"];
                     $_SESSION['id'] = $user['id'];
 
                     header("Location: index.php?module=client&action=form_connexionReussie_utilisateur");
