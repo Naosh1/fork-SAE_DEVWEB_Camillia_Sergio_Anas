@@ -16,6 +16,7 @@
                                     echo " <a href='index.php?module=client&action=menu'> Menu </a>";
                                     echo " <a href='index.php?module=client&action=form_inscription_utilisateur'> S'inscrire </a>";
                                     echo " <a href='index.php?module=client&action=form_connexion_utilisateur'> Connexion </a>";
+                                    echo " <a href='index.php?module=client&action=form_modification_utilisateur'> Modifier_Infos </a>";
                                 ?>
                             </nav>
                     </div>

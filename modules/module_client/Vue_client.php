@@ -34,6 +34,20 @@
             return ob_get_clean();
         }
 
+        public function form_modification() {
+            ob_start();
+
+            echo '<form method="post" action="/SaeWeb/index.php?module=client&action=verif_modification"> <br>';
+            echo    'Nouvelle Email : ' . '<input type="email" name="nvEmailUtilisateur" pattern="^[^@\s]+@[^@\s]+\.[^@\s]+$" title="Entrez une adresse email valide (ex : nom@gmail.com)" required> <br>';
+            echo    'Nouveau Mot de passe : ' . '<input type="password" name="nvMdpUtilisateur" pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9]).{8,}" title="Doit contenir au moins 8 caractères, une majuscule, une minuscule et un chiffre" required> <br>';
+            echo    'Confirmez le MDP : ' . '<input type="password" name="nvMdpUtilisateurConfirmation" required> <br>';
+            echo    'Nouveau Role : ' . '<input type="text" name="nvRoleUtilisateur" required> <br><br>';
+            echo    '<input type="submit" name="bouton" value="Modifier"> <br>';
+            echo '</form>';
+
+            return ob_get_clean();
+        }
+
         public function form_comptePasBonLogin() {
             ob_start();
 
@@ -78,6 +92,22 @@
             ob_start();
 
             echo "Personne est connectée !" . "<br>";
+
+            return ob_get_clean();
+        }
+
+        public function form_emailDejaUtilise() {
+            ob_start();
+
+            echo "Le mail est déja utilisée" . "<br>";
+
+            return ob_get_clean();
+        }
+
+        public function form_modificationReussie() {
+            ob_start();
+
+            echo "Modification des infos réussie avec succés !" . "<br>";
 
             return ob_get_clean();
         }

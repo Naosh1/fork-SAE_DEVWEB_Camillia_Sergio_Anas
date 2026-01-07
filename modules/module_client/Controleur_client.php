@@ -24,4 +24,8 @@
             $this->modele->connexion();
         }
 
+        public function modification() {
+            $this->modele->modification();
+        }
+
     }

@@ -42,7 +42,8 @@
                     ":email"  => $email,
                     ":mdp"    => $mdpHasher,
                     ":solde"  => $solde,
-                    ":role"   => $role]);
+                    ":role"   => $role
+                ]);
 
                 header("Location: index.php?module=client&action=form_compteBonLogin_utilisateur");
             }
@@ -54,7 +55,7 @@
                 exit;
             }
             else {
-                $sql = "SELECT mdp FROM compte WHERE email = :login";
+                $sql = "SELECT id, mdp FROM compte WHERE email = :login";
 
                 $stmt = $this->bdd->prepare($sql);
 
@@ -68,6 +69,7 @@
                     }
                     $_SESSION['prenom'] = $user['prenomUtilisateur'];
                     $_SESSION['login'] = $_POST["emailUtilisateur"];
+                    $_SESSION['id'] = $user['id'];
 
                     header("Location: index.php?module=client&action=form_connexionReussie_utilisateur");
                 }
@@ -77,32 +79,80 @@
             }
         }
 
-        public function supprimerCompteParID($id) {
-            $stmt = $this->bdd->prepare(
-                "DELETE FROM compte WHERE id = ?"
-            );
-            $stmt->execute([$id]);
-        }
-
-        public function rechercheCompteParID($id) {
-            $stmt = $this->bdd->prepare("SELECT * FROM compte WHERE id = ?");
-            $stmt->execute([$id]);
-            $row = $stmt->fetch();
-
-            if (!$row) {
-                return null;
+        public function modification() {
+            if (!isset($_SESSION['id'])) {
+                header("Location: index.php?module=client&action=erreur&erreur=personneEstConnectee_utilisateur");
+                exit;
             }
+            else {
 
-            return new Compte(
-                $row["id"],
-                $row["nom"],
-                $row["prenom"],
-                $row["email"],
-                $row["mdp"],
-                $row["solde"],
-                $row["role"]
-            );
+                $id = $_SESSION['id'];
+                $nvEmail = $_POST["nvEmailUtilisateur"];
+                $nvMdp = $_POST["nvMdpUtilisateur"];
+                $nvRole = $_POST["nvRoleUtilisateur"];
+
+                $sql = "SELECT COUNT(*) FROM compte WHERE email = :nvEmail AND id != :id";
+
+                $stmt = $this->bdd->prepare($sql);
+
+                $stmt->execute([
+                    ':nvEmail' => $nvEmail,
+                    ":id" => $id
+                ]);
+
+                if ($stmt->fetchColumn() > 0) {
+                    header("Location: index.php?module=client&action=erreur&erreur=emailDejaUtilise_utilisateur");
+                    exit;
+                }
+
+                if ($nvMdp !== $_POST["nvMdpUtilisateurConfirmation"]) {
+                    header("Location: index.php?module=client&action=erreur&erreur=mdpPasBon_utilisateur");
+                    exit;
+                }
+
+                $mdpHasher = password_hash($nvMdp, PASSWORD_DEFAULT);
+
+                $sql = "UPDATE compte SET email = :nvEmail, mdp = :nvMdp, role = :nvRole WHERE id = :id";
+
+                $stmt = $this->bdd->prepare($sql);
+
+                $stmt->execute([
+                    ":nvEmail" => $nvEmail,
+                    ":nvMdp" => $mdpHasher,
+                    ":nvRole" => $nvRole,
+                    ":id" => $id
+                ]);
+
+                header("Location: index.php?module=client&action=form_modificationReussie_utilisateur");
+            }
         }
+
+//        public function supprimerCompteParID($id) {
+//            $stmt = $this->bdd->prepare(
+//                "DELETE FROM compte WHERE id = ?"
+//            );
+//            $stmt->execute([$id]);
+//        }
+//
+//        public function rechercheCompteParID($id) {
+//            $stmt = $this->bdd->prepare("SELECT * FROM compte WHERE id = ?");
+//            $stmt->execute([$id]);
+//            $row = $stmt->fetch();
+//
+//            if (!$row) {
+//                return null;
+//            }
+//
+//            return new Compte(
+//                $row["id"],
+//                $row["nom"],
+//                $row["prenom"],
+//                $row["email"],
+//                $row["mdp"],
+//                $row["solde"],
+//                $row["role"]
+//            );
+//        }
 
         public function miseAJourDuSolde($idCompte, $nouveauSolde) {
             $stmt = $this->bdd->prepare(

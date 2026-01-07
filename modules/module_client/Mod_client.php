@@ -33,11 +33,22 @@
                     $contenu = $this->controleur->getVue()->form_connexionReussie();
                     VueGenerique::setAffichage($contenu);
                     break;
+                case "form_modification_utilisateur" :
+                    $contenu = $this->controleur->getVue()->form_modification();
+                    VueGenerique::setAffichage($contenu);
+                    break;
+                case "form_modificationReussie_utilisateur" :
+                    $contenu = $this->controleur->getVue()->form_modificationReussie();
+                    VueGenerique::setAffichage($contenu);
+                    break;
                 case "ajout_utilisateur" :
                     $this->controleur->ajout();
                     break;
                 case "verif_connexion" :
                     $this->controleur->connexion();
+                    break;
+                case "verif_modification" :
+                    $this->controleur->modification();
                     break;
                 case "erreur" :
                      switch ($this->erreur) {
@@ -55,6 +66,10 @@
                              break;
                          case "personneEstConnectee_utilisateur" :
                              $contenu = $this->controleur->getVue()->form_personneEstConnectee();
+                             VueGenerique::setAffichage($contenu);
+                             break;
+                         case "emailDejaUtilise_utilisateur" :
+                             $contenu = $this->controleur->getVue()->form_emailDejaUtilise();
                              VueGenerique::setAffichage($contenu);
                              break;
                      }
