@@ -1,9 +1,9 @@
 <?php
     class Connexion {
         private static $bdd = null;
-        private static $dsn = 'mysql:dbname=buvette;host=127.0.0.1';
-        private static $user = 'root';
-        private static $password = '';
+        private static $dsn = 'mysql:dbname=dutinfopw201633;host=database-etudiants.iut.univ-paris8.fr';
+        private static $user = 'dutinfopw201633';
+        private static $password = 'mejetuju';
 
         public function __construct() {
 
