@@ -4,7 +4,8 @@ include_once 'connexion/Connexion.php';
 class ModeleGestionnaire extends Connexion
 {
 
-    public function getClients(){
+    public function getClients()
+    {
         try {
             $requete = self::getBdd()->query(
                 "SELECT c.id, c.nom, c.prenom, c.email, c.solde, c.role,
@@ -23,6 +24,7 @@ class ModeleGestionnaire extends Connexion
             return [];
         }
     }
+
     public function getBarmans()
     {
         try {
@@ -207,6 +209,7 @@ class ModeleGestionnaire extends Connexion
             return false;
         }
     }
+
     public function getNbBarmans()
     {
         try {
@@ -222,6 +225,7 @@ class ModeleGestionnaire extends Connexion
             return 0;
         }
     }
+
     public function estBarmanActif($id): bool
     {
         try {
@@ -252,6 +256,7 @@ class ModeleGestionnaire extends Connexion
             return false;
         }
     }
+
     public function getAssociations()
     {
         try {
@@ -264,6 +269,7 @@ class ModeleGestionnaire extends Connexion
             return [];
         }
     }
+
     public function getProduits()
     {
         try {
@@ -276,6 +282,7 @@ class ModeleGestionnaire extends Connexion
             return [];
         }
     }
+
     public function supprimerProduit($id)
     {
         try {
@@ -286,6 +293,7 @@ class ModeleGestionnaire extends Connexion
             return false;
         }
     }
+
     public function ajouterProduit($nom, $type, $prix, $stock)
     {
         try {
@@ -347,6 +355,7 @@ class ModeleGestionnaire extends Connexion
             return [];
         }
     }
+
     public function getTotalVentes()
     {
         try {
@@ -416,15 +425,17 @@ class ModeleGestionnaire extends Connexion
     public function supprimerAssociation($id)
     {
         try {
-            $requete = self::getBdd()->prepare(
-                "DELETE FROM association WHERE id = ?"
-            );
+            $requete = self::getBdd()->prepare("DELETE FROM gere WHERE association_id = ?");
+            $requete->execute([$id]);
+
+            $requete = self::getBdd()->prepare("DELETE FROM association WHERE id = ?");
             return $requete->execute([$id]);
         } catch (PDOException $e) {
-            error_log("L'association n'a pas pu être supprimé : " . $e->getMessage());
+            error_log("L'association n'a pas pu être supprimée : " . $e->getMessage());
             return false;
         }
     }
+
 
     public function getAssociationParId($id)
     {
@@ -458,4 +469,21 @@ class ModeleGestionnaire extends Connexion
             return false;
         }
     }
+
+    public function getProduitParId($id)
+    {
+        try {
+            $requete = self::getBdd()->prepare(
+                "SELECT id, nom, type, prix, quantiteActuelle 
+             FROM produit 
+             WHERE id = ?"
+            );
+            $requete->execute([$id]);
+            return $requete->fetch(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Erreur getProduitParId: " . $e->getMessage());
+            return false;
+        }
+    }
+
 }

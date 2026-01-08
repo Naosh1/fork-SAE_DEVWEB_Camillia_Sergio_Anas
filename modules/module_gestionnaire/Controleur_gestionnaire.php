@@ -84,7 +84,6 @@ class ControleurGestionnaire
                 }
                 break;
 
-            // GESTION DES ASSOCIATIONS
             case 'associations':
                 $associations = $this->modele->getAssociations();
                 $this->vue->afficherAssociations($associations);
@@ -325,7 +324,7 @@ class ControleurGestionnaire
 
             case 'ajouterStock':
                 if (isset($_GET['id'])) {
-                    $produit = $this->modele->getProduit($_GET['id']);
+                    $produit = $this->modele->getProduitParId($_GET['id']);
                     if ($produit) {
                         $this->vue->formulaireAjoutStock($produit);
                     }

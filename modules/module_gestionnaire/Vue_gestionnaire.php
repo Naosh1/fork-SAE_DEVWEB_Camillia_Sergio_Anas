@@ -26,12 +26,16 @@ class VueGestionnaire extends VueGenerique
     public function afficherBarmans($barmans)
     {
         $this->menu();
+
         echo '<div class="bg-white rounded-lg shadow-md p-6 mb-6">';
         echo '<div class="flex justify-between items-center mb-6">';
         echo '<h2 class="text-2xl font-bold text-gray-800">Gestion des comptes barmans</h2>';
-        echo '<a href="index.php?action=ajouterBarman" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors duration-200 flex items-center">';
+
+        echo '<button onclick="window.location.href=\'index.php?action=ajouterBarman\'"';
+        echo ' class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors duration-200 flex items-center">';
         echo '<i class="fas fa-plus mr-2"></i> Ajouter un barman';
-        echo '</a>';
+        echo '</button>';
+
         echo '</div>';
 
         if (isset($_SESSION['success'])) {
@@ -114,8 +118,10 @@ class VueGestionnaire extends VueGenerique
             echo '</table>';
             echo '</div>';
         }
+
         echo '</div>';
     }
+
 
     public function formulaireAjoutBarman()
     {
@@ -417,9 +423,10 @@ class VueGestionnaire extends VueGenerique
         echo '<div class="bg-white rounded-lg shadow-md p-6 mb-6">';
         echo '<div class="flex justify-between items-center mb-6">';
         echo '<h2 class="text-2xl font-bold text-gray-800">Liste des associations</h2>';
-        echo '<a href="index.php?action=ajouterAssociation" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors duration-200 flex items-center">';
+        echo '<button onclick="window.location.href=\'index.php?action=ajouterAssociation\'" 
+class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors duration-200 flex items-center">';
         echo '<i class="fas fa-plus mr-2"></i> Ajouter une association';
-        echo '</a>';
+        echo '</button>';
         echo '</div>';
 
         if (isset($_SESSION['success'])) {
