@@ -1,7 +1,7 @@
 <?php
     class Connexion {
         private static $bdd = null;
-        private static $dsn = 'mysql:dbname=test;host=127.0.0.1';
+        private static $dsn = 'mysql:host=localhost;dbname=buvette;charset=utf8';
         private static $user = 'root';
         private static $password = '';
 

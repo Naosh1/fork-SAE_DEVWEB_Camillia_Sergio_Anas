@@ -8,4 +8,5 @@ include_once 'connexion/Connexion.php';
 Connexion::initConnexion();
 
 new Mod_gestionnaire();
+
 include 'template.php';

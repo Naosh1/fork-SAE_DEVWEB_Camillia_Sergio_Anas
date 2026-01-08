@@ -1,22 +1,257 @@
 <?php
+include_once 'connexion/Connexion.php';
 
 class ModeleGestionnaire extends Connexion
 {
 
-
-    public function getProduits()
-    {
+    public function getClients(){
         try {
             $requete = self::getBdd()->query(
-                "SELECT id, nom, type, prix, quantiteActuelle FROM produit ORDER BY nom"
+                "SELECT c.id, c.nom, c.prenom, c.email, c.solde, c.role,
+                    (SELECT COUNT(*) FROM dispose d WHERE d.compte_id = c.id AND d.role_id = 
+                        (SELECT id FROM role WHERE nom = 'client')) as est_barman
+             FROM compte c
+             WHERE c.role = 'client' OR c.id IN (
+                 SELECT compte_id FROM dispose WHERE role_id = 
+                    (SELECT id FROM role WHERE nom = 'client')
+             )
+             ORDER BY c.nom, c.prenom"
             );
             return $requete->fetchAll(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
-            error_log("Erreur getProduits: " . $e->getMessage());
+            error_log("Erreur getBarmans: " . $e->getMessage());
+            return [];
+        }
+    }
+    public function getBarmans()
+    {
+        try {
+            $requete = self::getBdd()->query(
+                "SELECT c.id, c.nom, c.prenom, c.email, c.solde, c.role,
+                    (SELECT COUNT(*) FROM dispose d WHERE d.compte_id = c.id AND d.role_id = 
+                        (SELECT id FROM role WHERE nom = 'barman')) as est_barman
+             FROM compte c
+             WHERE c.role = 'barman' OR c.id IN (
+                 SELECT compte_id FROM dispose WHERE role_id = 
+                    (SELECT id FROM role WHERE nom = 'barman')
+             )
+             ORDER BY c.nom, c.prenom"
+            );
+            return $requete->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Erreur getBarmans: " . $e->getMessage());
             return [];
         }
     }
 
+    public function getBarmanParId($id)
+    {
+        try {
+            $requete = self::getBdd()->prepare(
+                "SELECT c.*, 
+                    (SELECT COUNT(*) FROM dispose d WHERE d.compte_id = c.id AND d.role_id = 
+                        (SELECT id FROM role WHERE nom = 'barman')) as est_barman
+             FROM compte c 
+             WHERE c.id = ?"
+            );
+            $requete->execute([$id]);
+            return $requete->fetch(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Erreur getBarmanParId: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    public function ajouterBarman($nom, $prenom, $email, $motDePasse)
+    {
+        try {
+            $requeteVerif = self::getBdd()->prepare("SELECT id FROM compte WHERE email = ?");
+            $requeteVerif->execute([$email]);
+            if ($requeteVerif->fetch()) {
+                return false;
+            }
+            $hash = password_hash($motDePasse, PASSWORD_DEFAULT);
+
+            $requete = self::getBdd()->prepare(
+                "INSERT INTO compte (nom, prenom, email, mdp, solde, role) 
+             VALUES (?, ?, ?, ?, 0, 'barman')"
+            );
+            $requete->execute([$nom, $prenom, $email, $hash]);
+
+            $compteId = self::getBdd()->lastInsertId();
+
+            $requeteRole = self::getBdd()->prepare("SELECT id FROM role WHERE nom = 'barman'");
+            $requeteRole->execute();
+            $role = $requeteRole->fetch(PDO::FETCH_ASSOC);
+
+            if ($role) {
+                $requeteLien = self::getBdd()->prepare(
+                    "INSERT INTO dispose (role_id, compte_id) VALUES (?, ?)"
+                );
+                $requeteLien->execute([$role['id'], $compteId]);
+            }
+
+            return $compteId;
+        } catch (PDOException $e) {
+            error_log("Erreur ajouterBarman: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    public function modifierBarman($id, $nom, $prenom, $email, $changerMotDePasse = false, $nouveauMotDePasse = null)
+    {
+        try {
+            $requeteVerif = self::getBdd()->prepare("SELECT id FROM compte WHERE email = ? AND id != ?");
+            $requeteVerif->execute([$email, $id]);
+            if ($requeteVerif->fetch()) {
+                return false;
+            }
+
+            if ($changerMotDePasse && $nouveauMotDePasse) {
+                $hash = password_hash($nouveauMotDePasse, PASSWORD_DEFAULT);
+                $requete = self::getBdd()->prepare(
+                    "UPDATE compte SET 
+                 nom = ?, 
+                 prenom = ?, 
+                 email = ?, 
+                 mdp = ?,
+                 role = 'barman'
+                 WHERE id = ?"
+                );
+                return $requete->execute([$nom, $prenom, $email, $hash, $id]);
+            } else {
+                $requete = self::getBdd()->prepare(
+                    "UPDATE compte SET 
+                 nom = ?, 
+                 prenom = ?, 
+                 email = ?,
+                 role = 'barman'
+                 WHERE id = ?"
+                );
+                return $requete->execute([$nom, $prenom, $email, $id]);
+            }
+        } catch (PDOException $e) {
+            error_log("Erreur modifierBarman: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    public function activerDesactiverBarman($id, $actif)
+    {
+        try {
+            if (!$actif) {
+                $requete = self::getBdd()->prepare(
+                    "DELETE FROM dispose 
+                 WHERE compte_id = ? 
+                 AND role_id = (SELECT id FROM role WHERE nom = 'barman')"
+                );
+                return $requete->execute([$id]);
+            } else {
+                $requeteRole = self::getBdd()->prepare("SELECT id FROM role WHERE nom = 'barman'");
+                $requeteRole->execute();
+                $role = $requeteRole->fetch(PDO::FETCH_ASSOC);
+
+                if ($role) {
+                    $requeteVerif = self::getBdd()->prepare(
+                        "SELECT COUNT(*) FROM dispose 
+                     WHERE compte_id = ? AND role_id = ?"
+                    );
+                    $requeteVerif->execute([$id, $role['id']]);
+
+                    if (!$requeteVerif->fetchColumn()) {
+                        $requeteLien = self::getBdd()->prepare(
+                            "INSERT INTO dispose (role_id, compte_id) VALUES (?, ?)"
+                        );
+                        return $requeteLien->execute([$role['id'], $id]);
+                    }
+                    return true;
+                }
+                return false;
+            }
+        } catch (PDOException $e) {
+            error_log("Erreur activerDesactiverBarman: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    public function reinitialiserMotDePasseBarman($id)
+    {
+        try {
+            $motDePasseTemporaire = bin2hex(random_bytes(4));
+            $hash = password_hash($motDePasseTemporaire, PASSWORD_DEFAULT);
+
+            $requete = self::getBdd()->prepare(
+                "UPDATE compte SET mdp = ? WHERE id = ?"
+            );
+
+            if ($requete->execute([$hash, $id])) {
+                return $motDePasseTemporaire;
+            }
+            return false;
+        } catch (PDOException $e) {
+            error_log("Erreur reinitialiserMotDePasseBarman: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    public function supprimerBarman($id)
+    {
+        try {
+            $requeteLien = self::getBdd()->prepare("DELETE FROM dispose WHERE compte_id = ?");
+            $requeteLien->execute([$id]);
+
+            $requete = self::getBdd()->prepare("DELETE FROM compte WHERE id = ?");
+            return $requete->execute([$id]);
+        } catch (PDOException $e) {
+            error_log("Erreur supprimerBarman: " . $e->getMessage());
+            return false;
+        }
+    }
+    public function getNbBarmans()
+    {
+        try {
+            $requete = self::getBdd()->query(
+                "SELECT COUNT(*) as nb 
+             FROM compte 
+             WHERE role = 'barman'"
+            );
+            $result = $requete->fetch(PDO::FETCH_ASSOC);
+            return $result['nb'];
+        } catch (PDOException $e) {
+            error_log("Erreur getNbBarmans: " . $e->getMessage());
+            return 0;
+        }
+    }
+    public function estBarmanActif($id): bool
+    {
+        try {
+            $requete = self::getBdd()->prepare(
+                "SELECT COUNT(*) 
+             FROM dispose d 
+             JOIN role r ON d.role_id = r.id 
+             WHERE d.compte_id = ? AND r.nom = 'barman'"
+            );
+            $requete->execute([$id]);
+            return $requete->fetchColumn() > 0;
+        } catch (PDOException $e) {
+            error_log("Erreur estBarmanActif: " . $e->getMessage());
+            return false;
+        }
+    }
+
+
+    public function ajouterStock($idProduit, $quantite)
+    {
+        try {
+            $requete = self::getBdd()->prepare(
+                "UPDATE produit SET quantiteActuelle = quantiteActuelle + ? WHERE id = ?"
+            );
+            return $requete->execute([$quantite, $idProduit]);
+        } catch (PDOException $e) {
+            error_log("Erreur ajouterStock: " . $e->getMessage());
+            return false;
+        }
+    }
     public function getAssociations()
     {
         try {
@@ -29,7 +264,28 @@ class ModeleGestionnaire extends Connexion
             return [];
         }
     }
-
+    public function getProduits()
+    {
+        try {
+            $requete = self::getBdd()->query(
+                "SELECT id, nom, type, prix, quantiteActuelle FROM produit ORDER BY nom"
+            );
+            return $requete->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Erreur getProduits: " . $e->getMessage());
+            return [];
+        }
+    }
+    public function supprimerProduit($id)
+    {
+        try {
+            $requete = self::getBdd()->prepare("DELETE FROM produit WHERE id = ?");
+            return $requete->execute([$id]);
+        } catch (PDOException $e) {
+            error_log("Erreur supprimerProduit: " . $e->getMessage());
+            return false;
+        }
+    }
     public function ajouterProduit($nom, $type, $prix, $stock)
     {
         try {
@@ -91,22 +347,6 @@ class ModeleGestionnaire extends Connexion
             return [];
         }
     }
-
-    public function getUtilisateurs()
-    {
-        try {
-            $requete = self::getBdd()->query(
-                "SELECT id, nom, prenom, email, solde, role 
-                 FROM compte 
-                 ORDER BY nom, prenom"
-            );
-            return $requete->fetchAll(PDO::FETCH_ASSOC);
-        } catch (PDOException $e) {
-            error_log("Erreur getUtilisateurs: " . $e->getMessage());
-            return [];
-        }
-    }
-
     public function getTotalVentes()
     {
         try {
