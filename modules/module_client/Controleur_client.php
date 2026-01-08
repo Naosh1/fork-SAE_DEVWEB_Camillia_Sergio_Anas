@@ -28,4 +28,8 @@
             $this->modele->modification();
         }
 
+        public function deconnexion() {
+            $this->modele->deconnexion();
+        }
+
     }

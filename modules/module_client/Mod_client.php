@@ -14,16 +14,28 @@
 
             switch($this->action) {
                 case "menu" :
-                    $contenu = "Bienvenue";
+                    $contenu = "Bienvenue sur le site de la buvette";
                     VueGenerique::setAffichage($contenu);
                     break;
                 case "form_inscription_utilisateur" :
-                    $contenu = $this->controleur->getVue()->form_inscription();
-                    VueGenerique::setAffichage($contenu);
+                    if (isset($_SESSION) && count($_SESSION) == 0) {
+                        $contenu = $this->controleur->getVue()->form_inscription();
+                        VueGenerique::setAffichage($contenu);
+                    }
+                    else {
+                        $contenu = $this->controleur->getVue()->form_dejaConnecte();
+                        VueGenerique::setAffichage($contenu);
+                    }
                     break;
                 case "form_connexion_utilisateur" :
-                    $contenu = $this->controleur->getVue()->form_connexion();
-                    VueGenerique::setAffichage($contenu);
+                    if (isset($_SESSION) && count($_SESSION) == 0) {
+                        $contenu = $this->controleur->getVue()->form_connexion();
+                        VueGenerique::setAffichage($contenu);
+                    }
+                    else {
+                        $contenu = $this->controleur->getVue()->form_dejaConnecte();
+                        VueGenerique::setAffichage($contenu);
+                    }
                     break;
                 case "form_compteBonLogin_utilisateur" :
                     $contenu = $this->controleur->getVue()->form_compteBon();
@@ -41,6 +53,10 @@
                     $contenu = $this->controleur->getVue()->form_modificationReussie();
                     VueGenerique::setAffichage($contenu);
                     break;
+                case "form_deconnexionReussie_utilisateur" :
+                    $contenu = $this->controleur->getVue()->form_deconnexionReussie_utilisateur();
+                    VueGenerique::setAffichage($contenu);
+                    break;
                 case "ajout_utilisateur" :
                     $this->controleur->ajout();
                     break;
@@ -49,6 +65,9 @@
                     break;
                 case "verif_modification" :
                     $this->controleur->modification();
+                    break;
+                case "deconnexion" :
+                    $this->controleur->deconnexion();
                     break;
                 case "erreur" :
                      switch ($this->erreur) {

@@ -127,6 +127,14 @@
             }
         }
 
+        public function deconnexion() {
+            session_unset();
+
+            session_destroy();
+
+            header("Location : index.php?module=client&action=form_deconnexionReussie_utilisateur");
+        }
+
         public function miseAJourDuSolde($idCompte, $nouveauSolde) {
             $stmt = $this->bdd->prepare(
                 "UPDATE compte SET solde = ? WHERE id = ?"
