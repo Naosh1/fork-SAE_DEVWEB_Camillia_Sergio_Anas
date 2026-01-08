@@ -119,14 +119,25 @@
             echo "Vous êtes déjà connecté(e)" . "<br>";
 
             return ob_get_clean();
+
         }
 
-        public function form_deconnexionReussie_utilisateur() {
+        public function form_deconnexion_utilisateur() {
             ob_start();
 
             echo '<a href="index.php?module=client&action=deconnexion">Se déconnecter</a>';
 
             return ob_get_clean();
         }
+
+        public function form_deconnexionReussie_utilisateur() {
+           ob_start();
+
+           echo 'Vous etes déconnecter !';
+
+           return ob_get_clean();
+        }
+
+
 
     }

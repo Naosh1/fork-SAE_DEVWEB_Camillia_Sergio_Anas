@@ -53,6 +53,10 @@
                     $contenu = $this->controleur->getVue()->form_modificationReussie();
                     VueGenerique::setAffichage($contenu);
                     break;
+                case "form_deconnexion_utilisateur" :
+                    $contenu = $this->controleur->getVue()->form_deconnexion_utilisateur();
+                    VueGenerique::setAffichage($contenu);
+                    break;
                 case "form_deconnexionReussie_utilisateur" :
                     $contenu = $this->controleur->getVue()->form_deconnexionReussie_utilisateur();
                     VueGenerique::setAffichage($contenu);

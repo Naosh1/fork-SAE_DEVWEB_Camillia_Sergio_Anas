@@ -132,7 +132,7 @@
 
             session_destroy();
 
-            header("Location : index.php?module=client&action=form_deconnexionReussie_utilisateur");
+            header("Location: index.php?module=client&action=form_deconnexionReussie_utilisateur");
         }
 
         public function miseAJourDuSolde($idCompte, $nouveauSolde) {
