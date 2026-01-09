@@ -119,7 +119,6 @@
             echo "Vous êtes déjà connecté(e)" . "<br>";
 
             return ob_get_clean();
-
         }
 
         public function form_deconnexion() {
@@ -141,12 +140,12 @@
         public function form_rechargement() {
             ob_start();
 
-            echo '<form method="post" action="/~asemghouni/SAE_DEVWEB_Camillia_Sergio_Anas/index.php?module=client&action=verif_paiement"> <br>';
+            echo '<form method="post" action="/~asemghouni/SAE_DEVWEB_Camillia_Sergio_Anas/index.php?module=client&action=verif_rechargement"> <br>';
             echo    'Montant à recharger : ' . '<input type="number" name="montant" min="1" max="40" step="1" required> <br>';
-            echo    'Nom du titulaire : ' . '<input type="text" name="nomTitulaire" required><br>';
-            echo    'Numero de carte : ' . '<input type="text" name="codeCarteUtilisateur" pattern="[0-9]{16}" maxlength="16" placeholder="XXXX-XXXX-XXXX-XXXX" title="16 chiffres sans espaces" required> <br>';
-            echo    'CVV : ' . '<input type="text" name="cvvUtilisateur" pattern="[0-9]{3}" maxlength="3" placeholder="123" title="3 chiffres" required> <br>';
-            echo    'Date d\'expiration : ' . '<input type="month" name="dateExpirationUtilisateur" maxlength="5" placeholder="MM/AA"  required> <br>';
+            echo    'Nom du titulaire : ' . '<input type="text" inputmode="text" name="nomTitulaire" pattern="[A-Za-zÀ-ÖØ-öø-ÿ\s-]+" title="Uniquement des lettres" required><br>';
+            echo    'Numero de carte : ' . '<input type="text" inputmode="numeric" name="codeCarteUtilisateur" pattern="[0-9]{16}" maxlength="16" placeholder="XXXX-XXXX-XXXX-XXXX" title="Coordonnées numerique sans espace" required> <br>';
+            echo    'CVV : ' . '<input type="text" inputmode="numeric" name="cvvUtilisateur" pattern="[0-9]{3}" maxlength="3" placeholder="123" title="3 chiffres" required> <br>';
+            echo    'Date d\'expiration : ' . '<input type="text" inputmode="numeric" name="dateExpirationUtilisateur" pattern="(0[1-9]|1[0-2])\/[0-9]{2}" maxlength="5" placeholder="MM/AA" title="Entrez une date correcte" required> <br>';
             echo    '<input type="submit" name="bouton" value="Payer"> <br>';
             echo '</form>';
 
@@ -166,4 +165,19 @@
             return ob_get_clean();
         }
 
+        public function form_rechargementReussi() {
+            ob_start();
+
+            echo "Rechargement réussie !";
+
+            return ob_get_clean();
+        }
+
+        public function form_demandeConnexion() {
+            ob_start();
+
+            echo "Veuillez vous connecter !";
+
+            return ob_get_clean();
+        }
     }

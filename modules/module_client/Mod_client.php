@@ -14,13 +14,8 @@
 
             switch($this->action) {
                 case "accueil" :
-                    if (isset($_SESSION) && count($_SESSION) == 0) {
-                        $contenu = "Bienvenue sur le site de la buvette";
-                        VueGenerique::setAffichage($contenu);
-                    } else {
-                        $contenu = $this->controleur->getVue()->menu_accueil_utilisateur();
-                        VueGenerique::setAffichage($contenu);
-                    }
+                    $contenu = "Bienvenue sur le site de la buvette";
+                    VueGenerique::setAffichage($contenu);
                     break;
                 case "form_inscription_utilisateur" :
                     if (isset($_SESSION) && count($_SESSION) == 0) {
@@ -56,6 +51,10 @@
                     $contenu = $this->controleur->getVue()->form_modificationReussie();
                     VueGenerique::setAffichage($contenu);
                     break;
+                case "rechargementReussi_utilisateur" :
+                    $contenu = $this->controleur->getVue()->form_rechargementReussi();
+                    VueGenerique::setAffichage($contenu);
+                    break;
                 //case "form_deconnexion_utilisateur" :
                 //    $contenu = $this->controleur->getVue()->form_deconnexion();
                 //    VueGenerique::setAffichage($contenu);
@@ -65,12 +64,17 @@
                     VueGenerique::setAffichage($contenu);
                     break;
                 case "form_rechargement_utilisateur" :
-                    $contenu = $this->controleur->getVue()->form_rechargement();
-                    VueGenerique::setAffichage($contenu);
+                    if (isset($_SESSION) && count($_SESSION) == 0) {
+                        $contenu = $this->controleur->getVue()->form_demandeConnexion();
+                        VueGenerique::setAffichage($contenu);
+                    } else {
+                        $contenu = $this->controleur->getVue()->form_rechargement();
+                        VueGenerique::setAffichage($contenu);
+                    }
                     break;
                 case "form_plus_utilisateur" :
                     if (isset($_SESSION) && count($_SESSION) == 0) {
-                        $contenu = "Veuillez vous connecter !";
+                        $contenu = $this->controleur->getVue()->form_demandeConnexion();
                         VueGenerique::setAffichage($contenu);
                     } else {
                         $contenu = $this->controleur->getVue()->form_plus();
@@ -86,8 +90,8 @@
                 case "verif_modification" :
                     $this->controleur->modification();
                     break;
-                case "verif_paiement" :
-                    $this->controleur->paiement();
+                case "verif_rechargement" :
+                    $this->controleur->rechargement();
                     break;
                 case "deconnexion" :
                     $this->controleur->deconnexion();
@@ -114,6 +118,10 @@
                              $contenu = $this->controleur->getVue()->form_emailDejaUtilise();
                              VueGenerique::setAffichage($contenu);
                              break;
+                         //case "montantInvalide_utilisateur" :
+                         //    $contenu = $this->controleur->getVue()->form_montantInvalide();
+                         //    VueGenerique::setAffichage($contenu);
+                         //    break;
                      }
                      break;
             }

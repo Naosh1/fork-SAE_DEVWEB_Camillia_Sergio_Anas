@@ -13,6 +13,6 @@
         }
 
         public function affiche() {
-            echo $this->affichage;
+            return $this->affichage;
         }
     }

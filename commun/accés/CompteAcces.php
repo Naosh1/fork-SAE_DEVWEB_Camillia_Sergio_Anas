@@ -85,7 +85,6 @@
                 exit;
             }
             else {
-
                 $id = $_SESSION['id'];
                 $nvEmail = $_POST["nvEmailUtilisateur"];
                 $nvMdp = $_POST["nvMdpUtilisateur"];
@@ -127,15 +126,30 @@
             }
         }
 
-        public function paiement() {
+        public function rechargement() {
             if (!isset($_SESSION['id'])) {
-               header("Location: index.php?module=client&action=erreur&erreur=personneEstConnectee_utilisateur");
-               exit;
+                header("Location: index.php?module=client&action=erreur&erreur=personneEstConnectee_utilisateur");
+                exit;
             }
-            else {
 
-            }
+            $id = $_SESSION['id'];
+            $montant = (int) $_POST['montant'];
+
+            $stmt = $this->bdd->prepare(
+                "SELECT solde FROM compte WHERE id = :id"
+            );
+
+            $stmt->execute([':id' => $id]);
+
+            $soldeActuel = $stmt->fetchColumn();
+
+            $nvSolde = $soldeActuel + $montant;
+
+            $this->miseAJourDuSolde($id, $nvSolde);
+
+            header("Location: index.php?module=client&action=rechargementReussi_utilisateur");
         }
+
 
         public function deconnexion() {
             session_unset();
@@ -150,5 +164,7 @@
                 "UPDATE compte SET solde = ? WHERE id = ?"
             );
             $stmt->execute([$nouveauSolde, $idCompte]);
+
+            echo"test";
         }
     }

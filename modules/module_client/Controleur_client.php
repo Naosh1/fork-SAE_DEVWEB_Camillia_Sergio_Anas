@@ -32,8 +32,8 @@
             $this->modele->deconnexion();
         }
 
-        public function paiement() {
-            $this->modele->paiement();
+        public function rechargement() {
+            $this->modele->rechargement();
         }
 
     }
