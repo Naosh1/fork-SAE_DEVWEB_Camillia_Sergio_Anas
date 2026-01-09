@@ -122,7 +122,7 @@
 
         }
 
-        public function form_deconnexion_utilisateur() {
+        public function form_deconnexion() {
             ob_start();
 
             echo '<a href="index.php?module=client&action=deconnexion">Se déconnecter</a>';
@@ -130,14 +130,40 @@
             return ob_get_clean();
         }
 
-        public function form_deconnexionReussie_utilisateur() {
+        public function form_deconnexionReussie() {
            ob_start();
 
-           echo 'Vous etes déconnecter !';
+           echo 'Vous êtes déconnecter !';
 
            return ob_get_clean();
         }
 
+        public function form_rechargement() {
+            ob_start();
 
+            echo '<form method="post" action="/~asemghouni/SAE_DEVWEB_Camillia_Sergio_Anas/index.php?module=client&action=verif_paiement"> <br>';
+            echo    'Montant à recharger : ' . '<input type="number" name="montant" min="1" max="40" step="1" required> <br>';
+            echo    'Nom du titulaire : ' . '<input type="text" name="nomTitulaire" required><br>';
+            echo    'Numero de carte : ' . '<input type="text" name="codeCarteUtilisateur" pattern="[0-9]{16}" maxlength="16" placeholder="XXXX-XXXX-XXXX-XXXX" title="16 chiffres sans espaces" required> <br>';
+            echo    'CVV : ' . '<input type="text" name="cvvUtilisateur" pattern="[0-9]{3}" maxlength="3" placeholder="123" title="3 chiffres" required> <br>';
+            echo    'Date d\'expiration : ' . '<input type="month" name="dateExpirationUtilisateur" maxlength="5" placeholder="MM/AA"  required> <br>';
+            echo    '<input type="submit" name="bouton" value="Payer"> <br>';
+            echo '</form>';
+
+            return ob_get_clean();
+        }
+
+        public function form_plus() {
+            ob_start();
+        ?>
+                <nav class="nav-user">
+                    <ul>
+                        <li> <a href='index.php?module=client&action=form_modification_utilisateur'> Modifier mes infos </a> </li>
+                        <li> <a href='index.php?module=client&action=deconnexion'> Déconnexion </a> </li>
+                    </ul>
+                </nav>
+        <?php
+            return ob_get_clean();
+        }
 
     }

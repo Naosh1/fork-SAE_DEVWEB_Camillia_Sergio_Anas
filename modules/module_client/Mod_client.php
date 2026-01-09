@@ -9,20 +9,24 @@
 
         public function __construct() {
             $this->controleur = new Controleur_client();
-            $this->action = isset($_GET["action"]) ? $_GET["action"] : "menu";
+            $this->action = isset($_GET["action"]) ? $_GET["action"] : "accueil";
             $this->erreur = isset($_GET["erreur"]) ? $_GET["erreur"] : " ";
 
             switch($this->action) {
-                case "menu" :
-                    $contenu = "Bienvenue sur le site de la buvette";
-                    VueGenerique::setAffichage($contenu);
+                case "accueil" :
+                    if (isset($_SESSION) && count($_SESSION) == 0) {
+                        $contenu = "Bienvenue sur le site de la buvette";
+                        VueGenerique::setAffichage($contenu);
+                    } else {
+                        $contenu = $this->controleur->getVue()->menu_accueil_utilisateur();
+                        VueGenerique::setAffichage($contenu);
+                    }
                     break;
                 case "form_inscription_utilisateur" :
                     if (isset($_SESSION) && count($_SESSION) == 0) {
                         $contenu = $this->controleur->getVue()->form_inscription();
                         VueGenerique::setAffichage($contenu);
-                    }
-                    else {
+                    } else {
                         $contenu = $this->controleur->getVue()->form_dejaConnecte();
                         VueGenerique::setAffichage($contenu);
                     }
@@ -31,8 +35,7 @@
                     if (isset($_SESSION) && count($_SESSION) == 0) {
                         $contenu = $this->controleur->getVue()->form_connexion();
                         VueGenerique::setAffichage($contenu);
-                    }
-                    else {
+                    } else {
                         $contenu = $this->controleur->getVue()->form_dejaConnecte();
                         VueGenerique::setAffichage($contenu);
                     }
@@ -53,13 +56,26 @@
                     $contenu = $this->controleur->getVue()->form_modificationReussie();
                     VueGenerique::setAffichage($contenu);
                     break;
-                case "form_deconnexion_utilisateur" :
-                    $contenu = $this->controleur->getVue()->form_deconnexion_utilisateur();
+                //case "form_deconnexion_utilisateur" :
+                //    $contenu = $this->controleur->getVue()->form_deconnexion();
+                //    VueGenerique::setAffichage($contenu);
+                //    break;
+                case "form_deconnexionReussie_utilisateur" :
+                    $contenu = $this->controleur->getVue()->form_deconnexionReussie();
                     VueGenerique::setAffichage($contenu);
                     break;
-                case "form_deconnexionReussie_utilisateur" :
-                    $contenu = $this->controleur->getVue()->form_deconnexionReussie_utilisateur();
+                case "form_rechargement_utilisateur" :
+                    $contenu = $this->controleur->getVue()->form_rechargement();
                     VueGenerique::setAffichage($contenu);
+                    break;
+                case "form_plus_utilisateur" :
+                    if (isset($_SESSION) && count($_SESSION) == 0) {
+                        $contenu = "Veuillez vous connecter !";
+                        VueGenerique::setAffichage($contenu);
+                    } else {
+                        $contenu = $this->controleur->getVue()->form_plus();
+                        VueGenerique::setAffichage($contenu);
+                    }
                     break;
                 case "ajout_utilisateur" :
                     $this->controleur->ajout();
@@ -69,6 +85,9 @@
                     break;
                 case "verif_modification" :
                     $this->controleur->modification();
+                    break;
+                case "verif_paiement" :
+                    $this->controleur->paiement();
                     break;
                 case "deconnexion" :
                     $this->controleur->deconnexion();
@@ -97,8 +116,6 @@
                              break;
                      }
                      break;
-
-
             }
         }
 

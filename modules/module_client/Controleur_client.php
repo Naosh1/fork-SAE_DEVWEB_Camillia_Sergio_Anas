@@ -32,4 +32,8 @@
             $this->modele->deconnexion();
         }
 
+        public function paiement() {
+            $this->modele->paiement();
+        }
+
     }

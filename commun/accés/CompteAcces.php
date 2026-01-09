@@ -127,6 +127,16 @@
             }
         }
 
+        public function paiement() {
+            if (!isset($_SESSION['id'])) {
+               header("Location: index.php?module=client&action=erreur&erreur=personneEstConnectee_utilisateur");
+               exit;
+            }
+            else {
+
+            }
+        }
+
         public function deconnexion() {
             session_unset();
 

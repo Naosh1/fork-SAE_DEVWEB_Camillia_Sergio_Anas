@@ -13,11 +13,11 @@
                         <h1> Buvette </h1>
                             <nav>
                                 <?php
-                                    echo " <a href='index.php?module=client&action=menu'> Menu </a>";
+                                    echo " <a href='index.php?module=client&action=accueil'> Accueil </a>";
                                     echo " <a href='index.php?module=client&action=form_inscription_utilisateur'> S'inscrire </a>";
                                     echo " <a href='index.php?module=client&action=form_connexion_utilisateur'> Connexion </a>";
-                                    echo " <a href='index.php?module=client&action=form_modification_utilisateur'> Modifier_Infos </a>";
-                                    echo " <a href='index.php?module=client&action=form_deconnexion_utilisateur'> Deconnexion </a>";
+                                    echo " <a href='index.php?module=client&action=form_rechargement_utilisateur'> Rechargement </a>";
+                                    echo " <a href='index.php?module=client&action=form_plus_utilisateur'> Plus </a>";
                                 ?>
                             </nav>
                     </div>
