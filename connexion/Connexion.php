@@ -1,9 +1,9 @@
 <?php
     class Connexion {
         private static $bdd = null;
-        private static $dsn = 'mysql:dbname=buvette;host=127.0.0.1';
-        private static $user = 'root';
-        private static $password = '';
+        private static $dsn = 'mysql:dbname=dutinfopw201654;host=database-etudiants.iut.univ-paris8.fr';
+        private static $user = 'dutinfopw201654';
+        private static $password = 'syqugaru';
 
         public function __construct() {
 
@@ -21,3 +21,30 @@
         }
 
     }
+
+/*class Connexion
+{
+    private static $bdd = null;
+    private static $dsn = 'mysql:dbname=buvette;host=127.0.0.1';
+    private static $user = 'root';
+    private static $password = '';
+
+    public function __construct()
+    {
+
+    }
+
+    public static function initConnexion()
+    {
+        self::$bdd = new PDO(self::$dsn, self::$user, self::$password);
+    }
+
+    public static function getBdd()
+    {
+        if (!isset(self::$bdd)) {
+            self::initConnexion();
+        }
+        return self::$bdd;
+    }
+
+}*/
