@@ -17,3 +17,4 @@ class Cont_Menu {
         return $this->vue->affichage;
     }
 }
+
