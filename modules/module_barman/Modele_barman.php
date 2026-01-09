@@ -54,4 +54,120 @@ class ModeleBarman extends Connexion
 
     }
 
+    public function rechercherClient($identification)
+    {
+        try {
+            if (ctype_digit($identification)) {
+                $requete = self::getBdd()->prepare(
+                    "SELECT id, prenom, solde
+                 FROM compte
+                 WHERE id = ?"
+                );
+                $requete->execute([$identification]);
+            }
+            else {
+                $requete = self::getBdd()->prepare(
+                    "SELECT id, prenom, solde
+                 FROM compte
+                 WHERE nom LIKE ?"
+                );
+                $requete->execute(['%' . $identification . '%']);
+            }
+
+            return $requete->fetchAll(PDO::FETCH_ASSOC);
+
+        } catch (PDOException $e) {
+            error_log("Erreur rechercherClient: " . $e->getMessage());
+            return false;
+        }
+    }
+    public function listerProduits()
+    {
+        try {
+            $requete = self::getBdd()->prepare(
+                "SELECT id,nom,prix,quantiteActuelle,
+                CASE 
+                    WHEN quantiteActuelle > 0 THEN 'Disponible'
+                    ELSE 'Indisponible'
+                END AS disponibilite
+                FROM produit
+                ORDER BY nom"
+            );
+
+            $requete->execute();
+
+            return $requete->fetchAll(PDO::FETCH_ASSOC);
+
+        } catch (PDOException $e) {
+            error_log("Erreur listerProduits: " . $e->getMessage());
+            return false;
+        }
+    }
+    public function listerCommandesEnCours()
+    {
+        try {
+            $requete = self::getBdd()->prepare(
+                "SELECT 
+                v.id AS commande_id,
+                v.date_vente,
+                v.montant_total,
+                c.prenom
+             FROM vente v
+             JOIN compte c ON v.compte_id = c.id
+             WHERE v.date_vente = CURDATE()
+             ORDER BY v.id DESC"
+            );
+
+            $requete->execute();
+            return $requete->fetchAll(PDO::FETCH_ASSOC);
+
+        } catch (PDOException $e) {
+            error_log("Erreur listerCommandesEnCours: " . $e->getMessage());
+            return false;
+        }
+    }
+    public function getCommande($commande_id)
+    {
+        try {
+            $requete = self::getBdd()->prepare(
+                "SELECT 
+                v.id AS commande_id,
+                v.date_vente,
+                v.montant_total,
+                c.id AS client_id,
+                c.prenom
+             FROM vente v
+             JOIN compte c ON v.compte_id = c.id
+             WHERE v.id = ?"
+            );
+
+            $requete->execute([$commande_id]);
+            return $requete->fetch(PDO::FETCH_ASSOC);
+
+        } catch (PDOException $e) {
+            error_log("Erreur getCommande: " . $e->getMessage());
+            return false;
+        }
+    }
+    public function getProduitsCommande($commande_id)
+    {
+        try {
+            $requete = self::getBdd()->prepare(
+                "SELECT 
+                p.nom,
+                ct.quantite,
+                ct.prix_unitaire
+             FROM contient ct
+             JOIN produit p ON ct.produit_id = p.id
+             WHERE ct.vente_id = ?"
+            );
+
+            $requete->execute([$commande_id]);
+            return $requete->fetchAll(PDO::FETCH_ASSOC);
+
+        } catch (PDOException $e) {
+            error_log("Erreur getProduitsCommande: " . $e->getMessage());
+            return false;
+        }
+    }
 }
