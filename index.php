@@ -1,5 +1,5 @@
 <?php
-    include_once "vue_generique.php";
+    include_once "Vue_generique.php";
     include_once "modules/module_client/Mod_client.php";
     include_once "modules/module_barman/Mod_barman.php";
     include_once "modules/module_gestionnaire/Mod_gestionnaire.php";
