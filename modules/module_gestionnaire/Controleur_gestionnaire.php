@@ -1,4 +1,5 @@
 <?php
+
 class ControleurGestionnaire
 {
     private $modele;
@@ -45,7 +46,7 @@ class ControleurGestionnaire
 
             case 'modifierProduit':
                 if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['id'])) {
-                    $produit = $this->modele->getProduit($_GET['id']);
+                    $produit = $this->modele->getProduitParId($_GET['id']);
                     if ($produit) {
                         $this->vue->formulaireModificationProduit($produit);
                     } else {
@@ -83,6 +84,23 @@ class ControleurGestionnaire
                     exit();
                 }
                 break;
+            case 'gererAssociation':
+                if (isset($_GET['id'])) {
+                    $assoId = $_GET['id'];
+                    $association = $this->modele->getAssociationParId($assoId);
+                    if ($association) {
+                        $barmans = $this->modele->getBarmansParAssociation($assoId);
+                        $produits = $this->modele->getProduitsParAssociation($assoId);
+                        $clients = $this->modele->getClientsParAssociation($assoId);
+                        $this->vue->gererAssociation($association, $barmans, $produits, $clients);
+                    } else {
+                        $_SESSION['error'] = "Association non trouvée";
+                        header('Location: index.php?action=associations');
+                        exit();
+                    }
+                }
+                break;
+
 
             case 'associations':
                 $associations = $this->modele->getAssociations();
@@ -341,12 +359,10 @@ class ControleurGestionnaire
                 break;
 
             default:
-                echo '<div style="padding: 20px; background: #f8f9fa; border-radius: 8px; margin: 20px;">';
-                echo '<h2 style="color: #dc3545;">Page introuvable</h2>';
-                echo '<p>L\'action demandée n\'existe pas.</p>';
-                echo '<a href="index.php" style="color: #007bff; text-decoration: none;">← Retour à l\'accueil</a>';
-                echo '</div>';
+                $message = "L'action demandée n'existe pas.";
+                include 'templates/vue_erreur.php';
                 break;
+
         }
     }
 }

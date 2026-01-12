@@ -66,37 +66,65 @@ class ModeleGestionnaire extends Connexion
         }
     }
 
-    public function getBarmansParAssos($id_assos)
-    {
+    public function getBarmansParAssociation($associationId) {
         try {
-            $requete = self::getBdd()->prepare(
-                "SELECT c.id, c.nom, c.prenom, c.email, c.solde,
-                    (SELECT COUNT(*) 
-                     FROM dispose d 
-                     WHERE d.compte_id = c.id 
-                     AND d.role_id = (SELECT id FROM role WHERE nom = 'barman')
-                    ) AS est_barman
-             FROM compte c
-             WHERE c.association_id = ?
-             AND (
-                 c.role = 'barman'
-                 OR c.id IN (
-                     SELECT d.compte_id 
-                     FROM dispose d 
-                     WHERE d.role_id = (SELECT id FROM role WHERE nom = 'barman')
-                 )
-             )
-             ORDER BY c.nom, c.prenom"
-            );
-
-            $requete->execute([$id_assos]);
-            return $requete->fetchAll(PDO::FETCH_ASSOC);
-
+            $stmt = self::getBdd()->prepare("
+            SELECT c.* 
+            FROM compte c
+            JOIN dispose d ON c.id = d.compte_id
+            JOIN role r ON d.role_id = r.id
+            JOIN gestionne g ON g.compte_id = c.id
+            WHERE r.nom = 'barman'
+            AND g.association_id = :id
+        ");
+            $stmt->execute(['id' => $associationId]);
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
-            error_log("Erreur getBarmansParAssos : " . $e->getMessage());
+            error_log("Erreur getBarmansParAssociation: " . $e->getMessage());
             return [];
         }
     }
+
+
+
+    public function getProduitsParAssociation($associationId) {
+        try {
+            $stmt = self::getBdd()->prepare("
+            SELECT p.*
+            FROM produit p
+            JOIN gere g ON p.id = g.produit_id
+            WHERE g.association_id = :id
+        ");
+            $stmt->execute(['id' => $associationId]);
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Erreur getProduitsParAssociation: " . $e->getMessage());
+            return [];
+        }
+    }
+
+
+    public function getClientsParAssociation($associationId) {
+        try {
+            $stmt = self::getBdd()->prepare("
+            SELECT DISTINCT c.*
+            FROM compte c
+            JOIN vente v ON c.id = v.compte_id
+            JOIN contient ct ON v.id = ct.vente_id
+            JOIN produit p ON ct.produit_id = p.id
+            JOIN gere g ON p.id = g.produit_id
+            WHERE g.association_id = :id
+            AND c.role = 'client'
+        ");
+            $stmt->execute(['id' => $associationId]);
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Erreur getClientsParAssociation: " . $e->getMessage());
+            return [];
+        }
+    }
+
+
 
     public function getBarmanParId($id)
     {

@@ -1,52 +1,60 @@
 <?php
-// inscription.php
 session_start();
-
-include_once "connexion/Connexion.php";
+include_once "../connexion/Connexion.php";
 Connexion::initConnexion();
+
+if (isset($_SESSION['id'])) {
+    header('Location: index.php');
+    exit();
+}
+
+$erreurs = [];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $nom = $_POST['nom'] ?? '';
     $prenom = $_POST['prenom'] ?? '';
     $email = $_POST['email'] ?? '';
     $mdp = $_POST['mdp'] ?? '';
-    $mdp_confirmation = $_POST['mdp_confirmation'] ?? '';
-    $role = 'client'; // Par défaut
+    $mdp_conf = $_POST['mdp_confirmation'] ?? '';
+    $date_naissance = $_POST['date_naissance'] ?? '';
+    $role = 'client';
 
-    // Validation
-    $erreurs = [];
+    // Validation des champs
+    if (!$nom) $erreurs[] = "Le nom est requis";
+    if (!$prenom) $erreurs[] = "Le prénom est requis";
+    if (!$email || !filter_var($email, FILTER_VALIDATE_EMAIL)) $erreurs[] = "Email invalide";
+    if (!$date_naissance) $erreurs[] = "La date de naissance est requise";
 
-    if (empty($nom)) $erreurs[] = "Le nom est requis";
-    if (empty($prenom)) $erreurs[] = "Le prénom est requis";
-    if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) $erreurs[] = "Email invalide";
-    if (strlen($mdp) < 6) $erreurs[] = "Le mot de passe doit faire au moins 6 caractères";
-    if ($mdp !== $mdp_confirmation) $erreurs[] = "Les mots de passe ne correspondent pas";
-
-    // Vérifier si l'email existe déjà
-    $bdd = Connexion::getBdd();
-    $requete = $bdd->prepare("SELECT COUNT(*) FROM compte WHERE email = ?");
-    $requete->execute([$email]);
-    if ($requete->fetchColumn() > 0) {
-        $erreurs[] = "Cet email est déjà utilisé";
+    // Vérifier l'âge
+    if ($date_naissance) {
+        $aujourdhui = new DateTime();
+        $dob = new DateTime($date_naissance);
+        $age = $dob->diff($aujourdhui)->y;
+        if ($age < 18) $erreurs[] = "Vous devez être majeur pour vous inscrire (18 ans minimum)";
     }
 
-    if (empty($erreurs)) {
-        // Insérer l'utilisateur
-        $mdp_hash = password_hash($mdp, PASSWORD_DEFAULT);
-        $requete = $bdd->prepare(
-            "INSERT INTO compte (nom, prenom, email, mdp, solde, role) 
-             VALUES (?, ?, ?, ?, 0.00, ?)"
-        );
+    if (strlen($mdp) < 12) $erreurs[] = "Le mot de passe doit faire au moins 12 caractères";
+    if ($mdp !== $mdp_conf) $erreurs[] = "Les mots de passe ne correspondent pas";
 
-        if ($requete->execute([$nom, $prenom, $email, $mdp_hash, $role])) {
-            // Connecter automatiquement
+    $bdd = Connexion::getBdd();
+    $check = $bdd->prepare("SELECT COUNT(*) FROM compte WHERE email=?");
+    $check->execute([$email]);
+    if ($check->fetchColumn() > 0) $erreurs[] = "Cet email est déjà utilisé";
+
+    if (!$erreurs) {
+        $mdp_hash = password_hash($mdp, PASSWORD_DEFAULT);
+        $insert = $bdd->prepare("
+            INSERT INTO compte (nom, prenom, date_naissance, email, mdp, solde, role)
+            VALUES (?,?,?,?,?,0.00,?)
+        ");
+        if ($insert->execute([$nom, $prenom, $date_naissance, $email, $mdp_hash, $role])) {
             $id = $bdd->lastInsertId();
             $_SESSION['id'] = $id;
             $_SESSION['prenom'] = $prenom;
             $_SESSION['nom'] = $nom;
             $_SESSION['email'] = $email;
             $_SESSION['role'] = $role;
-
+            $_SESSION['login'] = $email;
             header('Location: index.php');
             exit();
         } else {
@@ -55,135 +63,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Inscription – Buvette</title>
+    <title>Inscription</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        * {
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, sans-serif;
+        body { font-family: 'Inter', sans-serif; }
+        body::before {
+            content:""; position: fixed; top:0; left:0; width:100%; height:100%;
+            background: linear-gradient(135deg,#0099FF,#094179,#0099FF,#094179);
+            background-size:400% 400%; z-index:-1; animation:gradientMove 20s ease infinite;
         }
-
-        body {
-            margin: 0;
-            min-height: 100vh;
-            background: linear-gradient(135deg, #1e3c72, #2a5298);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-
-        .inscription-container {
-            background: #fff;
-            padding: 2.5rem;
-            width: 100%;
-            max-width: 450px;
-            border-radius: 12px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.25);
-        }
-
-        .inscription-container h1 {
-            text-align: center;
-            margin-bottom: 0.3rem;
-            color: #1e3c72;
-        }
-
-        .inscription-container p {
-            text-align: center;
-            color: #666;
-            margin-bottom: 2rem;
-            font-size: 0.95rem;
-        }
-
-        .form-group {
-            margin-bottom: 1.3rem;
-        }
-
-        .form-row {
-            display: flex;
-            gap: 15px;
-        }
-
-        .form-row .form-group {
-            flex: 1;
-        }
-
-        label {
-            display: block;
-            font-size: 0.85rem;
-            margin-bottom: 0.4rem;
-            color: #333;
-        }
-
-        input {
-            width: 100%;
-            padding: 0.7rem;
-            border-radius: 8px;
-            border: 1px solid #ccc;
-            font-size: 0.95rem;
-            transition: border-color 0.2s;
-        }
-
-        input:focus {
-            outline: none;
-            border-color: #2a5298;
-        }
-
-        button {
-            width: 100%;
-            padding: 0.8rem;
-            border: none;
-            border-radius: 8px;
-            background: #2a5298;
-            color: #fff;
-            font-size: 1rem;
-            cursor: pointer;
-            margin-top: 10px;
-        }
-
-        button:hover {
-            background: #1e3c72;
-        }
-
-        .error {
-            background: #ffe1e1;
-            color: #a40000;
-            padding: 0.8rem;
-            border-radius: 6px;
-            margin-bottom: 1rem;
-            font-size: 0.85rem;
-        }
-
-        .error ul {
-            margin: 0;
-            padding-left: 20px;
-        }
-
-        .footer-links {
-            margin-top: 1.5rem;
-            text-align: center;
-            font-size: 0.85rem;
-        }
-
-        .footer-links a {
-            color: #2a5298;
-            text-decoration: none;
-        }
+        @keyframes gradientMove {0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
     </style>
 </head>
-<body>
+<body class="flex items-center justify-center min-h-screen p-4">
 
-<div class="inscription-container">
-    <h1>Créer un compte</h1>
-    <p>Rejoignez la communauté Buvette</p>
+<div class="bg-white shadow-2xl rounded-2xl max-w-lg w-full p-8">
+    <h1 class="text-3xl font-bold text-center text-blue-800 mb-4">Créer un compte</h1>
+    <p class="text-center text-gray-600 mb-6">Rejoignez la communauté Buvette</p>
 
-    <?php if (!empty($erreurs)) : ?>
-        <div class="error">
-            <ul>
+    <?php if ($erreurs) : ?>
+        <div class="bg-red-100 text-red-700 p-3 rounded-lg mb-4 text-center font-medium">
+            <ul class="list-disc list-inside">
                 <?php foreach ($erreurs as $erreur) : ?>
                     <li><?= htmlspecialchars($erreur) ?></li>
                 <?php endforeach; ?>
@@ -191,49 +98,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
     <?php endif; ?>
 
-    <form method="post" action="inscription.php">
-        <div class="form-row">
-            <div class="form-group">
-                <label for="nom">Nom *</label>
-                <input type="text" id="nom" name="nom" required
-                       value="<?= htmlspecialchars($_POST['nom'] ?? '') ?>">
-            </div>
-            <div class="form-group">
-                <label for="prenom">Prénom *</label>
-                <input type="text" id="prenom" name="prenom" required
-                       value="<?= htmlspecialchars($_POST['prenom'] ?? '') ?>">
-            </div>
+    <form method="post" class="space-y-4">
+        <div class="flex flex-col sm:flex-row gap-4">
+            <input type="text" name="nom" placeholder="Nom *" required
+                   value="<?= htmlspecialchars($_POST['nom'] ?? '') ?>"
+                   class="sm:w-1/3 w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400">
+            <input type="text" name="prenom" placeholder="Prénom *" required
+                   value="<?= htmlspecialchars($_POST['prenom'] ?? '') ?>"
+                   class="sm:w-1/3 w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400">
+            <input type="date" name="date_naissance" placeholder="Date de naissance *" required
+                   value="<?= htmlspecialchars($_POST['date_naissance'] ?? '') ?>"
+                   class="sm:w-1/3 w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 transition transform active:scale-95">
         </div>
 
-        <div class="form-group">
-            <label for="email">Email *</label>
-            <input type="email" id="email" name="email" required
-                   value="<?= htmlspecialchars($_POST['email'] ?? '') ?>">
+        <input type="email" name="email" placeholder="Email *" required
+               value="<?= htmlspecialchars($_POST['email'] ?? '') ?>"
+               class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400">
+
+        <div class="flex flex-col sm:flex-row gap-4">
+            <input type="password" name="mdp" placeholder="Mot de passe *" required minlength="12"
+                   class="sm:w-1/2 w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400">
+            <input type="password" name="mdp_confirmation" placeholder="Confirmation *" required
+                   class="sm:w-1/2 w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400">
         </div>
 
-        <div class="form-row">
-            <div class="form-group">
-                <label for="mdp">Mot de passe *</label>
-                <input type="password" id="mdp" name="mdp" required
-                       minlength="6">
-                <small style="color: #666; font-size: 0.8rem;">6 caractères minimum</small>
-            </div>
-            <div class="form-group">
-                <label for="mdp_confirmation">Confirmation *</label>
-                <input type="password" id="mdp_confirmation"
-                       name="mdp_confirmation" required>
-            </div>
-        </div>
-
-        <button type="submit">S'inscrire</button>
+        <button type="submit"
+                class="w-full bg-blue-500 text-white py-3 rounded-xl font-semibold hover:bg-blue-400 transition transform active:scale-95">
+            S'inscrire
+        </button>
     </form>
 
-    <div class="footer-links">
-        <p>
-            Déjà un compte ?
-            <a href="connexion.php">Se connecter</a>
-        </p>
-    </div>
+    <p class="mt-6 text-center text-gray-600">
+        Déjà un compte ? <a href="connexion.php" class="text-blue-700 font-medium hover:underline">Se connecter</a>
+    </p>
 </div>
 
 </body>

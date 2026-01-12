@@ -1,46 +1,39 @@
 <?php
-// connexion.php
 session_start();
-
-// Inclure la connexion à la base
 include_once "../connexion/Connexion.php";
 Connexion::initConnexion();
 
-// Si l'utilisateur est déjà connecté, rediriger vers l'accueil
-if (isset($_SESSION['id']) && isset($_SESSION['role'])) {
+if (isset($_SESSION['id'])) {
     header('Location: index.php');
     exit();
 }
 
-// Gérer la soumission du formulaire de connexion
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['emailUtilisateurConnexion'])) {
-    include_once "../commun/accés/CompteAcces.php";
+$erreur = '';
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $email = $_POST['email'] ?? '';
+    $mdp   = $_POST['mdp'] ?? '';
 
-    $compteAcces = new CompteAcces();
+    if ($email && $mdp) {
+        $bdd = Connexion::getBdd();
+        $requete = $bdd->prepare("SELECT id, prenom, nom, email, mdp, role FROM compte WHERE email = ?");
+        $requete->execute([$email]);
+        $user = $requete->fetch(PDO::FETCH_ASSOC);
 
-    // Appeler la méthode de connexion (à adapter)
-    $email = $_POST['emailUtilisateurConnexion'];
-    $mdp = $_POST['mdpUtilisateurConnexion'];
+        if ($user && password_verify($mdp, $user['mdp'])) {
+            $_SESSION['id'] = $user['id'];
+            $_SESSION['prenom'] = $user['prenom'];
+            $_SESSION['nom'] = $user['nom'];
+            $_SESSION['email'] = $user['email'];
+            $_SESSION['role'] = $user['role'];
+            $_SESSION['login'] = $user['email'];
 
-    // Récupérer l'utilisateur depuis la base
-    $bdd = Connexion::getBdd();
-    $requete = $bdd->prepare("SELECT id, prenom, nom, email, mdp, role FROM compte WHERE email = ?");
-    $requete->execute([$email]);
-    $user = $requete->fetch(PDO::FETCH_ASSOC);
-
-    if ($user && password_verify($mdp, $user['mdp'])) {
-        // Connexion réussie
-        $_SESSION['id'] = $user['id'];
-        $_SESSION['prenom'] = $user['prenom'];
-        $_SESSION['nom'] = $user['nom'];
-        $_SESSION['email'] = $user['email'];
-        $_SESSION['role'] = $user['role'];
-
-        // Rediriger selon le rôle
-        header('Location: index.php');
-        exit();
+            header('Location: index.php');
+            exit();
+        } else {
+            $erreur = "Identifiants incorrects";
+        }
     } else {
-        $erreur = "Identifiants incorrects";
+        $erreur = "Veuillez remplir tous les champs";
     }
 }
 ?>
@@ -48,162 +41,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['emailUtilisateurConne
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Connexion – Buvette</title>
+    <title>Connexion</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        * {
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, sans-serif;
+        body { font-family: 'Inter', sans-serif; }
+        body::before {
+            content:""; position: fixed; top:0; left:0; width:100%; height:100%;
+            background: linear-gradient(135deg,#0099FF,#094179,#0099FF,#094179);
+            background-size:400% 400%; z-index:-1; animation:gradientMove 20s ease infinite;
         }
-
-        body {
-            margin: 0;
-            min-height: 100vh;
-            background: linear-gradient(135deg, #1e3c72, #2a5298);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .login-container {
-            background: #fff;
-            padding: 2.5rem;
-            width: 100%;
-            max-width: 380px;
-            border-radius: 12px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.25);
-            animation: fadeIn 0.6s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(15px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .login-container h1 {
-            text-align: center;
-            margin-bottom: 0.3rem;
-            color: #1e3c72;
-        }
-
-        .login-container p {
-            text-align: center;
-            color: #666;
-            margin-bottom: 2rem;
-            font-size: 0.95rem;
-        }
-
-        .form-group {
-            margin-bottom: 1.3rem;
-        }
-
-        label {
-            display: block;
-            font-size: 0.85rem;
-            margin-bottom: 0.4rem;
-            color: #333;
-        }
-
-        input {
-            width: 100%;
-            padding: 0.7rem;
-            border-radius: 8px;
-            border: 1px solid #ccc;
-            font-size: 0.95rem;
-            transition: border-color 0.2s;
-        }
-
-        input:focus {
-            outline: none;
-            border-color: #2a5298;
-        }
-
-        button {
-            width: 100%;
-            padding: 0.8rem;
-            border: none;
-            border-radius: 8px;
-            background: #2a5298;
-            color: #fff;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: background 0.2s, transform 0.1s;
-        }
-
-        button:hover {
-            background: #1e3c72;
-            transform: translateY(-1px);
-        }
-
-        .footer-links {
-            margin-top: 1.5rem;
-            text-align: center;
-            font-size: 0.85rem;
-        }
-
-        .footer-links a {
-            color: #2a5298;
-            text-decoration: none;
-        }
-
-        .footer-links a:hover {
-            text-decoration: underline;
-        }
-
-        .error {
-            background: #ffe1e1;
-            color: #a40000;
-            padding: 0.6rem;
-            border-radius: 6px;
-            margin-bottom: 1rem;
-            text-align: center;
-            font-size: 0.85rem;
-        }
+        @keyframes gradientMove {0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
     </style>
 </head>
-<body>
+<body class="flex items-center justify-center min-h-screen p-4">
+<div class="bg-white shadow-2xl rounded-2xl max-w-md w-full p-8">
+    <h1 class="text-3xl font-bold text-center text-blue-800 mb-4">AssoManager</h1>
+    <p class="text-center text-gray-600 mb-6">Connectez-vous à votre espace</p>
 
-<div class="login-container">
-    <h1>Buvette</h1>
-    <p>Connexion à votre espace</p>
-
-    <?php if (isset($erreur)) : ?>
-        <div class="error">
+    <?php if ($erreur) : ?>
+        <div class="bg-red-100 text-red-700 p-3 rounded-lg mb-4 text-center font-medium">
             <?= htmlspecialchars($erreur) ?>
         </div>
     <?php endif; ?>
 
-    <form method="post" action="connexion.php">
-        <div class="form-group">
-            <label for="email">Email</label>
-            <input type="email"
-                   id="email"
-                   name="emailUtilisateurConnexion"
-                   placeholder="exemple@mail.com"
-                   required>
-        </div>
-
-        <div class="form-group">
-            <label for="mdp">Mot de passe</label>
-            <input type="password"
-                   id="mdp"
-                   name="mdpUtilisateurConnexion"
-                   placeholder="••••••••"
-                   required>
-        </div>
-
-        <button type="submit">Se connecter</button>
+    <form method="post" class="space-y-4">
+        <input type="email" name="email" placeholder="Email"
+               class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400" required>
+        <input type="password" name="mdp" placeholder="Mot de passe"
+               class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400" required>
+        <button type="submit"
+                class="w-full bg-blue-500 text-white py-3 rounded-xl font-semibold hover:bg-blue-400 transition">
+            Se connecter
+        </button>
     </form>
 
-    <div class="footer-links">
-        <p>
-            Pas de compte ?
-            <a href="inscription.php">
-                Créer un compte
-            </a>
-        </p>
-    </div>
+    <p class="mt-6 text-center text-gray-600">
+        Pas de compte ? <a href="inscription.php" class="text-blue-700 font-medium hover:underline">Créer un compte</a>
+    </p>
 </div>
-
 </body>
 </html>

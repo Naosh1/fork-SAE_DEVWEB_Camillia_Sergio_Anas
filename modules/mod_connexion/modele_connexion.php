@@ -25,10 +25,15 @@ class ModeleConnexion extends Connexion
         }
     }
 
-    public function deconnexion(){
+    public function deconnexion() {
+        session_start();
+        session_unset();
         session_destroy();
-        echo 'Deconnexion reussite !';
+        header('Location: index.php?module=connexion&action=connexion');
+        exit();
     }
+
+
 
     public function inscription()
     {

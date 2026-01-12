@@ -3,21 +3,62 @@ include_once '../vue_generique.php';
 
 class VueGestionnaire extends VueGenerique
 {
-    public function menu()
-    {
-        echo '<div class="menu" style="background-color: #f0f0f0; padding: 10px; align-content: center;">';
-        echo '<a href="index.php?action=associations">Associations</a>';
-        echo '</div>';
-    }
 
-    public function afficherAccueil()
+    public function gererAssociation($association, $barmans = [], $produits = [], $clients = [])
     {
-        $this->menu();
+
+        $soldeColor = $association['solde'] >= 0 ? 'text-green-600' : 'text-red-600';
+
+        echo '<div class="max-w-6xl mx-auto mt-6 space-y-6">
+        <h2 class="text-2xl font-bold text-gray-800">' . $association['nom'] . ' - Gestion</h2>
+
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <p><strong>Adresse:</strong> ' . $association['adresse'] . '</p>
+            <p><strong>Email:</strong> ' . $association['email'] . '</p>
+            <p><strong>Téléphone:</strong> ' . $association['telephone'] . '</p>
+            <p><strong>Solde:</strong> <span class="' . $soldeColor . '">' . $association['solde'] . ' €</span></p>
+            <div class="mt-4 flex space-x-4">
+                <a href="index.php?action=ajouterStock&id=' . $association['id'] . '" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg">Ajouter du stock</a>
+                <a href="index.php?action=ajouterBarman&id=' . $association['id'] . '" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">Ajouter un barman</a>
+                <a href="index.php?action=voirClients&id=' . $association['id'] . '" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg">Voir les clients</a>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h3 class="text-xl font-bold mb-4">Barmans</h3>';
+
+        foreach ($barmans as $barman) {
+            $roleClass = ($barman['role'] === 'barman') ? 'text-green-600' : 'text-gray-600';
+            echo '<div class="flex justify-between items-center border-b border-gray-200 py-2">
+                <span class="' . $roleClass . '">' . $barman['nom'] . ' ' . $barman['prenom'] . ' (' . $barman['email'] . ')</span>
+                <a href="index.php?action=modifierBarman&id=' . $barman['id'] . '" class="text-blue-600 hover:text-blue-800 text-sm">Modifier</a>
+            </div>';
+        }
+
+        echo '<h3 class="text-xl font-bold mb-4 mt-6">Produits</h3>';
+
+        foreach ($produits as $produit) {
+            echo '<div class="flex justify-between items-center border-b border-gray-200 py-2">
+                <span>' . $produit['nom'] . ' (' . $produit['type'] . ') - Stock: ' . $produit['quantiteActuelle'] . '</span>
+                <a href="index.php?action=modifierProduit&id=' . $produit['id'] . '" class="text-blue-600 hover:text-blue-800 text-sm">Modifier</a>
+            </div>';
+        }
+
+        echo '</div>
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h3 class="text-xl font-bold mb-4">Clients</h3>';
+
+        foreach ($clients as $client) {
+            echo '<div class="border-b border-gray-200 py-2">
+                ' . $client['nom'] . ' ' . $client['prenom'] . ' (' . $client['email'] . ')
+            </div>';
+        }
+
+        echo '</div></div>';
     }
 
     public function afficherBarmans($barmans)
     {
-        $this->menu();
 
         echo '<div class="bg-white rounded-lg shadow-md p-6 mb-6">';
         echo '<div class="flex justify-between items-center mb-6">';
@@ -117,7 +158,6 @@ class VueGestionnaire extends VueGenerique
 
     public function formulaireAjoutBarman()
     {
-        $this->menu();
         echo '<div class="max-w-2xl mx-auto">';
         echo '<div class="bg-white rounded-lg shadow-md p-6">';
         echo '<h2 class="text-2xl font-bold text-gray-800 mb-6">Ajouter un nouveau barman</h2>';
@@ -170,7 +210,6 @@ class VueGestionnaire extends VueGenerique
 
     public function formulaireModificationBarman($barman)
     {
-        $this->menu();
         echo '<div class="max-w-2xl mx-auto">';
         echo '<div class="bg-white rounded-lg shadow-md p-6">';
         echo '<h2 class="text-2xl font-bold text-gray-800 mb-6">Modifier le barman</h2>';
@@ -251,7 +290,6 @@ class VueGestionnaire extends VueGenerique
 
     public function afficherProduits($produits)
     {
-        $this->menu();
         echo '<h2>Liste des produits</h2>';
 
         if (empty($produits)) {
@@ -272,7 +310,6 @@ class VueGestionnaire extends VueGenerique
 
     public function formulaireModificationProduit($produit)
     {
-        $this->menu();
         echo '<h2>Modifier le produit</h2>';
         echo '<form action="index.php?action=modifierProduit" method="post">';
         echo '<input type="hidden" name="id" value="' . $produit['id'] . '">';
@@ -294,7 +331,6 @@ class VueGestionnaire extends VueGenerique
 
     public function formulaireAjoutStock($produit)
     {
-        $this->menu();
         echo '<h2>Réapprovisionner le stock</h2>';
         echo '<p>Produit : <strong>' . htmlspecialchars($produit['nom']) . '</strong></p>';
         echo '<p>Stock actuel : ' . $produit['quantiteActuelle'] . '</p>';
@@ -308,7 +344,6 @@ class VueGestionnaire extends VueGenerique
 
     public function formulaireAjoutProduit($associations)
     {
-        $this->menu();
         echo '<h2>Ajouter un produit</h2>';
         echo '<form action="index.php?action=ajouterProduit" method="post">
             <label>Nom :</label>
@@ -343,7 +378,6 @@ class VueGestionnaire extends VueGenerique
 
     public function afficherStock($stocks)
     {
-        $this->menu();
         echo '<h2>État du stock</h2>';
 
         if (empty($stocks)) {
@@ -361,7 +395,6 @@ class VueGestionnaire extends VueGenerique
 
     public function afficherVentes($ventes)
     {
-        $this->menu();
         echo '<h2>Historique des ventes</h2>';
 
         if (empty($ventes)) {
@@ -380,7 +413,6 @@ class VueGestionnaire extends VueGenerique
 
     public function afficherUtilisateurs($utilisateurs)
     {
-        $this->menu();
         echo '<h2>Liste des utilisateurs</h2>';
 
         if (empty($utilisateurs)) {
@@ -399,7 +431,6 @@ class VueGestionnaire extends VueGenerique
 
     public function afficherStatistiques($stats)
     {
-        $this->menu();
         echo '<h2>Statistiques</h2>';
         echo '<div style="border: 1px solid #ccc; padding: 10px;">';
         echo 'Total ventes : ' . $stats['totalVentes'] . '€<br>';
@@ -411,72 +442,71 @@ class VueGestionnaire extends VueGenerique
 
     public function afficherAssociations($associations)
     {
-        $this->menu();
-        echo '<div class="bg-white rounded-lg shadow-md p-6 mb-6">';
-        echo '<div class="flex justify-between items-center mb-6">';
-        echo '<h2 class="text-2xl font-bold text-gray-800">Liste des associations</h2>';
-        echo '</div>';
+
+        echo '<div class="bg-white rounded-lg shadow-md p-6 mb-6">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-gray-800">Liste des associations</h2>
+        </div>';
 
         if (isset($_SESSION['success'])) {
-            echo '<div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-4 rounded">';
-            echo '<i class="fas fa-check-circle mr-2"></i> ' . htmlspecialchars($_SESSION['success']);
-            echo '</div>';
+            echo '<div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-4 rounded">
+            <i class="fas fa-check-circle mr-2"></i>' . htmlspecialchars($_SESSION['success']) . '
+        </div>';
             unset($_SESSION['success']);
         }
 
         if (isset($_SESSION['error'])) {
-            echo '<div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4 rounded">';
-            echo '<i class="fas fa-exclamation-circle mr-2"></i> ' . htmlspecialchars($_SESSION['error']);
-            echo '</div>';
+            echo '<div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4 rounded">
+            <i class="fas fa-exclamation-circle mr-2"></i>' . htmlspecialchars($_SESSION['error']) . '
+        </div>';
             unset($_SESSION['error']);
         }
 
         if (empty($associations)) {
-            echo '<div class="bg-blue-50 border-l-4 border-blue-500 text-blue-700 p-4 rounded">';
-            echo '<i class="fas fa-info-circle mr-2"></i> Aucune association trouvée. Cliquez sur "Ajouter une association" pour commencer.';
-            echo '</div>';
+            echo '<div class="bg-blue-50 border-l-4 border-blue-500 text-blue-700 p-4 rounded">
+            <i class="fas fa-info-circle mr-2"></i> Aucune association trouvée. Cliquez sur "Ajouter une association" pour commencer.
+        </div>';
         } else {
             echo '<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">';
-
             foreach ($associations as $asso) {
                 $soldeColor = $asso['solde'] >= 0 ? 'text-green-600' : 'text-red-600';
                 $soldeBg = $asso['solde'] >= 0 ? 'bg-green-50' : 'bg-red-50';
 
-                echo '<div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow duration-200">';
-                echo '<div class="flex justify-between items-start mb-3">';
-                echo '<h3 class="font-bold text-lg text-gray-800">' . htmlspecialchars($asso['nom']) . '</h3>';
-                echo '<span class="px-2 py-1 text-xs font-medium rounded ' . $soldeBg . ' ' . $soldeColor . '">';
-                echo htmlspecialchars($asso['solde']) . ' €';
-                echo '</span>';
-                echo '</div>';
-
-                echo '<div class="space-y-2 mb-4">';
-                echo '<div class="flex items-start text-sm text-gray-600">';
-                echo '<i class="fas fa-map-marker-alt mt-1 mr-2 text-gray-400"></i>';
-                echo '<span class="flex-1">' . htmlspecialchars($asso['adresse']) . '</span>';
-                echo '</div>';
-
-                echo '<div class="flex items-center text-sm text-gray-600">';
-                echo '<i class="fas fa-envelope mr-2 text-gray-400"></i>';
-                echo '<span>' . htmlspecialchars($asso['email']) . '</span>';
-                echo '</div>';
-
-                echo '<div class="flex items-center text-sm text-gray-600">';
-                echo '<i class="fas fa-phone mr-2 text-gray-400"></i>';
-                echo '<span>' . htmlspecialchars($asso['telephone']) . '</span>';
-                echo '</div>';
-                echo '</div>';
-
-                echo '<div class="flex justify-between pt-3 border-t border-gray-100">';
-                echo '<a href="index.php?action=modifierAssociation&id=' . $asso['id'] . '" class="text-blue-600 hover:text-blue-800 text-sm font-medium">';
-                echo '<i class="fas fa-edit mr-1"></i> Modifier';
-                echo '</a> </div>';
+                echo '<div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow duration-200">
+                <div class="flex justify-between items-start mb-3">
+                    <h3 class="font-bold text-lg text-gray-800">' . htmlspecialchars($asso['nom']) . '</h3>
+                    <span class="px-2 py-1 text-xs font-medium rounded ' . $soldeBg . ' ' . $soldeColor . '">' . htmlspecialchars($asso['solde']) . ' €</span>
+                </div>
+                <div class="space-y-2 mb-4">
+                    <div class="flex items-start text-sm text-gray-600">
+                        <i class="fas fa-map-marker-alt mt-1 mr-2 text-gray-400"></i>
+                        <span class="flex-1">' . htmlspecialchars($asso['adresse']) . '</span>
+                    </div>
+                    <div class="flex items-center text-sm text-gray-600">
+                        <i class="fas fa-envelope mr-2 text-gray-400"></i>
+                        <span>' . htmlspecialchars($asso['email']) . '</span>
+                    </div>
+                    <div class="flex items-center text-sm text-gray-600">
+                        <i class="fas fa-phone mr-2 text-gray-400"></i>
+                        <span>' . htmlspecialchars($asso['telephone']) . '</span>
+                    </div>
+                </div>
+                <div class="flex justify-between pt-3 border-t border-gray-100">
+                    <a href="index.php?action=modifierAssociation&id=' . $asso['id'] . '" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                        <i class="fas fa-edit mr-1"></i> Modifier
+                    </a>
+                    <a href="index.php?action=gererAssociation&id=' . $asso['id'] . '" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm font-medium">
+                        <i class="fas fa-cogs mr-1"></i> Gérer
+                    </a>
+                </div>
+            </div>';
             }
-
             echo '</div>';
         }
+
         echo '</div>';
     }
+
 
     public function formulaireAjoutAssociation()
     {

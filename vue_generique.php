@@ -1,17 +1,14 @@
 <?php
-    class VueGenerique {
-        private static $memoire;
 
-        public static function getAffichage() {
-            return self::$memoire;
-        }
+class VueGenerique {
+    private static $affichage = '';
 
-        public static function setAffichage($contenu) {
-            self::$memoire = $contenu;
-        }
+    public static function setAffichage($contenu) {
+        self::$affichage = $contenu;
     }
 
-
-
-
-
+    public static function afficherVue() {
+        echo self::$affichage;
+    }
+}
+?>
