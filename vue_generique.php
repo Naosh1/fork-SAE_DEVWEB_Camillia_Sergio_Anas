@@ -1,12 +1,17 @@
 <?php
+    class VueGenerique {
+        private static $memoire;
 
-class VueGenerique{
+        public static function getAffichage() {
+            return self::$memoire;
+        }
 
-    public function __construct(){
-        ob_start();
+        public static function setAffichage($contenu) {
+            self::$memoire = $contenu;
+        }
     }
 
-    public function getVueGenerique(){
-        return ob_get_clean();
-    }
-}
+
+
+
+
