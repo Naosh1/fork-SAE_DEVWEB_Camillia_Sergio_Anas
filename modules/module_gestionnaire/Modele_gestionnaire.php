@@ -1,8 +1,28 @@
 <?php
-include_once 'connexion/Connexion.php';
+include_once '../connexion/Connexion.php';
 
 class ModeleGestionnaire extends Connexion
 {
+
+    public function getClientsParAssos($id_assos)
+    {
+        try {
+            $requete = self::getBdd()->prepare(
+                "SELECT c.id, c.nom, c.prenom, c.email, c.solde
+             FROM compte c
+             WHERE c.role = 'client'
+             AND c.association_id = ?
+             ORDER BY c.nom, c.prenom"
+            );
+
+            $requete->execute([$id_assos]);
+            return $requete->fetchAll(PDO::FETCH_ASSOC);
+
+        } catch (PDOException $e) {
+            error_log("Erreur de getClientsParAssos : " . $e->getMessage());
+            return [];
+        }
+    }
 
     public function getClients()
     {
@@ -42,6 +62,38 @@ class ModeleGestionnaire extends Connexion
             return $requete->fetchAll(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
             error_log("Erreur getBarmans: " . $e->getMessage());
+            return [];
+        }
+    }
+
+    public function getBarmansParAssos($id_assos)
+    {
+        try {
+            $requete = self::getBdd()->prepare(
+                "SELECT c.id, c.nom, c.prenom, c.email, c.solde,
+                    (SELECT COUNT(*) 
+                     FROM dispose d 
+                     WHERE d.compte_id = c.id 
+                     AND d.role_id = (SELECT id FROM role WHERE nom = 'barman')
+                    ) AS est_barman
+             FROM compte c
+             WHERE c.association_id = ?
+             AND (
+                 c.role = 'barman'
+                 OR c.id IN (
+                     SELECT d.compte_id 
+                     FROM dispose d 
+                     WHERE d.role_id = (SELECT id FROM role WHERE nom = 'barman')
+                 )
+             )
+             ORDER BY c.nom, c.prenom"
+            );
+
+            $requete->execute([$id_assos]);
+            return $requete->fetchAll(PDO::FETCH_ASSOC);
+
+        } catch (PDOException $e) {
+            error_log("Erreur getBarmansParAssos : " . $e->getMessage());
             return [];
         }
     }
@@ -256,6 +308,30 @@ class ModeleGestionnaire extends Connexion
             return false;
         }
     }
+    public function getAssociationsParGestionnaire($id_gestionnaire)
+    {
+        try {
+            $requete = self::getBdd()->prepare(
+                "SELECT a.id, a.nom, a.adresse, a.email, a.telephone, a.solde
+             FROM association a
+             JOIN gestionne g ON g.association_id = a.id
+             JOIN compte c ON c.id = g.compte_id
+             JOIN dispose d ON d.compte_id = c.id
+             JOIN role r ON r.id = d.role_id
+             WHERE c.id = ?
+             AND r.nom = 'gestionnaire'
+             ORDER BY a.nom"
+            );
+
+            $requete->execute([$id_gestionnaire]);
+            return $requete->fetchAll(PDO::FETCH_ASSOC);
+
+        } catch (PDOException $e) {
+            error_log("Erreur getAssociationsParGestionnaire : " . $e->getMessage());
+            return [];
+        }
+    }
+
 
     public function getAssociations()
     {

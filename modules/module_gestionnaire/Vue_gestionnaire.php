@@ -1,17 +1,11 @@
 <?php
-include_once 'vue_generique.php';
+include_once '../vue_generique.php';
 
 class VueGestionnaire extends VueGenerique
 {
     public function menu()
     {
-        echo '<div class="menu" style="background-color: #f0f0f0; padding: 10px; margin-bottom: 20px;">';
-        echo '<a href="index.php?action=produits">Produits</a> | ';
-        echo '<a href="index.php?action=stock">Stock</a> | ';
-        echo '<a href="index.php?action=ventes">Ventes</a> | ';
-        echo '<a href="index.php?action=clients">Clients</a> | ';
-        echo '<a href="index.php?action=barmans">Barmans</a> | ';
-        echo '<a href="index.php?action=statistiques">Statistiques</a> | ';
+        echo '<div class="menu" style="background-color: #f0f0f0; padding: 10px; align-content: center;">';
         echo '<a href="index.php?action=associations">Associations</a>';
         echo '</div>';
     }
@@ -19,8 +13,6 @@ class VueGestionnaire extends VueGenerique
     public function afficherAccueil()
     {
         $this->menu();
-        echo '<h1>Bienvenue dans le gestionnaire de buvette</h1>';
-        echo '<p>Veuillez choisir une section dans le menu ci-dessus.</p>';
     }
 
     public function afficherBarmans($barmans)
@@ -29,7 +21,7 @@ class VueGestionnaire extends VueGenerique
 
         echo '<div class="bg-white rounded-lg shadow-md p-6 mb-6">';
         echo '<div class="flex justify-between items-center mb-6">';
-        echo '<h2 class="text-2xl font-bold text-gray-800">Gestion des comptes barmans</h2>';
+        echo '<h2 class="text-2xl font-bold text-gray-800">Gestion du personnel</h2>';
 
         echo '<button onclick="window.location.href=\'index.php?action=ajouterBarman\'"';
         echo ' class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors duration-200 flex items-center">';
@@ -423,10 +415,6 @@ class VueGestionnaire extends VueGenerique
         echo '<div class="bg-white rounded-lg shadow-md p-6 mb-6">';
         echo '<div class="flex justify-between items-center mb-6">';
         echo '<h2 class="text-2xl font-bold text-gray-800">Liste des associations</h2>';
-        echo '<button onclick="window.location.href=\'index.php?action=ajouterAssociation\'" 
-class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors duration-200 flex items-center">';
-        echo '<i class="fas fa-plus mr-2"></i> Ajouter une association';
-        echo '</button>';
         echo '</div>';
 
         if (isset($_SESSION['success'])) {
@@ -482,12 +470,7 @@ class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-
                 echo '<div class="flex justify-between pt-3 border-t border-gray-100">';
                 echo '<a href="index.php?action=modifierAssociation&id=' . $asso['id'] . '" class="text-blue-600 hover:text-blue-800 text-sm font-medium">';
                 echo '<i class="fas fa-edit mr-1"></i> Modifier';
-                echo '</a>';
-                echo '<a href="index.php?action=supprimerAssociation&id=' . $asso['id'] . '" class="text-red-600 hover:text-red-800 text-sm font-medium" onclick="return confirm(\'Êtes-vous sûr de vouloir supprimer cette association ?\')">';
-                echo '<i class="fas fa-trash mr-1"></i> Supprimer';
-                echo '</a>';
-                echo '</div>';
-                echo '</div>';
+                echo '</a> </div>';
             }
 
             echo '</div>';

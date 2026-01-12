@@ -50,34 +50,47 @@
         }
 
         public function connexion() {
+            session_start(); // toujours démarrer la session en premier
+
             if (!isset($_POST['emailUtilisateurConnexion'], $_POST['mdpUtilisateurConnexion'])) {
                 header("Location: index.php?module=client&action=erreur&erreur=personneEstConnectee_utilisateur");
                 exit;
             }
-            else {
-                $sql = "SELECT id, prenom, mdp FROM compte WHERE email = :login";
 
-                $stmt = $this->bdd->prepare($sql);
+            $sql = "SELECT id, prenom, mdp, role FROM compte WHERE email = :login";
+            $stmt = Connexion::getBdd()->prepare($sql);
+            $stmt->execute([':login' => $_POST['emailUtilisateurConnexion']]);
+            $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-                $stmt->execute([':login' => $_POST['emailUtilisateurConnexion']]);
+            if ($user && password_verify($_POST['mdpUtilisateurConnexion'], $user['mdp'])) {
+                $_SESSION['id'] = $user['id'];
+                $_SESSION['prenom'] = $user['prenom'];
+                $_SESSION['login'] = $_POST['emailUtilisateurConnexion'];
+                $_SESSION['role'] = $user['role']; // ← essentiel
 
-                $user = $stmt->fetch();
-
-                if ($user && password_verify($_POST['mdpUtilisateurConnexion'], $user['mdp'])) {
-                    if (session_status() === PHP_SESSION_NONE) {
-                        session_start();
-                    }
-                    $_SESSION['prenom'] = $user['prenom'];
-                    $_SESSION['login'] = $_POST["emailUtilisateurConnexion"];
-                    $_SESSION['id'] = $user['id'];
-
-                    header("Location: index.php?module=client&action=form_connexionReussie_utilisateur");
+                // redirection selon rôle
+                switch($user['role']) {
+                    case 'client':
+                        header("Location: index.php");
+                        break;
+                    case 'barman':
+                        header("Location: index.php");
+                        break;
+                    case 'gestionnaire':
+                        header("Location: index.php");
+                        break;
+                    default:
+                        echo "Rôle inconnu dans la BD !";
+                        exit;
                 }
-                else {
-                    header("Location: index.php?module=client&action=erreur&erreur=connexionPasBon_utilisateur");
-                }
+                exit;
+            } else {
+                header("Location: index.php?module=client&action=erreur&erreur=connexionPasBon_utilisateur");
+                exit;
             }
         }
+
+
 
         public function modification() {
             if (!isset($_SESSION['id'])) {
