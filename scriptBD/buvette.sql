@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Hôte : 127.0.0.1
--- Généré le : mar. 30 déc. 2025 à 02:05
+-- Généré le : mar. 13 jan. 2026 à 21:39
 -- Version du serveur : 10.4.32-MariaDB
 -- Version de PHP : 8.2.12
 
@@ -77,6 +77,16 @@ CREATE TABLE `compte` (
   `solde` decimal(10,0) NOT NULL,
   `role` varchar(50) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Déchargement des données de la table `compte`
+--
+
+INSERT INTO `compte` (`id`, `nom`, `prenom`, `email`, `mdp`, `solde`, `role`) VALUES
+(1, 'test', 'test', 'anas@gmail.com', '$2y$10$QF7YDPCJ56jHRRA4Z8/C5OMFmkJe8c.G4uFj2g4LxCYnRAhjGZpo.', 81, 'Client'),
+(2, 'anas', 'semghouni', 'anassemghouni774@gmail.com', '$2y$10$OraztxD5LXMdFFejfE6GouorLxA3Oci3FuC8vsmhUaQLcwzOUygk.', 4, 'Admin'),
+(3, 'Jr', 'Asko', 'asko@gmail.com', '$2y$10$SRvS5NOvWKdTiFrTiC3ab.xfYaY.AnmQ604s1ygW9XQOy3jj7d9ai', 5, 'Client'),
+(4, 'uyfgcsd', 'hoiezedhi', 'ohezcezc@gmail.com', '$2y$10$iKuhpV7MdeC.qHALqfH1jOjLmS0CmcJHoPn.MNwgB1S3MJMJWETQ6', 10, 'Client');
 
 -- --------------------------------------------------------
 
@@ -186,9 +196,17 @@ CREATE TABLE `produit` (
 CREATE TABLE `rechargement` (
   `id` bigint(20) UNSIGNED NOT NULL,
   `valeur` decimal(10,0) NOT NULL,
-  `date_rechargement` date NOT NULL,
+  `date_rechargement` datetime NOT NULL DEFAULT current_timestamp(),
   `compte_id` bigint(20) UNSIGNED NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Déchargement des données de la table `rechargement`
+--
+
+INSERT INTO `rechargement` (`id`, `valeur`, `date_rechargement`, `compte_id`) VALUES
+(5, 10, '2026-01-13 21:28:49', 1),
+(6, 2, '2026-01-13 21:32:35', 1);
 
 -- --------------------------------------------------------
 
@@ -338,7 +356,7 @@ ALTER TABLE `association`
 -- AUTO_INCREMENT pour la table `compte`
 --
 ALTER TABLE `compte`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT pour la table `fournisseur`
@@ -362,7 +380,7 @@ ALTER TABLE `produit`
 -- AUTO_INCREMENT pour la table `rechargement`
 --
 ALTER TABLE `rechargement`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT pour la table `role`
