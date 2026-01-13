@@ -202,7 +202,7 @@
 
             <div class="bfor-card">
                 <div class="bfor-top">
-                    <div class="bfor-bank">HISTORIQUE</div>
+                    <div class="bfor-bank">RECHARGEMENT</div>
                     <div class="bfor-badge">VIRTUELLE</div>
                 </div>
 
