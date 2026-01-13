@@ -15,10 +15,12 @@
             <section class="section-white">
                 <div class="card">
                     <h1>Buvette</h1>
+
                     <?php
                         $menu = new Mod_Menu();
                         echo $menu->affiche();
                     ?>
+
                 </div>
             </section>
         </header>
@@ -33,3 +35,4 @@
         </footer>
     </body>
 </html>
+
