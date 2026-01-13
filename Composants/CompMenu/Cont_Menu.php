@@ -12,8 +12,17 @@ class Cont_Menu {
     public function exec() {
         $this->vue->gen_menu();
     }
+<<<<<<< HEAD
 
     public function getAffichage() {
         return $this->vue->affichage;
     }
 }
+
+=======
+
+    public function getAffichage() {
+        return $this->vue->affichage;
+    }
+}
+>>>>>>> travailClient

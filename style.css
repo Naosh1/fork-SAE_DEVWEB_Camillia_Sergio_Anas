@@ -149,6 +149,33 @@ nav a:active {
     transform: translateY(0);
 }
 
+nav ul {
+    padding: 0;
+    margin: 0;
+}
+
+nav li {
+    list-style: none;
+    margin-bottom: 20px;
+    width: 100%;
+}
+
+.nav-user a {
+    background: none;
+    padding: 0;
+    border-radius: 0;
+    font-weight: 500;
+    color: var(--color-link);
+}
+
+.nav-user a:hover {
+    color: var(--color-link);
+    background: none;
+    text-decoration: underline;
+    transform: none;
+    box-shadow: none;
+}
+
 /* =========================
    Main content
    ========================= */
@@ -236,6 +263,71 @@ footer p {
 }
 
 /* =========================
+   Carte solde
+   ========================= */
+
+.bfor-card {
+    background: var(--color-white);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    box-shadow: var(--shadow-lg);
+    max-width: 420px;
+    margin: auto;
+    font-family: Arial, sans-serif;
+    color: var(--color-text);
+    transition: var(--transition);
+}
+
+.bfor-top {
+    background: linear-gradient(
+            135deg,
+            var(--color-secondary),
+            var(--color-tertiary)
+    );
+    border-radius: var(--radius-md);
+    padding: 14px 16px;
+    color: var(--color-white);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 28px;
+    box-shadow: var(--shadow-md);
+}
+
+.bfor-bank {
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.bfor-badge {
+    background: rgba(255,255,255,0.15);
+    backdrop-filter: blur(6px);
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 12px;
+    border: 1px solid rgba(255,255,255,0.35);
+}
+
+.bfor-account {
+    text-align: center;
+    padding-bottom: 10px;
+}
+
+.bfor-account p {
+    color: var(--color-tertiary);
+    margin-bottom: 6px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.bfor-account h1 {
+    font-size: 38px;
+    margin: 0;
+    color: var(--color-primary);
+    font-weight: 700;
+}
+
+/* =========================
    Typographie raffinée
    ========================= */
 h1 {
@@ -243,6 +335,7 @@ h1 {
     font-weight: 800;
     line-height: 1.2;
     margin-bottom: 0.5em;
+    text-align: center;
 }
 
 h2 {
@@ -281,6 +374,33 @@ h6 {
     margin-bottom: 0.5em;
     text-transform: uppercase;
     letter-spacing: 0.05em;
+}
+
+/* =========================
+   Historique
+   ========================= */
+table {
+    border-collapse: separate;
+    border-spacing: 0 12px;
+    margin: 0 auto;
+}
+
+th, td {
+    padding: 12px 20px;
+    text-align: left;
+    color: var(--color-text);
+}
+
+th {
+    font-weight: 600;
+    color: var(--color-primary);
+    background: var(--color-blue-grey);
+}
+
+td {
+    background: var(--color-white);
+    box-shadow: var(--shadow-sm);
+    border-radius: var(--radius-sm);
 }
 
 /* =========================
@@ -327,11 +447,29 @@ input[type="number"] {
     background: var(--color-blue-grey);
     color: var(--color-text);
 }
+input[type="month"] {
+    width: 100%;
+    padding: 14px 18px;
+    margin-bottom: 20px;
+    border: 2px solid rgba(111, 112, 255, 0.15);
+    border-radius: var(--radius-sm);
+    font-size: 1rem;
+    font-family: inherit;
+    background: var(--color-blue-grey);
+    color: var(--color-text);
+}
 
 input[type="text"]:focus,
 input[type="email"]:focus,
 input[type="password"]:focus,
 input[type="number"]:focus {
+    outline: none;
+    border-color: var(--color-link);
+    background: var(--color-white);
+    box-shadow: 0 0 0 4px rgba(111, 112, 255, 0.1);
+    transform: translateY(-2px);
+}
+input[type="month"]:focus {
     outline: none;
     border-color: var(--color-link);
     background: var(--color-white);

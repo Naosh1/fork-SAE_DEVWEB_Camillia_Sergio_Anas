@@ -1,6 +1,10 @@
 <?php
+<<<<<<< HEAD
+    include_once 'Composants/CompMenu/Cont_Menu.php';
+=======
 
 include_once 'Composants/CompMenu/Cont_Menu.php';
+>>>>>>> travailClient
 
 class Mod_Menu {
     private $controleur;
@@ -12,7 +16,15 @@ class Mod_Menu {
         $this->affichage = $this->controleur->getAffichage();
     }
 
+<<<<<<< HEAD
+        public function affiche() {
+            return $this->affichage;
+        }
+    }
+
+=======
     public function affiche() {
-        echo $this->affichage;
+        return $this->affichage;
     }
 }
+>>>>>>> travailClient
