@@ -72,9 +72,11 @@
                     $_SESSION['id'] = $user['id'];
 
                     header("Location: index.php?module=client&action=form_connexionReussie_utilisateur");
+                    exit();
                 }
                 else {
                     header("Location: index.php?module=client&action=erreur&erreur=connexionPasBon_utilisateur");
+                    exit();
                 }
             }
         }
@@ -122,6 +124,7 @@
                 ]);
 
                 header("Location: index.php?module=client&action=form_modificationReussie_utilisateur");
+                exit();
             }
         }
 
@@ -146,7 +149,10 @@
 
             $this->miseAJourDuSolde($id, $nvSolde);
 
+            $this->ajouterRechargement($id, $montant);
+
             header("Location: index.php?module=client&action=rechargementReussi_utilisateur");
+            exit();
         }
 
         public function deconnexion() {
@@ -155,6 +161,17 @@
             session_destroy();
 
             header("Location: index.php?module=client&action=form_deconnexionReussie_utilisateur");
+            exit();
+        }
+
+        public function getSolde() {
+            $stmt = $this->bdd->prepare(
+                "SELECT solde FROM compte WHERE id = :id"
+            );
+
+            $stmt->execute([':id' => $_SESSION['id']]);
+
+            return $stmt->fetchColumn();
         }
 
         public function miseAJourDuSolde($idCompte, $nouveauSolde) {
@@ -163,4 +180,27 @@
             );
             $stmt->execute([$nouveauSolde, $idCompte]);
         }
+
+        public function ajouterRechargement($idCompte, $montant) {
+            $stmt = $this->bdd->prepare(
+                "INSERT INTO rechargement (valeur, date_rechargement, compte_id) VALUES (:montant, NOW(), :idCompte)"
+            );
+            $stmt->execute([
+                ':montant' => $montant,
+                ':idCompte' => $idCompte
+            ]);
+        }
+
+        public function getHistoriqueRechargements($idCompte) {
+            $stmt = $this->bdd->prepare(
+                "SELECT valeur, date_rechargement
+                 FROM rechargement
+                 WHERE compte_id = :id
+                 ORDER BY date_rechargement DESC"
+            );
+            $stmt->execute([':id' => $idCompte]);
+
+            return $stmt->fetchAll();
+        }
+
     }

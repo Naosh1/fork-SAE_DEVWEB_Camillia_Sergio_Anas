@@ -17,6 +17,10 @@ include_once "Controleur_client.php";
                     $contenu = "Bienvenue sur le site de la buvette";
                     VueGenerique::setAffichage($contenu);
                     break;
+                case "espace" :
+                    $contenu = $this->controleur->getVue()->form_espace($this->controleur->soldeEspace(), $this->controleur->historiqueRechargements());
+                    VueGenerique::setAffichage($contenu);
+                    break;
                 case "form_inscription_utilisateur" :
                     if (isset($_SESSION) && count($_SESSION) == 0) {
                         $contenu = $this->controleur->getVue()->form_inscription();

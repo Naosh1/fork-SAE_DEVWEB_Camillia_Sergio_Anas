@@ -28,7 +28,7 @@
             echo '<form method="post" action="/SaeWeb/index.php?module=client&action=verif_connexion">';
             echo    'Email : ' . '<input type="email"  name="emailUtilisateurConnexion" placeholder="votreEmail@gmail.com" required> <br>';
             echo    'Mot de passe : ' . '<input type="password" name="mdpUtilisateurConnexion" required> <br>';
-            echo '<input type="submit" name="bouton" value="Inscription"> <br>';
+            echo '<input type="submit" name="bouton" value="Connexion"> <br>';
 
             return ob_get_clean();
         }
@@ -175,6 +175,62 @@
 
             echo "Veuillez vous connecter !";
 
+            return ob_get_clean();
+        }
+
+        public function form_espace($solde, $historique) {
+
+            ob_start();
+            ?>
+            <div class="bfor-card">
+                <div class="bfor-top">
+                    <div class="bfor-bank">SOLDE</div>
+                    <div class="bfor-badge">VIRTUELLE</div>
+                </div>
+
+                <div class="bfor-account">
+                    <p>Mon compte</p>
+                    <h1>
+                        <?php
+                            echo htmlspecialchars(number_format($solde,2));
+                        ?>
+                    </h1>
+                </div>
+            </div>
+
+            <br>
+
+            <div class="bfor-card">
+                <div class="bfor-top">
+                    <div class="bfor-bank">HISTORIQUE</div>
+                    <div class="bfor-badge">VIRTUELLE</div>
+                </div>
+
+                <div class="bfor-account">
+                <?php if (empty($historique)): ?>
+                    <br>
+                    <p>Aucun rechargement effectué.</p>
+                <?php else: ?>
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Montant</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <?php foreach ($historique as $r): ?>
+                            <tr>
+                                <td><?= htmlspecialchars($r['date_rechargement']) ?></td>
+                                <td><?= htmlspecialchars(number_format($r['valeur'], 2)) ?> €</td>
+                            </tr>
+                        <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                <?php endif; ?>
+                </div>
+            </div>
+            <?php
             return ob_get_clean();
         }
 
