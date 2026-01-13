@@ -12,7 +12,7 @@
             $email = $_POST["emailUtilisateur"];
             $mdp = $_POST["mdpUtilisateur"];
             $solde = $_POST["soldeUtilisateur"];
-            $role = $_POST["roleUtilisateur"];
+            $role = "Client";
 
             $sql = "SELECT COUNT(*) FROM compte WHERE email = :login";
             $stmt = $this->bdd->prepare($sql);
@@ -89,7 +89,6 @@
                 $id = $_SESSION['id'];
                 $nvEmail = $_POST["nvEmailUtilisateur"];
                 $nvMdp = $_POST["nvMdpUtilisateur"];
-                $nvRole = $_POST["nvRoleUtilisateur"];
 
                 $sql = "SELECT COUNT(*) FROM compte WHERE email = :nvEmail AND id != :id";
 
@@ -112,19 +111,50 @@
 
                 $mdpHasher = password_hash($nvMdp, PASSWORD_DEFAULT);
 
-                $sql = "UPDATE compte SET email = :nvEmail, mdp = :nvMdp, role = :nvRole WHERE id = :id";
+                $sql = "UPDATE compte SET email = :nvEmail, mdp = :nvMdp WHERE id = :id";
 
                 $stmt = $this->bdd->prepare($sql);
 
                 $stmt->execute([
                     ":nvEmail" => $nvEmail,
                     ":nvMdp" => $mdpHasher,
-                    ":nvRole" => $nvRole,
                     ":id" => $id
                 ]);
 
                 header("Location: index.php?module=client&action=form_modificationReussie_utilisateur");
             }
+        }
+
+        public function rechargement() {
+            if (!isset($_SESSION['id'])) {
+                header("Location: index.php?module=client&action=erreur&erreur=personneEstConnectee_utilisateur");
+                exit;
+            }
+
+            $id = $_SESSION['id'];
+            $montant = (int) $_POST['montant'];
+
+            $stmt = $this->bdd->prepare(
+                "SELECT solde FROM compte WHERE id = :id"
+            );
+
+            $stmt->execute([':id' => $id]);
+
+            $soldeActuel = $stmt->fetchColumn();
+
+            $nvSolde = $soldeActuel + $montant;
+
+            $this->miseAJourDuSolde($id, $nvSolde);
+
+            header("Location: index.php?module=client&action=rechargementReussi_utilisateur");
+        }
+
+        public function deconnexion() {
+            session_unset();
+
+            session_destroy();
+
+            header("Location: index.php?module=client&action=form_deconnexionReussie_utilisateur");
         }
 
         public function miseAJourDuSolde($idCompte, $nouveauSolde) {

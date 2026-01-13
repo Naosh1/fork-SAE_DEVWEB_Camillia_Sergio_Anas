@@ -28,4 +28,12 @@
             $this->modele->modification();
         }
 
+        public function deconnexion() {
+            $this->modele->deconnexion();
+        }
+
+        public function rechargement() {
+            $this->modele->rechargement();
+        }
+
     }
