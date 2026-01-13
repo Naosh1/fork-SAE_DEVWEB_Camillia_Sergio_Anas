@@ -8,5 +8,6 @@ class VueGenerique {
 
     public static function setAffichage($contenu) {
         self::$memoire = $contenu;
+
     }
 }
