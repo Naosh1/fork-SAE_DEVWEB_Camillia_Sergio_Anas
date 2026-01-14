@@ -3,49 +3,79 @@ include_once '../connexion/Connexion.php';
 
 class ModeleGestionnaire extends Connexion
 {
+    public function getTousLesClients()
+    {
+        $stmt = self::getBdd()->prepare("
+        SELECT id, nom, prenom, email
+        FROM compte
+        WHERE role = 'client'
+        ORDER BY nom, prenom
+    ");
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 
-    public function getClients()
+    public function rechercherClients($q = '')
     {
         try {
-            $requete = self::getBdd()->query(
-                "SELECT c.id, c.nom, c.prenom, c.email, c.solde, c.role,
-                    (SELECT COUNT(*) FROM dispose d WHERE d.compte_id = c.id AND d.role_id = 
-                        (SELECT id FROM role WHERE nom = 'client')) as est_barman
-             FROM compte c
-             WHERE c.role = 'client' OR c.id IN (
-                 SELECT compte_id FROM dispose WHERE role_id = 
-                    (SELECT id FROM role WHERE nom = 'client')
-             )
-             ORDER BY c.nom, c.prenom"
-            );
-            return $requete->fetchAll(PDO::FETCH_ASSOC);
+            if ($q) {
+                $stmt = self::getBdd()->prepare("
+                SELECT id, nom, prenom, email
+                FROM compte
+                WHERE role = 'client'
+                AND (
+                    nom LIKE :q
+                    OR prenom LIKE :q
+                    OR email LIKE :q
+                )
+                ORDER BY nom, prenom
+            ");
+                $stmt->execute(['q' => "%$q%"]);
+            } else {
+                $stmt = self::getBdd()->query("
+                SELECT id, nom, prenom, email
+                FROM compte
+                WHERE role = 'client'
+                ORDER BY nom, prenom
+            ");
+            }
+
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+
         } catch (PDOException $e) {
-            error_log("Erreur getBarmans: " . $e->getMessage());
+            error_log("Erreur rechercherClients : " . $e->getMessage());
             return [];
         }
     }
 
-    public function getBarmans()
-    {
-        try {
-            $requete = self::getBdd()->query(
-                "SELECT c.id, c.nom, c.prenom, c.email, c.solde, c.role,
-                    (SELECT COUNT(*) FROM dispose d WHERE d.compte_id = c.id AND d.role_id = 
-                        (SELECT id FROM role WHERE nom = 'barman')) as est_barman
-             FROM compte c
-             WHERE c.role = 'barman' OR c.id IN (
-                 SELECT compte_id FROM dispose WHERE role_id = 
-                    (SELECT id FROM role WHERE nom = 'barman')
-             )
-             ORDER BY c.nom, c.prenom"
-            );
-            return $requete->fetchAll(PDO::FETCH_ASSOC);
-        } catch (PDOException $e) {
-            error_log("Erreur getBarmans: " . $e->getMessage());
-            return [];
-        }
+    public function getTotalPertes($idGestionnaire) {
+        $sql = "SELECT SUM(perte * prix) as valeur_perte 
+            FROM concerne 
+            JOIN produit ON concerne.produit_id = produit.id
+            JOIN gere ON produit.id = gere.produit_id
+            JOIN gestionne ON gere.association_id = gestionne.association_id
+            WHERE gestionne.compte_id = ?";
+        $stmt = self::getBdd()->prepare($sql);
+        $stmt->execute([$idGestionnaire]);
+        return $stmt->fetchColumn() ?: 0;
     }
 
+
+    public function getTopProduits($idGest) {
+        $sql = "SELECT p.nom, SUM(c.quantite) as total_vendu, p.prix
+            FROM contient c
+            JOIN produit p ON c.produit_id = p.id
+            JOIN gere g ON p.id = g.produit_id
+            JOIN gestionne gn ON g.association_id = gn.association_id
+            WHERE gn.compte_id = :idGest
+            GROUP BY p.id
+            ORDER BY total_vendu DESC
+            LIMIT 5";
+
+        $stmt = self::getBdd()->prepare($sql);
+        $stmt->execute(['idGest' => $idGest]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
     public function getBarmansParAssociation($associationId)
     {
         try {
@@ -127,77 +157,31 @@ class ModeleGestionnaire extends Connexion
         }
     }
 
-    public function ajouterBarman($nom, $prenom, $email, $motDePasse)
-    {
+    public function ajouterClientCommeBarman($clientId, $assoId) {
         try {
-            $requeteVerif = self::getBdd()->prepare("SELECT id FROM compte WHERE email = ?");
-            $requeteVerif->execute([$email]);
-            if ($requeteVerif->fetch()) {
-                return false;
-            }
-            $hash = password_hash($motDePasse, PASSWORD_DEFAULT);
+            $bdd = self::getBdd();
 
-            $requete = self::getBdd()->prepare(
-                "INSERT INTO compte (nom, prenom, email, mdp, solde, role) 
-             VALUES (?, ?, ?, ?, 0, 'barman')"
-            );
-            $requete->execute([$nom, $prenom, $email, $hash]);
+            $sql1 = "UPDATE compte SET role = 'barman' WHERE id = :cid";
+            $stmt1 = $bdd->prepare($sql1);
+            $stmt1->execute(['cid' => $clientId]);
+            $sqlDelete = "DELETE FROM appartient WHERE compte_id = :cid AND association_id = :aid";
+            $stmtDel = $bdd->prepare($sqlDelete);
+            $stmtDel->execute(['cid' => $clientId, 'aid' => $assoId]);
 
-            $compteId = self::getBdd()->lastInsertId();
+            $sqlInsert = "INSERT INTO appartient (compte_id, association_id, role) 
+                      VALUES (:cid, :aid, 'barman')";
+            $stmtIns = $bdd->prepare($sqlInsert);
 
-            $requeteRole = self::getBdd()->prepare("SELECT id FROM role WHERE nom = 'barman'");
-            $requeteRole->execute();
-            $role = $requeteRole->fetch(PDO::FETCH_ASSOC);
+            $result = $stmtIns->execute([
+                'cid' => $clientId,
+                'aid' => $assoId
+            ]);
 
-            if ($role) {
-                $requeteLien = self::getBdd()->prepare(
-                    "INSERT INTO dispose (role_id, compte_id) VALUES (?, ?)"
-                );
-                $requeteLien->execute([$role['id'], $compteId]);
-            }
+            return $result;
 
-            return $compteId;
         } catch (PDOException $e) {
-            error_log("Erreur ajouterBarman: " . $e->getMessage());
-            return false;
-        }
-    }
-
-    public function modifierBarman($id, $nom, $prenom, $email, $changerMotDePasse = false, $nouveauMotDePasse = null)
-    {
-        try {
-            $requeteVerif = self::getBdd()->prepare("SELECT id FROM compte WHERE email = ? AND id != ?");
-            $requeteVerif->execute([$email, $id]);
-            if ($requeteVerif->fetch()) {
-                return false;
-            }
-
-            if ($changerMotDePasse && $nouveauMotDePasse) {
-                $hash = password_hash($nouveauMotDePasse, PASSWORD_DEFAULT);
-                $requete = self::getBdd()->prepare(
-                    "UPDATE compte SET 
-                 nom = ?, 
-                 prenom = ?, 
-                 email = ?, 
-                 mdp = ?,
-                 role = 'barman'
-                 WHERE id = ?"
-                );
-                return $requete->execute([$nom, $prenom, $email, $hash, $id]);
-            } else {
-                $requete = self::getBdd()->prepare(
-                    "UPDATE compte SET 
-                 nom = ?, 
-                 prenom = ?, 
-                 email = ?,
-                 role = 'barman'
-                 WHERE id = ?"
-                );
-                return $requete->execute([$nom, $prenom, $email, $id]);
-            }
-        } catch (PDOException $e) {
-            error_log("Erreur modifierBarman: " . $e->getMessage());
-            return false;
+            echo "Détails de l'erreur SQL : " . $e->getMessage();
+            die();
         }
     }
 
@@ -239,25 +223,6 @@ class ModeleGestionnaire extends Connexion
         }
     }
 
-    public function reinitialiserMotDePasseBarman($id)
-    {
-        try {
-            $motDePasseTemporaire = bin2hex(random_bytes(4));
-            $hash = password_hash($motDePasseTemporaire, PASSWORD_DEFAULT);
-
-            $requete = self::getBdd()->prepare(
-                "UPDATE compte SET mdp = ? WHERE id = ?"
-            );
-
-            if ($requete->execute([$hash, $id])) {
-                return $motDePasseTemporaire;
-            }
-            return false;
-        } catch (PDOException $e) {
-            error_log("Erreur reinitialiserMotDePasseBarman: " . $e->getMessage());
-            return false;
-        }
-    }
 
     public function supprimerBarman($id)
     {
@@ -329,9 +294,57 @@ class ModeleGestionnaire extends Connexion
             ':compte_id' => $idGestionnaire,
             ':association_id' => $assoId
         ]);
+    }public function updateStock($id, $quantite) {
+    $sql = "UPDATE produit SET quantiteActuelle = quantiteActuelle + ? WHERE id = ?";
+    $stmt = self::getBdd()->prepare($sql);
+    return $stmt->execute([$quantite, $id]);
+}
+    public function getProduitsFiltres($id_compte = null, $id_asso = null, $tri = 'stock') {
+        $sql = "SELECT p.*, a.nom as nom_association 
+        FROM produit p 
+        JOIN gere g_link ON p.id = g_link.produit_id
+        JOIN association a ON a.id = g_link.association_id ";
+        $params = [];
+        $where = [];
+        if ($id_asso) { $where[] = "a.id = ?"; $params[] = $id_asso; }
+        elseif ($id_compte) {
+            $sql .= " JOIN gestionne g ON a.id = g.association_id ";
+            $where[] = "g.compte_id = ?"; $params[] = $id_compte;
+        }
+
+        if ($tri === 'urgences_seules') {
+            $where[] = "p.quantiteActuelle < 10";
+
+        } elseif ($tri === 'type_alim') {
+            $where[] = "p.type = 'nourriture'";
+        } elseif ($tri === 'type_boisson') {
+            $where[] = "p.type = 'boisson'";
+        }
+
+        if (!empty($where)) { $sql .= " WHERE " . implode(" AND ", $where); }
+
+        switch ($tri) {
+            case 'nom': $sql .= " ORDER BY p.nom ASC"; break;
+            case 'prix': $sql .= " ORDER BY p.prix ASC"; break;
+            default: $sql .= " ORDER BY p.quantiteActuelle ASC"; break;
+        }
+
+        $stmt = self::getBdd()->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+    public function getProduitsParStock($id_compte) {
 
+        $sql = "SELECT p.* FROM produit p 
+            JOIN gere g_link ON p.id = g_link.produit_id
+            JOIN gestionne g ON g_link.association_id = g.association_id
+            WHERE g.compte_id = ?
+            ORDER BY p.quantiteActuelle ASC";
 
+        $stmt = self::getBdd()->prepare($sql);
+        $stmt->execute([$id_compte]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
     public function getAssociationsParGestionnaire($id_gestionnaire)
     {
         try {
@@ -354,19 +367,6 @@ class ModeleGestionnaire extends Connexion
     }
 
 
-    public function getAssociations()
-    {
-        try {
-            $requete = self::getBdd()->query(
-                "SELECT id, nom, adresse, email, telephone, solde FROM association ORDER BY nom"
-            );
-            return $requete->fetchAll(PDO::FETCH_ASSOC);
-        } catch (PDOException $e) {
-            error_log("Erreur getAssociations: " . $e->getMessage());
-            return [];
-        }
-    }
-
     public function getDetailsAssos($idAssociation)
     {
         $assos = $this->getAssociationParId($idAssociation);
@@ -384,19 +384,6 @@ class ModeleGestionnaire extends Connexion
     }
 
 
-    public function getProduits()
-    {
-        try {
-            $requete = self::getBdd()->query(
-                "SELECT id, nom, type, prix, quantiteActuelle FROM produit ORDER BY nom"
-            );
-            return $requete->fetchAll(PDO::FETCH_ASSOC);
-        } catch (PDOException $e) {
-            error_log("Erreur getProduits: " . $e->getMessage());
-            return [];
-        }
-    }
-
     public function supprimerProduit($id)
     {
         try {
@@ -407,7 +394,30 @@ class ModeleGestionnaire extends Connexion
             return false;
         }
     }
+    public function getStockCritique($idGestionnaire, $seuil = 15)
+    {
+        try {
+            $sql = "SELECT p.id, p.nom, p.quantiteActuelle, a.nom as nom_association
+                FROM produit p
+                JOIN gere g ON p.id = g.produit_id
+                JOIN association a ON g.association_id = a.id
+                JOIN gestionne gest ON a.id = gest.association_id
+                WHERE gest.compte_id = :id_gest 
+                AND p.quantiteActuelle <= :seuil
+                ORDER BY p.quantiteActuelle ASC";
 
+            $stmt = self::getBdd()->prepare($sql);
+            $stmt->execute([
+                'id_gest' => $idGestionnaire,
+                'seuil'   => $seuil
+            ]);
+
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Erreur getStockCritique : " . $e->getMessage());
+            return [];
+        }
+    }
     public function ajouterProduit($nom, $type, $prix, $stock)
     {
         try {
@@ -521,35 +531,6 @@ class ModeleGestionnaire extends Connexion
         }
     }
 
-    public function ajouterAssociation($nom, $adresse, $email, $telephone, $solde = 0)
-    {
-        try {
-            $requete = self::getBdd()->prepare(
-                "INSERT INTO association (nom, adresse, email, telephone, solde)
-             VALUES (?, ?, ?, ?, ?)"
-            );
-            $requete->execute([$nom, $adresse, $email, $telephone, $solde]);
-            return self::getBdd()->lastInsertId();
-        } catch (PDOException $e) {
-            error_log("Erreur ajouterAssociation: " . $e->getMessage());
-            return false;
-        }
-    }
-
-    public function supprimerAssociation($id)
-    {
-        try {
-            $requete = self::getBdd()->prepare("DELETE FROM gere WHERE association_id = ?");
-            $requete->execute([$id]);
-
-            $requete = self::getBdd()->prepare("DELETE FROM association WHERE id = ?");
-            return $requete->execute([$id]);
-        } catch (PDOException $e) {
-            error_log("L'association n'a pas pu être supprimée : " . $e->getMessage());
-            return false;
-        }
-    }
-
 
     public function getAssociationParId($id)
     {
@@ -561,25 +542,6 @@ class ModeleGestionnaire extends Connexion
             return $requete->fetch(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
             error_log("Erreur getAssociationParId: " . $e->getMessage());
-            return false;
-        }
-    }
-
-    public function modifierAssociation($id, $nom, $adresse, $email, $telephone, $solde)
-    {
-        try {
-            $requete = self::getBdd()->prepare(
-                "UPDATE association SET 
-                nom = ?,
-                adresse = ?,
-                email = ?,
-                telephone = ?,
-                solde = ?
-             WHERE id = ?"
-            );
-            return $requete->execute([$nom, $adresse, $email, $telephone, $solde, $id]);
-        } catch (PDOException $e) {
-            error_log("Erreur modifierAssociation: " . $e->getMessage());
             return false;
         }
     }
@@ -609,6 +571,72 @@ class ModeleGestionnaire extends Connexion
             return $requete->fetch(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
             error_log("Erreur getProduitParId: " . $e->getMessage());
+            return false;
+        }
+    }
+
+
+
+    public function getBarmans()
+    {
+        try {
+            $requete = self::getBdd()->query(
+                "SELECT c.id, c.nom, c.prenom, c.email, c.solde, c.role, 
+                        assos.nom as nom_association
+                 FROM compte c
+                 LEFT JOIN appartient a ON c.id = a.compte_id
+                 LEFT JOIN association assos ON a.association_id = assos.id
+                 WHERE c.role = 'barman' 
+                 OR c.id IN (
+                     SELECT compte_id FROM dispose WHERE role_id = 
+                        (SELECT id FROM role WHERE nom = 'barman')
+                 )
+                 ORDER BY c.nom, c.prenom"
+            );
+            return $requete->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Erreur getBarmans: " . $e->getMessage());
+            return [];
+        }
+    }
+
+    public function getAssociations() {
+        try {
+            $req = self::getBdd()->prepare("SELECT id, nom FROM association ORDER BY nom");
+            $req->execute();
+            return $req->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Erreur getAssociations : " . $e->getMessage());
+            return [];
+        }
+    }
+    public function validerInventaire($idAssociation, $donneesStocks) {
+        try {
+            $this->getBdd()->beginTransaction();
+
+            $stmtInv = $this->getBdd()->prepare("INSERT INTO inventaire (date_inventaire, association_id) VALUES (NOW(), ?)");
+            $stmtInv->execute([$idAssociation]);
+            $idInventaire = $this->getBdd()->lastInsertId();
+
+            $stmtDetail = $this->getBdd()->prepare("
+            INSERT INTO concerne (produit_id, inventaire_id, stock_theorique, stock_reel, perte) 
+            VALUES (?, ?, ?, ?, ?)
+        ");
+            $stmtUpdateStock = $this->getBdd()->prepare("UPDATE produit SET quantiteActuelle = ? WHERE id = ?");
+
+            foreach ($donneesStocks as $idProduit => $stockReel) {
+                $produit = $this->getProduitParId($idProduit);
+                $stockTheorique = $produit['quantiteActuelle'];
+                $perte = $stockTheorique - $stockReel;
+                $stmtDetail->execute([$idProduit, $idInventaire, $stockTheorique, $stockReel, $perte]);
+                $stmtUpdateStock->execute([$stockReel, $idProduit]);
+            }
+
+            $this->getBdd()->commit();
+            return true;
+        } catch (Exception $e) {
+            $this->getBdd()->rollBack();
+            error_log("Erreur Inventaire : " . $e->getMessage());
             return false;
         }
     }

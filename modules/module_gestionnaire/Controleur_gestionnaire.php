@@ -15,40 +15,66 @@ class ControleurGestionnaire
     {
         switch ($action) {
             case 'accueil':
-                $prenom = $_SESSION['prenom'] ?? 'Gestionnaire';
-                $id_gestionnaire = $_SESSION['id'] ?? null;
+                $idGest = $_SESSION['id'];
 
-                $associations = [];
-                if ($id_gestionnaire !== null) {
-                    $associations = $this->modele->getAssociationsParGestionnaire($id_gestionnaire);
-                }
-                $this->vue->afficherTableauDeBordAccueil($prenom, $associations);
+                $associations = $this->modele->getAssociationsParGestionnaire($idGest);
+                $pertes = $this->modele->getTotalPertes($idGest);
+                $top = $this->modele->getTopProduits($idGest);
+                $alertes = $this->modele->getStockCritique($idGest);
+
+                $data = [
+                    'associations' => $associations,
+                    'totalPertes' => $pertes,
+                    'topProduits' => $top,
+                    'alertes' => $alertes
+                ];
+
+                $this->vue->afficherTableauDeBordAccueil($_SESSION['prenom'], $data);
                 break;
 
             case 'produits':
-                $id_assos = $_SESSION['id_assos'] ?? '';
+                $id_assos = $_SESSION['id'] ?? '';
                 $produits = $this->modele->getProduitsParAssociation($id_assos);
                 $this->vue->afficherProduits($produits);
                 break;
+            case 'voirProduits':
+                $tri = $_GET['tri'] ?? 'stock';
+                $id_gestionnaire = $_SESSION['id'] ?? '';
+                $associations = $this->modele->getAssociationsParGestionnaire($id_gestionnaire);
+                $produits = $this->modele->getProduitsFiltres($id_gestionnaire, null, $tri);
 
+                $this->vue->afficherProduits($produits);
+                break;
+
+            case 'voirStockAsso':
+                $id_asso = $_GET['id_asso'] ?? null;
+                $produits = $this->modele->getProduitsFiltres(null, $id_asso);
+                $this->vue->afficherProduits($produits, "Stock de l'Association");
+                break;
             case 'ajouterProduit':
                 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-                    $id_gestionnaire = $_SESSION['id_gestionnaire'] ?? '';
-                    $associations = $this->modele->getAssociationsParGestionnaire($id_gestionnaire);
-                    $this->vue->formulaireAjoutProduit($associations);
-                } elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
-                    $produitId = $this->modele->ajouterProduit(
-                        $_POST['nom'],
-                        $_POST['type'],
-                        $_POST['prix'],
-                        $_POST['stock']
-                    );
+                    $id_compte = $_SESSION['id'] ?? $_SESSION['id'] ?? null;
 
-                    if ($produitId && isset($_POST['association_id'])) {
-                        $this->modele->lierProduitAssociation($produitId, $_POST['association_id']);
+                    $associations = $this->modele->getAssociationsParGestionnaire($id_compte);
+                    $this->vue->formulaireAjoutProduit($associations);
+
+                } elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                    $nom = htmlspecialchars($_POST['nom']);
+                    $type = $_POST['type'];
+                    $prix = floatval($_POST['prix']);
+                    $stock = intval($_POST['stock']);
+                    $assoId = $_POST['association_id'] ?? null;
+
+                    $produitId = $this->modele->ajouterProduit($nom, $type, $prix, $stock);
+
+                    if ($produitId && $assoId) {
+                        $this->modele->lierProduitAssociation($produitId, $assoId);
+                        $_SESSION['success'] = "Produit '$nom' ajouté avec succès.";
+                    } else {
+                        $_SESSION['error'] = "Échec de l'ajout du produit.";
                     }
 
-                    header('Location: index.php?action=produits');
+                    header('Location: index.php?action=voirProduits');
                     exit();
                 }
                 break;
@@ -160,44 +186,52 @@ class ControleurGestionnaire
                 $associations = $this->modele->getAssociationsParGestionnaire($id_gestionnaire);
                 $this->vue->afficherAssociationsValidees($associations);
                 break;
-
+            case 'voirProduits' :
+                $id_assos = $_GET['id'] ?? '';
+                $produits = $this->modele->getProduitsParAssociation($id_assos);
+                $this->vue->afficherProduits($produits);
+                break;
             case 'barmans':
+                $idGestionnaire = $_SESSION['id'];
+
+                $associations = $this->modele->getAssociationsParGestionnaire($idGestionnaire);
+
                 $barmans = $this->modele->getBarmans();
-                $this->vue->afficherBarmans($barmans);
+
+                $this->vue->afficherBarmans($barmans, $associations);
                 break;
 
             case 'ajouterBarman':
-                if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-                    $barmans = $this->modele->getBarmans();
-                    $this->vue->afficherBarmans($barmans);
-                } elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
-                    if (empty($_POST['nom']) || empty($_POST['prenom']) || empty($_POST['email']) || empty($_POST['mot_de_passe'])) {
-                        $_SESSION['error'] = "Tous les champs sont obligatoires";
-                        header('Location: index.php?action=ajouterBarman');
-                        exit();
-                    }
+                if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                    $clientId = $_POST['client_id'] ?? null;
+                    $assoId = $_POST['association_id'] ?? null;
 
-                    if (!filter_var($_POST['email'], FILTER_VALIDATE_EMAIL)) {
-                        $_SESSION['error'] = "Format d'email invalide";
-                        header('Location: index.php?action=ajouterBarman');
-                        exit();
-                    }
+                    if ($clientId && $assoId) {
+                        $res = $this->modele->ajouterClientCommeBarman($clientId, $assoId);
 
-                    $barmanId = $this->modele->ajouterBarman(
-                        $_POST['nom'],
-                        $_POST['prenom'],
-                        $_POST['email'],
-                        $_POST['mot_de_passe']
-                    );
-
-                    if ($barmanId) {
-                        $_SESSION['success'] = "Barman ajouté avec succès !";
+                        if ($res) {
+                            $_SESSION['success'] = "Barman ajouté avec succès";
+                            header('Location: index.php?action=barmans');
+                            exit();
+                        } else {
+                            die("Erreur lors de l'insertion en base de données.");
+                        }
                     } else {
-                        $_SESSION['error'] = "Erreur lors de l'ajout du barman (email peut-être déjà utilisé)";
+                        header('Location: index.php?action=ajouterBarman&error=missing_data');
+                        exit();
                     }
-                    header('Location: index.php?action=barmans');
-                    exit();
+                } else {
+                    $q = $_GET['q'] ?? '';
+                    $clients = $this->modele->rechercherClients($q);
+                    $associations = $this->modele->getAssociationsParGestionnaire($_SESSION['id']);
+                    $this->vue->formulaireAjouterBarman($clients, $associations);
                 }
+                break;
+
+            case 'afficherBarmans':
+                $barmans = $this->modele->getBarmans();
+                $associations = $this->modele->getAssociations();
+                $this->vue->afficherBarmans($barmans, $associations);
                 break;
             case 'toggleBarman':
                 if (isset($_GET['id'])) {
@@ -208,19 +242,6 @@ class ControleurGestionnaire
                         $_SESSION['success'] = "Barman " . (!$estActif ? "activé" : "désactivé") . " avec succès";
                     } else {
                         $_SESSION['error'] = "Erreur lors de la modification du statut";
-                    }
-                    header('Location: index.php?action=barmans');
-                    exit();
-                }
-                break;
-
-            case 'reinitialiserMdpBarman':
-                if (isset($_GET['id'])) {
-                    $nouveauMdp = $this->modele->reinitialiserMotDePasseBarman($_GET['id']);
-                    if ($nouveauMdp) {
-                        $_SESSION['success'] = "Mot de passe réinitialisé. Nouveau mot de passe temporaire : <strong>" . $nouveauMdp . "</strong>";
-                    } else {
-                        $_SESSION['error'] = "Erreur lors de la réinitialisation du mot de passe";
                     }
                     header('Location: index.php?action=barmans');
                     exit();
@@ -251,8 +272,21 @@ class ControleurGestionnaire
                 break;
 
             case 'clients':
-                $utilisateurs = $this->modele->getClients();
+                $utilisateurs = $this->modele->getTousLesClients();
                 $this->vue->afficherUtilisateurs($utilisateurs);
+                break;
+            case 'voirListeClients':
+                $idAsso = $_GET['id'] ?? $_SESSION['id_association'] ?? null;
+
+                $association = $this->modele->getAssociationParId($idAsso);
+                if ($association) {
+                    $clients = $this->modele->getClientsParAssociation($association['id']);
+                    $this->vue->afficherClients($clients);
+                } else {
+                    $_SESSION['error'] = "Aucune association trouvée.";
+                    header("Location: index.php?action=accueil");
+                    exit;
+                }
                 break;
 
             case 'statistiques':
@@ -267,19 +301,39 @@ class ControleurGestionnaire
                 break;
 
             case 'ajouterStock':
-                if (isset($_GET['id'])) {
-                    $produit = $this->modele->getProduitParId($_GET['id']);
-                    if ($produit) {
-                        $this->vue->formulaireAjoutStock($produit);
-                    }
+                $id_produit = $_GET['id'] ?? null;
+
+                if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+                    $produit = $this->modele->getProduitParId($id_produit);
+                    $this->vue->formulaireStock($produit);
+
                 } elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
-                    $success = $this->modele->ajouterStock($_POST['id'], $_POST['quantite']);
+                    $quantiteAjoutee = intval($_POST['quantite']);
+                    $id = $_POST['id_produit'];
+                    $this->modele->updateStock($id, $quantiteAjoutee);
+                    header('Location: index.php?action=voirProduits');
+                    exit();
+                }
+                break;
+            case 'faireInventaire':
+                $id_assos = $_GET['id'] ?? $_SESSION['id_assos'];
+                $produits = $this->modele->getProduitsParAssociation($id_assos);
+                $this->vue->formulaireInventaire($produits, $id_assos);
+                break;
+
+            case 'enregistrerInventaire':
+                if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                    $id_assos = $_POST['association_id'];
+                    $stocksReels = $_POST['stock_reel'];
+
+                    $success = $this->modele->validerInventaire($id_assos, $stocksReels);
+
                     if ($success) {
-                        $_SESSION['success'] = "Stock mis à jour avec succès";
+                        $_SESSION['success'] = "Inventaire enregistré et stocks mis à jour.";
                     } else {
-                        $_SESSION['error'] = "Erreur lors de la mise à jour du stock";
+                        $_SESSION['error'] = "Erreur lors de l'enregistrement de l'inventaire.";
                     }
-                    header('Location: index.php?action=stock');
+                    header("Location: index.php?action=gererAssociation&id=$id_assos");
                     exit();
                 }
                 break;
