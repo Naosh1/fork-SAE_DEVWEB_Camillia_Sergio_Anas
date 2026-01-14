@@ -12,13 +12,7 @@ class Mod_barman
     {
         $this->controleur = new Controleur_Barman();
 
-        if (isset($_POST['action'])) {
-            $action = $_POST['action'];
-        } elseif (isset($_GET['action'])) {
-            $action = $_GET['action'];
-        } else {
-            $action = 'accueil';
-        }
+        $action = $_POST['action'] ?? $_GET['action'] ?? 'accueil';
 
         error_log("Mod_barman: action = '$action'");
 

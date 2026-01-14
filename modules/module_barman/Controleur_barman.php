@@ -14,50 +14,119 @@ class Controleur_barman {
 
         switch ($action) {
             case 'accueil':
-                $this->vue->afficherAccueil();
+                $this->afficherAccueil();
                 break;
             case 'afficherProduits':
-                $produits = $this->modele->listerProduits();
-                $this->vue->afficherProduits($produits);
+                $this->afficherProduits();
                 break;
             case 'rechercherClient':
-                $clients = [];
-                if (isset($_GET['search'])) {
-                    $clients = $this->modele->rechercherClient($_GET['search']);
-                }
-                $this->vue->afficherClients($clients);
+                $this->rechercherClient();
                 break;
             case 'commandesEnCours':
-                $commandes = $this->modele->listerCommandesEnCours();
-                $this->vue->afficherCommandes($commandes);
+                $this->afficherCommandes();
                 break;
             case 'detailCommande':
-                if (!isset($_GET['id'])) {
-                    $this->vue->afficherErreur("Aucun ID de commande spécifié");
-                    break;
-                }
-                $commande = $this->modele->getCommande($_GET['id']);
-                $produits = $this->modele->getProduitsCommande($_GET['id']);
-                $this->vue->afficherDetailCommande($commande, $produits);
+                $this->afficherDetailCommande();
                 break;
             case 'creerTransaction':
-                $produits = $this->modele->listerProduits();
-                $this->vue->afficherFormTransaction($produits);
+                $this->afficherFormTransaction();
                 break;
             case 'traiterTransaction':
-                error_log("Case traiterTransaction appelé");
                 $this->traiterTransaction();
+                break;
+            case 'historiqueCommandes':
+                $this->afficherHistoriqueCommandes();
+                break;
+            case 'derniereTransaction':
+                $this->afficherDerniereTransaction();
+                break;
+            case 'annulerTransaction':
+                $this->annulerTransaction();
                 break;
             default:
                 error_log("Action non reconnue: '$action', affichage accueil par défaut");
-                $this->vue->afficherAccueil();
+                $this->afficherAccueil();
                 break;
         }
     }
 
-    private function traiterTransaction() {
+    private function afficherAccueil()
+    {
+        $this->vue->afficherAccueil();
+    }
+
+    private function afficherProduits()
+    {
+        $produits = $this->modele->listerProduits();
+        $this->vue->afficherProduits($produits);
+    }
+
+    private function rechercherClient()
+    {
+        $clients = [];
+        $search = $_GET['search'] ?? null;
+
+        if ($search) {
+            $clients = $this->modele->rechercherClient($search);
+        }
+
+        $this->vue->afficherClients($clients, $search);
+    }
+
+    private function afficherCommandes()
+    {
+        $commandes = $this->modele->listerCommandesEnCours();
+        $this->vue->afficherCommandes($commandes);
+    }
+
+    private function afficherDetailCommande()
+    {
+        $id = $_GET['id'] ?? null;
+
+        if (!$id) {
+            $this->vue->afficherErreur("Aucun ID de commande spécifié");
+            return;
+        }
+
+        $commande = $this->modele->getCommande($id);
+        $produits = $this->modele->getProduitsCommande($id);
+        $this->vue->afficherDetailCommande($commande, $produits);
+    }
+
+    private function afficherHistoriqueCommandes() {
+        $commandes = $this->modele->getHistoriqueCommandes();
+        $this->vue->afficherHistoriqueCommandes($commandes);
+    }
+
+    private function afficherDerniereTransaction() {
+        $transaction = $this->modele->getDerniereTransaction();
+        $this->vue->afficherDerniereTransaction($transaction);
+    }
+
+    private function annulerTransaction() {
+        $transaction_id = $_POST['transaction_id'] ?? null;
+
+        if (!$transaction_id) {
+            $this->vue->afficherErreur("Aucune transaction spécifiée");
+            return;
+        }
+
+        if ($this->modele->annulerTransaction($transaction_id)) {
+            $this->vue->afficherConfirmationAnnulation($transaction_id);
+        } else {
+            $this->vue->afficherErreur("Échec de l'annulation de la transaction");
+        }
+    }
+
+    private function afficherFormTransaction($erreur = null, $donneesSaisies = null)
+    {
+        $produits = $this->modele->listerProduits();
+        $this->vue->afficherFormTransaction($produits, $erreur, $donneesSaisies);
+    }
+
+    private function traiterTransaction()
+    {
         try {
-            // DEBUG: Vérifier ce qui est reçu
             error_log("DEBUG: POST reçu: " . print_r($_POST, true));
 
             if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -68,118 +137,108 @@ class Controleur_barman {
             $client_id = isset($_POST['client_id']) ? (int)$_POST['client_id'] : 0;
             $produits = $_POST['produits'] ?? [];
 
-            error_log("DEBUG: Client ID: " . $client_id);
-            error_log("DEBUG: Produits reçus: " . print_r($produits, true));
-
             if ($client_id <= 0) {
-                $produitsListe = $this->modele->listerProduits();
-                $this->vue->afficherFormTransaction($produitsListe, "L'ID client doit être un nombre positif", $_POST);
+                $this->afficherFormTransaction("L'ID client doit être un nombre positif", $_POST);
                 return;
             }
 
             if (empty($produits) || !is_array($produits)) {
-                $produitsListe = $this->modele->listerProduits();
-                $this->vue->afficherFormTransaction($produitsListe, "Aucun produit sélectionné", $_POST);
+                $this->afficherFormTransaction("Aucun produit sélectionné", $_POST);
                 return;
             }
 
             $soldeClient = $this->modele->getSoldeClient($client_id);
-            error_log("DEBUG: Solde client récupéré: " . $soldeClient);
-
             if ($soldeClient === false) {
-                $produitsListe = $this->modele->listerProduits();
-                $this->vue->afficherFormTransaction($produitsListe, "Client non trouvé (ID: $client_id)", $_POST);
+                $this->afficherFormTransaction("Client non trouvé (ID: $client_id)", $_POST);
                 return;
             }
 
-            $produitsValides = [];
-            $erreurs = [];
-            $produitsIds = [];
-            $montantTotal = 0;
+            $resultatValidation = $this->validerProduits($produits);
 
-            foreach ($produits as $index => $produit) {
-                $produit_id = isset($produit['id']) ? (int)$produit['id'] : 0;
-                $quantite = isset($produit['quantite']) ? (int)$produit['quantite'] : 0;
-
-                if ($produit_id <= 0) {
-                    $erreurs[] = "Produit #" . ($index + 1) . ": ID invalide";
-                    continue;
-                }
-
-                if ($quantite <= 0) {
-                    $erreurs[] = "Produit #" . ($index + 1) . ": Quantité invalide";
-                    continue;
-                }
-
-                if (in_array($produit_id, $produitsIds)) {
-                    $erreurs[] = "Le produit ID $produit_id est en double";
-                    continue;
-                }
-                $produitsIds[] = $produit_id;
-
-                $infoProduit = $this->modele->getInfoProduit($produit_id);
-                if (!$infoProduit) {
-                    $erreurs[] = "Produit ID $produit_id non trouvé";
-                    continue;
-                }
-
-                if ($quantite > $infoProduit['disponibilite']) {
-                    $erreurs[] = "Stock insuffisant pour " . $infoProduit['nom'] . " (demandé: $quantite, disponible: " . $infoProduit['disponibilite'] . ")";
-                    continue;
-                }
-
-                $produitsValides[] = [
-                    'id' => $produit_id,
-                    'quantite' => $quantite,
-                    'prix' => (float)$infoProduit['prix']
-                ];
-
-                $montantTotal += $quantite * $infoProduit['prix'];
-            }
-
-            if (!empty($erreurs)) {
-                $produitsListe = $this->modele->listerProduits();
-                $this->vue->afficherFormTransaction($produitsListe, implode("<br>", $erreurs), $_POST);
+            if (!empty($resultatValidation['erreurs'])) {
+                $this->afficherFormTransaction(implode("<br>", $resultatValidation['erreurs']), $_POST);
                 return;
             }
 
-            if (empty($produitsValides)) {
-                $produitsListe = $this->modele->listerProduits();
-                $this->vue->afficherFormTransaction($produitsListe, "Aucun produit valide", $_POST);
+            if (empty($resultatValidation['produitsValides'])) {
+                $this->afficherFormTransaction("Aucun produit valide", $_POST);
                 return;
             }
 
-            error_log("DEBUG: Montant total calculé: " . $montantTotal);
-            error_log("DEBUG: Solde client: " . $soldeClient);
-
+            $montantTotal = $resultatValidation['montantTotal'];
             if ($soldeClient < $montantTotal) {
-                $produitsListe = $this->modele->listerProduits();
                 $erreurSolde = "Solde insuffisant. Solde du client: $soldeClient €, Total transaction: $montantTotal €";
-                $this->vue->afficherFormTransaction($produitsListe, $erreurSolde, $_POST);
+                $this->afficherFormTransaction($erreurSolde, $_POST);
                 return;
             }
 
-            error_log("DEBUG: Appel de creerTransaction...");
-            $resultat = $this->modele->creerTransaction($produitsValides, $client_id);
-            error_log("DEBUG: Résultat de creerTransaction: " . ($resultat ? $resultat : "false"));
+            $vente_id = $this->modele->creerTransaction($resultatValidation['produitsValides'], $client_id, $montantTotal);
 
-            if ($resultat) {
-                error_log("DEBUG: Transaction créée avec ID: " . $resultat);
-                foreach ($produitsValides as $produit) {
-                    $this->modele->updateStock($produit['id'], $produit['quantite']);
-                }
-
-                $this->vue->afficherResultatTransaction($resultat);
+            if ($vente_id) {
+                error_log("DEBUG: Transaction créée avec ID: " . $vente_id);
+                $this->vue->afficherResultatTransaction($vente_id);
             } else {
                 error_log("DEBUG: Échec de creerTransaction");
-                $produitsListe = $this->modele->listerProduits();
-                $this->vue->afficherFormTransaction($produitsListe, "Erreur lors de la création de la transaction (solde insuffisant ou autre erreur)", $_POST);
+                $this->afficherFormTransaction("Erreur lors de la création de la transaction", $_POST);
             }
 
         } catch (Exception $e) {
             error_log("DEBUG: Exception attrapée: " . $e->getMessage());
-            $produitsListe = $this->modele->listerProduits();
-            $this->vue->afficherFormTransaction($produitsListe, "Erreur technique: " . $e->getMessage(), $_POST);
+            $this->afficherFormTransaction("Erreur technique: " . $e->getMessage(), $_POST);
         }
+    }
+
+    private function validerProduits($produits)
+    {
+        $produitsValides = [];
+        $erreurs = [];
+        $produitsIds = [];
+        $montantTotal = 0;
+
+        foreach ($produits as $index => $produit) {
+            $produit_id = isset($produit['id']) ? (int)$produit['id'] : 0;
+            $quantite = isset($produit['quantite']) ? (int)$produit['quantite'] : 0;
+
+            if ($produit_id <= 0) {
+                $erreurs[] = "Produit #" . ($index + 1) . ": ID invalide";
+                continue;
+            }
+
+            if ($quantite <= 0) {
+                $erreurs[] = "Produit #" . ($index + 1) . ": Quantité invalide";
+                continue;
+            }
+
+            if (in_array($produit_id, $produitsIds)) {
+                $erreurs[] = "Le produit ID $produit_id est en double";
+                continue;
+            }
+            $produitsIds[] = $produit_id;
+
+            $infoProduit = $this->modele->getInfoProduit($produit_id);
+            if (!$infoProduit) {
+                $erreurs[] = "Produit ID $produit_id non trouvé";
+                continue;
+            }
+
+            if ($quantite > $infoProduit['disponibilite']) {
+                $erreurs[] = "Stock insuffisant pour " . $infoProduit['nom'] . " (demandé: $quantite, disponible: " . $infoProduit['disponibilite'] . ")";
+                continue;
+            }
+
+            $produitsValides[] = [
+                'id' => $produit_id,
+                'quantite' => $quantite,
+                'prix' => (float)$infoProduit['prix']
+            ];
+
+            $montantTotal += $quantite * $infoProduit['prix'];
+        }
+
+        return [
+            'produitsValides' => $produitsValides,
+            'erreurs' => $erreurs,
+            'montantTotal' => $montantTotal
+        ];
     }
 }

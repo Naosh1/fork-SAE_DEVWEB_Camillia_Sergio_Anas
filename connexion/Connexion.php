@@ -1,5 +1,5 @@
 <?php
-    class Connexion {
+  /*  class Connexion {
         private static $bdd = null;
         private static $dsn = 'mysql:dbname=dutinfopw201654;host=database-etudiants.iut.univ-paris8.fr';
         private static $user = 'dutinfopw201654';
@@ -21,8 +21,8 @@
         }
 
     }
-
-/*class Connexion
+*/
+class Connexion
 {
     private static $bdd = null;
     private static $dsn = 'mysql:dbname=buvette;host=127.0.0.1';
@@ -47,4 +47,4 @@
         return self::$bdd;
     }
 
-}*/
+}
