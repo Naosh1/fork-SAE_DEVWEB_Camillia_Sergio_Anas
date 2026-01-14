@@ -4,26 +4,6 @@ include_once '../connexion/Connexion.php';
 class ModeleGestionnaire extends Connexion
 {
 
-    public function getClientsParAssos($id_assos)
-    {
-        try {
-            $requete = self::getBdd()->prepare(
-                "SELECT c.id, c.nom, c.prenom, c.email, c.solde
-             FROM compte c
-             WHERE c.role = 'client'
-             AND c.association_id = ?
-             ORDER BY c.nom, c.prenom"
-            );
-
-            $requete->execute([$id_assos]);
-            return $requete->fetchAll(PDO::FETCH_ASSOC);
-
-        } catch (PDOException $e) {
-            error_log("Erreur de getClientsParAssos : " . $e->getMessage());
-            return [];
-        }
-    }
-
     public function getClients()
     {
         try {
@@ -66,16 +46,16 @@ class ModeleGestionnaire extends Connexion
         }
     }
 
-    public function getBarmansParAssociation($associationId) {
+    public function getBarmansParAssociation($associationId)
+    {
         try {
             $stmt = self::getBdd()->prepare("
-            SELECT c.* 
+            SELECT c.id, c.nom, c.prenom, c.email, c.solde, c.role
             FROM compte c
-            JOIN dispose d ON c.id = d.compte_id
-            JOIN role r ON d.role_id = r.id
-            JOIN gestionne g ON g.compte_id = c.id
-            WHERE r.nom = 'barman'
-            AND g.association_id = :id
+            JOIN appartient a ON c.id = a.compte_id
+            WHERE a.association_id = :id
+            AND c.role = 'barman'
+            ORDER BY c.nom, c.prenom
         ");
             $stmt->execute(['id' => $associationId]);
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -86,8 +66,8 @@ class ModeleGestionnaire extends Connexion
     }
 
 
-
-    public function getProduitsParAssociation($associationId) {
+    public function getProduitsParAssociation($associationId)
+    {
         try {
             $stmt = self::getBdd()->prepare("
             SELECT p.*
@@ -104,26 +84,29 @@ class ModeleGestionnaire extends Connexion
     }
 
 
-    public function getClientsParAssociation($associationId) {
+    public function getClientsParAssociation($associationId)
+    {
         try {
             $stmt = self::getBdd()->prepare("
-            SELECT DISTINCT c.*
+            SELECT c.id, c.nom, c.prenom, c.email, c.solde, c.role
             FROM compte c
-            JOIN vente v ON c.id = v.compte_id
-            JOIN contient ct ON v.id = ct.vente_id
-            JOIN produit p ON ct.produit_id = p.id
-            JOIN gere g ON p.id = g.produit_id
-            WHERE g.association_id = :id
+            JOIN appartient a ON c.id = a.compte_id
+            WHERE a.association_id = :id
             AND c.role = 'client'
         ");
             $stmt->execute(['id' => $associationId]);
-            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $clients = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            foreach ($clients as &$client) {
+                if (!isset($client['solde'])) $client['solde'] = 0;
+            }
+
+            return $clients;
         } catch (PDOException $e) {
             error_log("Erreur getClientsParAssociation: " . $e->getMessage());
             return [];
         }
     }
-
 
 
     public function getBarmanParId($id)
@@ -336,26 +319,36 @@ class ModeleGestionnaire extends Connexion
             return false;
         }
     }
+
+
+    public function accepterAssociation($assoId, $idGestionnaire)
+    {
+        $sql = "INSERT INTO gestionne (compte_id, association_id) VALUES (:compte_id, :association_id)";
+        $stmt = self::getBdd()->prepare($sql);
+        return $stmt->execute([
+            ':compte_id' => $idGestionnaire,
+            ':association_id' => $assoId
+        ]);
+    }
+
+
     public function getAssociationsParGestionnaire($id_gestionnaire)
     {
         try {
-            $requete = self::getBdd()->prepare(
-                "SELECT a.id, a.nom, a.adresse, a.email, a.telephone, a.solde
-             FROM association a
-             JOIN gestionne g ON g.association_id = a.id
-             JOIN compte c ON c.id = g.compte_id
-             JOIN dispose d ON d.compte_id = c.id
-             JOIN role r ON r.id = d.role_id
-             WHERE c.id = ?
-             AND r.nom = 'gestionnaire'
-             ORDER BY a.nom"
-            );
+            $sql = "
+            SELECT a.id, a.nom, a.adresse, a.email, a.telephone, a.solde
+            FROM association a
+            JOIN gestionne g ON g.association_id = a.id
+            WHERE g.compte_id = ?
+        ";
 
-            $requete->execute([$id_gestionnaire]);
-            return $requete->fetchAll(PDO::FETCH_ASSOC);
+            $stmt = self::getBdd()->prepare($sql);
+            $stmt->execute([$id_gestionnaire]);
+
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         } catch (PDOException $e) {
-            error_log("Erreur getAssociationsParGestionnaire : " . $e->getMessage());
+            error_log('Erreur getAssociationsParGestionnaire : ' . $e->getMessage());
             return [];
         }
     }
@@ -373,6 +366,23 @@ class ModeleGestionnaire extends Connexion
             return [];
         }
     }
+
+    public function getDetailsAssos($idAssociation)
+    {
+        $assos = $this->getAssociationParId($idAssociation);
+        if (!$assos) return null;
+
+        $assos['produits'] = $this->getProduitsParAssociation($idAssociation);
+        $assos['clients'] = $this->getClientsParAssociation($idAssociation);
+        $assos['barmans'] = $this->getBarmansParAssociation($idAssociation);
+
+        $assos['nb_clients'] = count($assos['clients']);
+        $assos['nb_produits'] = count($assos['produits']);
+        $assos['nb_barmans'] = count($assos['barmans']);
+
+        return $assos;
+    }
+
 
     public function getProduits()
     {
@@ -570,6 +580,19 @@ class ModeleGestionnaire extends Connexion
             return $requete->execute([$nom, $adresse, $email, $telephone, $solde, $id]);
         } catch (PDOException $e) {
             error_log("Erreur modifierAssociation: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    public function modifierProduit($id, $nom, $type, $prix, $stock)
+    {
+        try {
+            $requete = self::getBdd()->prepare(
+                "UPDATE produit SET nom = ?, type = ?, prix = ?, quantiteActuelle = ? WHERE id = ?"
+            );
+            return $requete->execute([$nom, $type, $prix, $stock, $id]);
+        } catch (PDOException $e) {
+            error_log("Erreur modifierProduit: " . $e->getMessage());
             return false;
         }
     }

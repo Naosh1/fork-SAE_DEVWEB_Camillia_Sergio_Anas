@@ -15,17 +15,26 @@ class ControleurGestionnaire
     {
         switch ($action) {
             case 'accueil':
-                $this->vue->afficherAccueil();
+                $prenom = $_SESSION['prenom'] ?? 'Gestionnaire';
+                $id_gestionnaire = $_SESSION['id'] ?? null;
+
+                $associations = [];
+                if ($id_gestionnaire !== null) {
+                    $associations = $this->modele->getAssociationsParGestionnaire($id_gestionnaire);
+                }
+                $this->vue->afficherTableauDeBordAccueil($prenom, $associations);
                 break;
 
             case 'produits':
-                $produits = $this->modele->getProduits();
+                $id_assos = $_SESSION['id_assos'] ?? '';
+                $produits = $this->modele->getProduitsParAssociation($id_assos);
                 $this->vue->afficherProduits($produits);
                 break;
 
             case 'ajouterProduit':
                 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-                    $associations = $this->modele->getAssociations();
+                    $id_gestionnaire = $_SESSION['id_gestionnaire'] ?? '';
+                    $associations = $this->modele->getAssociationsParGestionnaire($id_gestionnaire);
                     $this->vue->formulaireAjoutProduit($associations);
                 } elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $produitId = $this->modele->ajouterProduit(
@@ -84,8 +93,53 @@ class ControleurGestionnaire
                     exit();
                 }
                 break;
+            case 'voirAssociation':
+                $id_assos = $_GET['id'] ?? '';
+                if ($id_assos) {
+                    $assos = $this->modele->getDetailsAssos($id_assos);
+                    if ($assos) {
+                        $this->vue->afficherDetailsAssos($assos);
+                    } else {
+                        $_SESSION['error'] = "Association introuvable.";
+                        header('Location: index.php?action=associations');
+                        exit();
+                    }
+                } else {
+                    $_SESSION['error'] = "ID d'association manquant.";
+                    header('Location: index.php?action=associations');
+                    exit();
+                }
+                break;
+
+
+            case 'accepterAssociation':
+                if (isset($_GET['id'])) {
+                    $assoId = $_GET['id'];
+                    $association = $this->modele->getAssociationParId($assoId);
+                    if (!$association) {
+                        $_SESSION['error'] = "Association non trouvée";
+                        header('Location: index.php?action=associations');
+                        exit();
+                    }
+                    if ($association['status'] !== 'validee') {
+                        $_SESSION['error'] = "Association non validée";
+                        header('Location: index.php?action=associations');
+                        exit();
+                    }
+                    $idGestionnaire = $_SESSION['id'] ?? null;
+                    if ($idGestionnaire) {
+                        $this->modele->accepterAssociation($assoId, $idGestionnaire);
+                        $_SESSION['success'] = "Association acceptée avec succès";
+                    }
+
+                    header('Location: index.php?action=associations');
+                    exit();
+                }
+                break;
+
             case 'gererAssociation':
                 if (isset($_GET['id'])) {
+
                     $assoId = $_GET['id'];
                     $association = $this->modele->getAssociationParId($assoId);
                     if ($association) {
@@ -101,80 +155,10 @@ class ControleurGestionnaire
                 }
                 break;
 
-
             case 'associations':
-                $associations = $this->modele->getAssociations();
-                $this->vue->afficherAssociations($associations);
-                break;
-
-            case 'ajouterAssociation':
-                if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-                    $this->vue->formulaireAjoutAssociation();
-                } elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
-                    if (empty($_POST['nom']) || empty($_POST['adresse']) || empty($_POST['email']) || empty($_POST['telephone'])) {
-                        $_SESSION['error'] = "Tous les champs sont obligatoires";
-                        header('Location: index.php?action=ajouterAssociation');
-                        exit();
-                    }
-
-                    $associationId = $this->modele->ajouterAssociation(
-                        $_POST['nom'],
-                        $_POST['adresse'],
-                        $_POST['email'],
-                        $_POST['telephone'],
-                        $_POST['solde'] ?? 0.00
-                    );
-
-                    if ($associationId) {
-                        $_SESSION['success'] = "Association ajoutée avec succès !";
-                    } else {
-                        $_SESSION['error'] = "Erreur lors de l'ajout de l'association";
-                    }
-                    header('Location: index.php?action=associations');
-                    exit();
-                }
-                break;
-
-            case 'modifierAssociation':
-                if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['id'])) {
-                    $association = $this->modele->getAssociationParId($_GET['id']);
-                    if ($association) {
-                        $this->vue->formulaireModificationAssociation($association);
-                    } else {
-                        $_SESSION['error'] = "Association non trouvée";
-                        header('Location: index.php?action=associations');
-                        exit();
-                    }
-                } elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
-                    $success = $this->modele->modifierAssociation(
-                        $_POST['id'],
-                        $_POST['nom'],
-                        $_POST['adresse'],
-                        $_POST['email'],
-                        $_POST['telephone'],
-                        $_POST['solde']
-                    );
-                    if ($success) {
-                        $_SESSION['success'] = "Association modifiée avec succès";
-                    } else {
-                        $_SESSION['error'] = "Erreur lors de la modification";
-                    }
-                    header('Location: index.php?action=associations');
-                    exit();
-                }
-                break;
-
-            case 'supprimerAssociation':
-                if (isset($_GET['id'])) {
-                    $success = $this->modele->supprimerAssociation($_GET['id']);
-                    if ($success) {
-                        $_SESSION['success'] = "Association supprimée avec succès";
-                    } else {
-                        $_SESSION['error'] = "Erreur lors de la suppression";
-                    }
-                    header('Location: index.php?action=associations');
-                    exit();
-                }
+                $id_gestionnaire = $_SESSION['id'] ?? '';
+                $associations = $this->modele->getAssociationsParGestionnaire($id_gestionnaire);
+                $this->vue->afficherAssociationsValidees($associations);
                 break;
 
             case 'barmans':
@@ -184,7 +168,8 @@ class ControleurGestionnaire
 
             case 'ajouterBarman':
                 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-                    $this->vue->formulaireAjoutBarman();
+                    $barmans = $this->modele->getBarmans();
+                    $this->vue->afficherBarmans($barmans);
                 } elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     if (empty($_POST['nom']) || empty($_POST['prenom']) || empty($_POST['email']) || empty($_POST['mot_de_passe'])) {
                         $_SESSION['error'] = "Tous les champs sont obligatoires";
@@ -214,65 +199,6 @@ class ControleurGestionnaire
                     exit();
                 }
                 break;
-
-            case 'modifierBarman':
-                if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['id'])) {
-                    $barman = $this->modele->getBarmanParId($_GET['id']);
-                    if ($barman) {
-                        $this->vue->formulaireModificationBarman($barman);
-                    } else {
-                        $_SESSION['error'] = "Barman non trouvé";
-                        header('Location: index.php?action=barmans');
-                        exit();
-                    }
-                } elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
-                    if (empty($_POST['nom']) || empty($_POST['prenom']) || empty($_POST['email'])) {
-                        $_SESSION['error'] = "Tous les champs obligatoires doivent être remplis";
-                        header('Location: index.php?action=modifierBarman&id=' . $_POST['id']);
-                        exit();
-                    }
-
-                    if (!filter_var($_POST['email'], FILTER_VALIDATE_EMAIL)) {
-                        $_SESSION['error'] = "Format d'email invalide";
-                        header('Location: index.php?action=modifierBarman&id=' . $_POST['id']);
-                        exit();
-                    }
-
-                    $changerMdp = isset($_POST['changer_mdp']) && $_POST['changer_mdp'] == 'on';
-
-                    if ($changerMdp) {
-                        if (empty($_POST['nouveau_mot_de_passe']) || empty($_POST['confirmer_mot_de_passe'])) {
-                            $_SESSION['error'] = "Les champs de mot de passe doivent être remplis";
-                            header('Location: index.php?action=modifierBarman&id=' . $_POST['id']);
-                            exit();
-                        }
-
-                        if ($_POST['nouveau_mot_de_passe'] !== $_POST['confirmer_mot_de_passe']) {
-                            $_SESSION['error'] = "Les mots de passe ne correspondent pas";
-                            header('Location: index.php?action=modifierBarman&id=' . $_POST['id']);
-                            exit();
-                        }
-                    }
-
-                    $success = $this->modele->modifierBarman(
-                        $_POST['id'],
-                        $_POST['nom'],
-                        $_POST['prenom'],
-                        $_POST['email'],
-                        $changerMdp,
-                        $changerMdp ? $_POST['nouveau_mot_de_passe'] : null
-                    );
-
-                    if ($success) {
-                        $_SESSION['success'] = "Barman modifié avec succès";
-                    } else {
-                        $_SESSION['error'] = "Erreur lors de la modification";
-                    }
-                    header('Location: index.php?action=barmans');
-                    exit();
-                }
-                break;
-
             case 'toggleBarman':
                 if (isset($_GET['id'])) {
                     $estActif = $this->modele->estBarmanActif($_GET['id']);
