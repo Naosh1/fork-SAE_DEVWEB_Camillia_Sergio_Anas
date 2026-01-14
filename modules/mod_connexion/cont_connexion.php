@@ -35,11 +35,9 @@ class ControllerConnexion
 
             case 'deconnexion':
                 $this->modele->deconnexion();
-                // Après la déconnexion, ne plus rien faire, la redirection est déjà faite
                 exit();
         }
 
-        // Si l'utilisateur est connecté, afficher l'interface client
         if (isset($_SESSION['login'])) {
             $this->vue->afficherInterfaceClient();
         }

@@ -6,25 +6,28 @@ class ModeleConnexion extends Connexion
 {
     public static function connexion()
     {
-
         if (isset($_POST['login']) && isset($_POST['password'])) {
-            $login = htmlspecialchars($_POST['login']);
+            $email = htmlspecialchars($_POST['login']);
             $password = htmlspecialchars($_POST['password']);
 
-            $query = self::getBdd()->prepare("SELECT login, password FROM utilisateur WHERE login = :login");
-            $query->bindValue(':login', $login);
+            $query = self::getBdd()->prepare("SELECT * FROM compte WHERE email = :email");
+            $query->bindValue(':email', $email);
             $query->execute();
 
             $user = $query->fetch();
-            if ($user && password_verify($password, $user['password'])) {
-                $_SESSION['login'] = $login;
-                echo 'Connexion reussite !';
-            }else{
-                echo 'Erreur : login ou mot de passe incorrect';
+
+            if ($user && password_verify($password, $user['mdp'])) {
+                $_SESSION['id'] = $user['id'];
+                $_SESSION['login'] = $user['email'];
+                $_SESSION['prenom'] = $user['prenom'];
+                $_SESSION['photo'] = $user['photo'];
+
+                echo 'Connexion réussie !';
+            } else {
+                echo 'Erreur : email ou mot de passe incorrect';
             }
         }
     }
-
     public function deconnexion() {
         session_start();
         session_unset();

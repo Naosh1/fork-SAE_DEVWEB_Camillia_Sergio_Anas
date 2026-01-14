@@ -18,34 +18,89 @@ class ControleurGestionnaire
                 $idGest = $_SESSION['id'];
 
                 $associations = $this->modele->getAssociationsParGestionnaire($idGest);
-                $pertes = $this->modele->getTotalPertes($idGest);
-                $top = $this->modele->getTopProduits($idGest);
                 $alertes = $this->modele->getStockCritique($idGest);
+                $top = $this->modele->getTopProduits($idGest);
+                $pertes = $this->modele->getTotalPertes($idGest);
+
+                $barmans = $this->modele->getBarmans();
 
                 $data = [
                     'associations' => $associations,
-                    'totalPertes' => $pertes,
+                    'alertes' => $alertes,
                     'topProduits' => $top,
-                    'alertes' => $alertes
+                    'totalPertes' => $pertes,
+                    'nbBarmans' => count($barmans),
+                    'nbAssos' => count($associations)
                 ];
 
                 $this->vue->afficherTableauDeBordAccueil($_SESSION['prenom'], $data);
                 break;
+            case 'profil':
+                $id_user = $_SESSION['id'];
+                $user = $this->modele->getUtilisateur($id_user);
+                $_SESSION['photo'] = $user['photo'];
+                $this->vue->afficherProfil($user);
+                break;
+            case 'updateProfil':
+                if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                    $id_user = $_SESSION['id'];
+                    $nom = htmlspecialchars($_POST['nom']);
+                    $prenom = htmlspecialchars($_POST['prenom']);
+                    $email = htmlspecialchars($_POST['email']);
+                    $tel = preg_replace('/[^0-9+]/', '', $_POST['tel']);
+                    if (strlen($tel) > 15) {
+                        header("Location: index.php?action=profil&error=tel_trop_long");
+                        exit();
+                    }
 
+                    $old_password = $_POST['old_password'] ?? '';
+                    $new_password = $_POST['new_password'] ?? '';
+                    $user = $this->modele->getUtilisateur($id_user);
+                    $password_hash = null;
+
+                    if (!empty($old_password)) {
+                        if (!password_verify($old_password, $user['mdp'])) {
+                            header("Location: index.php?action=profil&error=password_incorrect");
+                            exit();
+                        }
+                        if (!empty($new_password)) {
+                            $password_hash = password_hash($new_password, PASSWORD_DEFAULT);
+                        }
+                    }
+                    if ($this->modele->updateUserInfos($id_user, $nom, $prenom, $email, $tel, $password_hash)) {
+                        $_SESSION['prenom'] = $prenom;
+                        header("Location: index.php?action=profil&success=1");
+                    } else {
+                        header("Location: index.php?action=profil&error=update_failed");
+                    }
+                    exit();
+                }
+                break;
+
+            case 'modifierPP':
+                if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['profile_picture'])) {
+                    $id_user = $_SESSION['id'];
+                    $file = $_FILES['profile_picture'];
+
+                    if ($file['error'] === 0) {
+                        $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+                        $nom_image = "pp_" . $id_user . "_" . time() . "." . $ext;
+
+                        if (move_uploaded_file($file['tmp_name'], "uploads/profiles/" . $nom_image)) {
+                            $this->modele->updateUserPhoto($id_user, $nom_image);
+                            $_SESSION['photo'] = $nom_image;
+                            $_SESSION['success_msg'] = "Photo mise à jour avec succès !";
+                        }
+                    }
+                    header("Location: index.php?action=profil");
+                    exit();
+                }
+                break;
             case 'produits':
                 $id_assos = $_SESSION['id'] ?? '';
                 $produits = $this->modele->getProduitsParAssociation($id_assos);
-                $this->vue->afficherProduits($produits);
+                $this->vue->afficherProduits($produits, $id_assos);
                 break;
-            case 'voirProduits':
-                $tri = $_GET['tri'] ?? 'stock';
-                $id_gestionnaire = $_SESSION['id'] ?? '';
-                $associations = $this->modele->getAssociationsParGestionnaire($id_gestionnaire);
-                $produits = $this->modele->getProduitsFiltres($id_gestionnaire, null, $tri);
-
-                $this->vue->afficherProduits($produits);
-                break;
-
             case 'voirStockAsso':
                 $id_asso = $_GET['id_asso'] ?? null;
                 $produits = $this->modele->getProduitsFiltres(null, $id_asso);
@@ -119,25 +174,6 @@ class ControleurGestionnaire
                     exit();
                 }
                 break;
-            case 'voirAssociation':
-                $id_assos = $_GET['id'] ?? '';
-                if ($id_assos) {
-                    $assos = $this->modele->getDetailsAssos($id_assos);
-                    if ($assos) {
-                        $this->vue->afficherDetailsAssos($assos);
-                    } else {
-                        $_SESSION['error'] = "Association introuvable.";
-                        header('Location: index.php?action=associations');
-                        exit();
-                    }
-                } else {
-                    $_SESSION['error'] = "ID d'association manquant.";
-                    header('Location: index.php?action=associations');
-                    exit();
-                }
-                break;
-
-
             case 'accepterAssociation':
                 if (isset($_GET['id'])) {
                     $assoId = $_GET['id'];
@@ -163,33 +199,66 @@ class ControleurGestionnaire
                 }
                 break;
 
+
+            case 'voirAssociation':
             case 'gererAssociation':
                 if (isset($_GET['id'])) {
-
                     $assoId = $_GET['id'];
-                    $association = $this->modele->getAssociationParId($assoId);
-                    if ($association) {
-                        $barmans = $this->modele->getBarmansParAssociation($assoId);
-                        $produits = $this->modele->getProduitsParAssociation($assoId);
-                        $clients = $this->modele->getClientsParAssociation($assoId);
-                        $this->vue->gererAssociation($association, $barmans, $produits, $clients);
+                    $assos = $this->modele->getDetailsAssos($assoId);
+
+                    if ($assos) {
+                        $this->vue->afficherDetailsAssos($assos);
                     } else {
-                        $_SESSION['error'] = "Association non trouvée";
+                        $_SESSION['error'] = "Association introuvable.";
                         header('Location: index.php?action=associations');
                         exit();
                     }
+                } else {
+                    $_SESSION['error'] = "ID manquant.";
+                    header('Location: index.php?action=associations');
+                    exit();
                 }
                 break;
 
+
+            case 'fournisseurs':
+                $fournisseurs = $this->modele->getTousLesFournisseurs();
+
+                $this->vue->afficherFournisseurs($fournisseurs);
+                break;
+
+            case 'supprimerFournisseur':
+                if (isset($_GET['id'])) {
+                    if ($this->modele->supprimerFournisseur($_GET['id'])) {
+                        $_SESSION['success'] = "Fournisseur supprimé.";
+                    }
+                    header('Location: index.php?action=fournisseurs');
+                    exit();
+                }
+                break;
             case 'associations':
                 $id_gestionnaire = $_SESSION['id'] ?? '';
                 $associations = $this->modele->getAssociationsParGestionnaire($id_gestionnaire);
                 $this->vue->afficherAssociationsValidees($associations);
                 break;
-            case 'voirProduits' :
-                $id_assos = $_GET['id'] ?? '';
-                $produits = $this->modele->getProduitsParAssociation($id_assos);
-                $this->vue->afficherProduits($produits);
+            case 'voirProduits':
+                $id_asso = $_GET['id'] ?? null;
+                $id_gest = $_SESSION['id'];
+
+                if ($id_asso) {
+                    $produits = $this->modele->getProduitsParAssociation($id_asso);
+                } else {
+                    $produits = $this->modele->getProduitsFiltres($id_gest);
+                }
+
+                $associations = $this->modele->getAssociationsParGestionnaire($id_gest);
+                $this->vue->afficherProduits($produits, $associations);
+                break;
+            case 'voirBarmans':
+                $id_assos = $_GET['id'] ?? null;
+                $barmans = $this->modele->getBarmansParAssociation($id_assos);
+                $this->vue->afficherBarmans($barmans, $id_assos);
+
                 break;
             case 'barmans':
                 $idGestionnaire = $_SESSION['id'];

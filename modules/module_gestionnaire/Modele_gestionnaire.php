@@ -15,6 +15,29 @@ class ModeleGestionnaire extends Connexion
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    public function getUtilisateur($id) {
+        $sql = "SELECT *, mdp FROM compte WHERE id = ?";
+        $query = self::getBdd()->prepare($sql);
+        $query->execute([$id]);
+        return $query->fetch(PDO::FETCH_ASSOC);
+    }
+    public function updateUserPhoto($id, $nom_image) {
+        $sql = "UPDATE compte SET photo = ? WHERE id = ?";
+        $query = self::getBdd()->prepare($sql);
+        return $query->execute([$nom_image, $id]);
+    }
+    public function updateUserInfos($id, $nom, $prenom, $email, $tel, $password = null) {
+        if ($password) {
+            $sql = "UPDATE compte SET nom = ?, prenom = ?, email = ?, tel = ?, mdp = ? WHERE id = ?";
+            $query = self::getBdd()->prepare($sql);
+            return $query->execute([$nom, $prenom, $email, $tel, $password, $id]);
+        } else {
+            $sql = "UPDATE compte SET nom = ?, prenom = ?, email = ?, tel = ? WHERE id = ?";
+            $query = self::getBdd()->prepare($sql);
+            return $query->execute([$nom, $prenom, $email, $tel, $id]);
+        }
+    }
+
     public function rechercherClients($q = '')
     {
         try {
@@ -47,7 +70,16 @@ class ModeleGestionnaire extends Connexion
             return [];
         }
     }
+    public function getTousLesFournisseurs() {
+        $req = $this->getBdd()->prepare("SELECT id, nom, telephone, email FROM fournisseur ORDER BY nom ASC");
+        $req->execute();
+        return $req->fetchAll(PDO::FETCH_ASSOC);
+    }
 
+    public function supprimerFournisseur($id) {
+        $req = $this->getBdd()->prepare("DELETE FROM fournisseurs WHERE id = ?");
+        return $req->execute([$id]);
+    }
     public function getTotalPertes($idGestionnaire) {
         $sql = "SELECT SUM(perte * prix) as valeur_perte 
             FROM concerne 
@@ -331,18 +363,6 @@ class ModeleGestionnaire extends Connexion
 
         $stmt = self::getBdd()->prepare($sql);
         $stmt->execute($params);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
-    public function getProduitsParStock($id_compte) {
-
-        $sql = "SELECT p.* FROM produit p 
-            JOIN gere g_link ON p.id = g_link.produit_id
-            JOIN gestionne g ON g_link.association_id = g.association_id
-            WHERE g.compte_id = ?
-            ORDER BY p.quantiteActuelle ASC";
-
-        $stmt = self::getBdd()->prepare($sql);
-        $stmt->execute([$id_compte]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
     public function getAssociationsParGestionnaire($id_gestionnaire)
