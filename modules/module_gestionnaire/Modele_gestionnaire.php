@@ -1,10 +1,9 @@
 <?php
-include_once '../connexion/Connexion.php';
+include_once 'connexion/Connexion.php';
 
-class ModeleGestionnaire extends Connexion
-{
-    public function getTousLesClients()
-    {
+class ModeleGestionnaire extends Connexion {
+
+    public function getTousLesClients() {
         $stmt = self::getBdd()->prepare("
         SELECT id, nom, prenom, email
         FROM compte
