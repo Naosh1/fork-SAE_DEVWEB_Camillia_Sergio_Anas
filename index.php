@@ -45,20 +45,20 @@ switch ($role) {
     case 'admin':
         include_once '../modules/module_gestionnaire/Mod_gestionnaire.php';
         new Mod_gestionnaire();
-        include_once 'template_gestionnaire.php';
+        include_once '../template_gestionnaire.php';
         break;
 
     case 'barman':
         include_once '../modules/module_barman/Mod_barman.php';
         new Mod_barman();
-        include_once 'template_barman.php';
+        include_once '../template_barman.php';
         break;
 
     case 'client':
     default:
         include_once '../modules/module_client/Mod_client.php';
         new Mod_client();
-        include_once 'template_client.php';
+        include_once '../template_client.php';
         break;
 }
 ?>

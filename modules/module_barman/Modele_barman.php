@@ -1,5 +1,5 @@
 <?php
-include_once 'connexion/Connexion.php';
+include_once '../connexion/Connexion.php';
 
 class ModeleBarman extends Connexion {
 

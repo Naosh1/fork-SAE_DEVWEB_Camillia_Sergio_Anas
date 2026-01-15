@@ -34,7 +34,6 @@ $prenom = $_SESSION['prenom'] ?? '';
 
         .font-montserrat { font-family: 'Montserrat', sans-serif; }
 
-        /* Effet de verre pour les cartes */
         .glass-card {
             background: rgba(30, 41, 59, 0.7);
             backdrop-filter: blur(12px);
@@ -52,6 +51,7 @@ $prenom = $_SESSION['prenom'] ?? '';
         }
         .animate-fade-in { animation: fadeInUp 0.6s ease-out forwards; }
     </style>
+
 </head>
 
 

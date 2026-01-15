@@ -32,7 +32,6 @@ class Connexion
     static $user = 'dutinfopw201655';
     private
     static $password = 'hevenequ';
-
 //    private static $bdd = null;
 //    private static $dsn = 'mysql:host=localhost;dbname=buvette;charset=utf8';
 //    private static $user = 'root';

@@ -2,7 +2,7 @@
 include_once 'Modele_barman.php';
 include_once 'Vue_barman.php';
 include_once 'Controleur_barman.php';
-include_once 'connexion/Connexion.php';
+include_once '../connexion/Connexion.php';
 
 class Mod_barman
 {
