@@ -1,28 +1,19 @@
 <?php
 
-include_once 'Composants/CompMenu/Vue_Menu.php';
+    include_once 'Composants/CompMenu/Vue_Menu.php';
 
-class Cont_Menu {
-    private $vue;
+    class Cont_Menu {
+        private $vue;
 
-    public function __construct() {
-        $this->vue = new Vue_Menu();
+        public function __construct() {
+            $this->vue = new Vue_Menu();
+        }
+
+        public function exec() {
+            $this->vue->gen_menu();
+        }
+
+        public function getAffichage() {
+            return $this->vue->affichage;
+        }
     }
-
-    public function exec() {
-        $this->vue->gen_menu();
-    }
-<<<<<<< HEAD
-
-    public function getAffichage() {
-        return $this->vue->affichage;
-    }
-}
-
-=======
-
-    public function getAffichage() {
-        return $this->vue->affichage;
-    }
-}
->>>>>>> travailClient
