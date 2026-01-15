@@ -1,7 +1,7 @@
 <?php
 
     include_once "Vue_client.php";
-    include_once "commun/accés/CompteAcces.php";
+    include_once "../commun/accés/CompteAcces.php";
 
 class Controleur_client {
     private $vue;
