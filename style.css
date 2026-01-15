@@ -263,6 +263,71 @@ footer p {
 }
 
 /* =========================
+   Carte solde
+   ========================= */
+
+.bfor-card {
+    background: var(--color-white);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    box-shadow: var(--shadow-lg);
+    max-width: 420px;
+    margin: auto;
+    font-family: Arial, sans-serif;
+    color: var(--color-text);
+    transition: var(--transition);
+}
+
+.bfor-top {
+    background: linear-gradient(
+            135deg,
+            var(--color-secondary),
+            var(--color-tertiary)
+    );
+    border-radius: var(--radius-md);
+    padding: 14px 16px;
+    color: var(--color-white);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 28px;
+    box-shadow: var(--shadow-md);
+}
+
+.bfor-bank {
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.bfor-badge {
+    background: rgba(255,255,255,0.15);
+    backdrop-filter: blur(6px);
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 12px;
+    border: 1px solid rgba(255,255,255,0.35);
+}
+
+.bfor-account {
+    text-align: center;
+    padding-bottom: 10px;
+}
+
+.bfor-account p {
+    color: var(--color-tertiary);
+    margin-bottom: 6px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.bfor-account h1 {
+    font-size: 38px;
+    margin: 0;
+    color: var(--color-primary);
+    font-weight: 700;
+}
+
+/* =========================
    Typographie raffinée
    ========================= */
 h1 {
@@ -270,6 +335,7 @@ h1 {
     font-weight: 800;
     line-height: 1.2;
     margin-bottom: 0.5em;
+    text-align: center;
 }
 
 h2 {
@@ -308,6 +374,33 @@ h6 {
     margin-bottom: 0.5em;
     text-transform: uppercase;
     letter-spacing: 0.05em;
+}
+
+/* =========================
+   Historique
+   ========================= */
+table {
+    border-collapse: separate;
+    border-spacing: 0 12px;
+    margin: 0 auto;
+}
+
+th, td {
+    padding: 12px 20px;
+    text-align: left;
+    color: var(--color-text);
+}
+
+th {
+    font-weight: 600;
+    color: var(--color-primary);
+    background: var(--color-blue-grey);
+}
+
+td {
+    background: var(--color-white);
+    box-shadow: var(--shadow-sm);
+    border-radius: var(--radius-sm);
 }
 
 /* =========================

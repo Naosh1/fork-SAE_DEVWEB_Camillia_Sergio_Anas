@@ -180,7 +180,6 @@
         }
 
         public function form_espace($solde, $historique) {
-
                     ob_start();
                     ?>
                     <div class="bfor-card">
