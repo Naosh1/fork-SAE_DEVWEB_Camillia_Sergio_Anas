@@ -36,4 +36,12 @@
             $this->modele->rechargement();
         }
 
+        public function soldeEspace() {
+            return $this->modele->getSolde();
+        }
+
+        public function historiqueRechargements() {
+            return $this->modele->getHistoriqueRechargements($_SESSION['id']);
+        }
+
     }

@@ -1,6 +1,6 @@
 <?php
 
-    include_once "Controleur_client.php";
+include_once "Controleur_client.php";
 
     class Mod_client {
         private $controleur;
@@ -12,9 +12,13 @@
             $this->action = isset($_GET["action"]) ? $_GET["action"] : "accueil";
             $this->erreur = isset($_GET["erreur"]) ? $_GET["erreur"] : " ";
 
-            switch($this->action) {
+            switch ($this->action) {
                 case "accueil" :
                     $contenu = "Bienvenue sur le site de la buvette";
+                    VueGenerique::setAffichage($contenu);
+                    break;
+                case "espace" :
+                    $contenu = $this->controleur->getVue()->form_espace($this->controleur->soldeEspace(), $this->controleur->historiqueRechargements());
                     VueGenerique::setAffichage($contenu);
                     break;
                 case "form_inscription_utilisateur" :
@@ -97,35 +101,35 @@
                     $this->controleur->deconnexion();
                     break;
                 case "erreur" :
-                     switch ($this->erreur) {
-                         case "loginPasBon_utilisateur" :
-                             $contenu = $this->controleur->getVue()->form_comptePasBonLogin();
-                             VueGenerique::setAffichage($contenu);
-                             break;
-                         case "mdpPasBon_utilisateur" :
-                             $contenu = $this->controleur->getVue()->form_mdpPasBon();
-                             VueGenerique::setAffichage($contenu);
-                             break;
-                         case "connexionPasBon_utilisateur" :
-                             $contenu = $this->controleur->getVue()->form_connexionPasBon();
-                             VueGenerique::setAffichage($contenu);
-                             break;
-                         case "personneEstConnectee_utilisateur" :
-                             $contenu = $this->controleur->getVue()->form_personneEstConnectee();
-                             VueGenerique::setAffichage($contenu);
-                             break;
-                         case "emailDejaUtilise_utilisateur" :
-                             $contenu = $this->controleur->getVue()->form_emailDejaUtilise();
-                             VueGenerique::setAffichage($contenu);
-                             break;
-                         //case "montantInvalide_utilisateur" :
-                         //    $contenu = $this->controleur->getVue()->form_montantInvalide();
-                         //    VueGenerique::setAffichage($contenu);
-                         //    break;
-                     }
-                     break;
-            }
+                    switch ($this->erreur) {
+                        case "loginPasBon_utilisateur" :
+                            $contenu = $this->controleur->getVue()->form_comptePasBonLogin();
+                            VueGenerique::setAffichage($contenu);
+                            break;
+                        case "mdpPasBon_utilisateur" :
+                            $contenu = $this->controleur->getVue()->form_mdpPasBon();
+                            VueGenerique::setAffichage($contenu);
+                            break;
+                        case "connexionPasBon_utilisateur" :
+                            $contenu = $this->controleur->getVue()->form_connexionPasBon();
+                            VueGenerique::setAffichage($contenu);
+                            break;
+                        case "personneEstConnectee_utilisateur" :
+                            $contenu = $this->controleur->getVue()->form_personneEstConnectee();
+                            VueGenerique::setAffichage($contenu);
+                            break;
+                        case "emailDejaUtilise_utilisateur" :
+                            $contenu = $this->controleur->getVue()->form_emailDejaUtilise();
+                            VueGenerique::setAffichage($contenu);
+                            break;
+                        //case "montantInvalide_utilisateur" :
+                        //    $contenu = $this->controleur->getVue()->form_montantInvalide();
+                        //    VueGenerique::setAffichage($contenu);
+                        //    break;
+                    }
+                    break;
         }
-
-
     }
+
+
+}

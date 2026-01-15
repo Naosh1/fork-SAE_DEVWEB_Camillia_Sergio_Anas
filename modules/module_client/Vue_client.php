@@ -16,7 +16,6 @@
             echo    'Mot de passe : ' . '<input type="password" name="mdpUtilisateur" pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9]).{8,}" title="Doit contenir au moins 8 caractères, une majuscule, une minuscule et un chiffre" required> <br>';
             echo    'Confirmez le MDP : ' . '<input type="password" name="mdpUtilisateurConfirmation" required> <br>';
             echo    'Solde : ' . '<input type="number" value="0" name="soldeUtilisateur" required> <br>';
-            echo    'Role : ' . '<input type="text" name="roleUtilisateur" required> <br><br>';
             echo    '<input type="submit" name="bouton" value="Inscription"> <br>';
             echo '</form>';
 
@@ -42,7 +41,6 @@
             echo    'Nouvelle Email : ' . '<input type="email" name="nvEmailUtilisateur" pattern="^[^@\s]+@[^@\s]+\.[^@\s]+$" title="Entrez une adresse email valide (ex : nom@gmail.com)" required> <br>';
             echo    'Nouveau Mot de passe : ' . '<input type="password" name="nvMdpUtilisateur" pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9]).{8,}" title="Doit contenir au moins 8 caractères, une majuscule, une minuscule et un chiffre" required> <br>';
             echo    'Confirmez le MDP : ' . '<input type="password" name="nvMdpUtilisateurConfirmation" required> <br>';
-            echo    'Nouveau Role : ' . '<input type="text" name="nvRoleUtilisateur" required> <br><br>';
             echo    '<input type="submit" name="bouton" value="Modifier"> <br>';
             echo '</form>';
 
@@ -180,4 +178,60 @@
 
             return ob_get_clean();
         }
+
+        public function form_espace($solde, $historique) {
+
+                    ob_start();
+                    ?>
+                    <div class="bfor-card">
+                        <div class="bfor-top">
+                            <div class="bfor-bank">SOLDE</div>
+                            <div class="bfor-badge">VIRTUELLE</div>
+                        </div>
+
+                        <div class="bfor-account">
+                            <p>Mon compte</p>
+                            <h1>
+                                <?php
+                                    echo htmlspecialchars(number_format($solde,2));
+                                ?>
+                            </h1>
+                        </div>
+                    </div>
+
+                    <br>
+
+                    <div class="bfor-card">
+                        <div class="bfor-top">
+                            <div class="bfor-bank">RECHARGEMENT</div>
+                            <div class="bfor-badge">VIRTUELLE</div>
+                        </div>
+
+                        <div class="bfor-account">
+                        <?php if (empty($historique)): ?>
+                            <br>
+                            <p>Aucun rechargement effectué.</p>
+                        <?php else: ?>
+                            <table>
+                                <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Montant</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <?php foreach ($historique as $r): ?>
+                                    <tr>
+                                        <td><?= htmlspecialchars($r['date_rechargement']) ?></td>
+                                        <td><?= htmlspecialchars(number_format($r['valeur'], 2)) ?> €</td>
+                                    </tr>
+                                <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        <?php endif; ?>
+                        </div>
+                    </div>
+                    <?php
+                    return ob_get_clean();
+                }
     }
