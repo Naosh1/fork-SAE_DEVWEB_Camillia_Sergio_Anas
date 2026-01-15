@@ -8,60 +8,15 @@ class Controleur_barman {
         $this->vue = new Vue_barman();
     }
 
-    public function gererAction($action)
-    {
-        error_log("Controleur_barman->gererAction('$action')");
-
-        switch ($action) {
-            case 'accueil':
-                $this->afficherAccueil();
-                break;
-            case 'afficherProduits':
-                $this->afficherProduits();
-                break;
-            case 'rechercherClient':
-                $this->rechercherClient();
-                break;
-            case 'commandesEnCours':
-                $this->afficherCommandes();
-                break;
-            case 'detailCommande':
-                $this->afficherDetailCommande();
-                break;
-            case 'creerTransaction':
-                $this->afficherFormTransaction();
-                break;
-            case 'traiterTransaction':
-                $this->traiterTransaction();
-                break;
-            case 'historiqueCommandes':
-                $this->afficherHistoriqueCommandes();
-                break;
-            case 'derniereTransaction':
-                $this->afficherDerniereTransaction();
-                break;
-            case 'annulerTransaction':
-                $this->annulerTransaction();
-                break;
-            default:
-                error_log("Action non reconnue: '$action', affichage accueil par défaut");
-                $this->afficherAccueil();
-                break;
-        }
+    public function getVue() {
+        return $this->vue;
     }
 
-    private function afficherAccueil()
-    {
-        $this->vue->afficherAccueil();
+    public function listeProduits() {
+        return $this->modele->listerProduits();
     }
 
-    private function afficherProduits()
-    {
-        $produits = $this->modele->listerProduits();
-        $this->vue->afficherProduits($produits);
-    }
-
-    private function rechercherClient()
+    public function rechercherClient()
     {
         $clients = [];
         $search = $_GET['search'] ?? null;
@@ -70,61 +25,63 @@ class Controleur_barman {
             $clients = $this->modele->rechercherClient($search);
         }
 
-        $this->vue->afficherClients($clients, $search);
+        return $this->vue->afficherClients($clients);
     }
 
-    private function afficherCommandes()
+    public function afficherCommandes()
     {
         $commandes = $this->modele->listerCommandesEnCours();
-        $this->vue->afficherCommandes($commandes);
+        return $this->vue->afficherCommandes($commandes);
     }
 
-    private function afficherDetailCommande()
+    public function afficherDetailCommande()
     {
         $id = $_GET['id'] ?? null;
 
         if (!$id) {
-            $this->vue->afficherErreur("Aucun ID de commande spécifié");
-            return;
+            $resultat = $this->vue->afficherErreur("Aucun ID de commande spécifié");
+        }
+        else {
+            $commande = $this->modele->getCommande($id);
+            $produits = $this->modele->getProduitsCommande($id);
+
+            $resultat = $this->vue->afficherDetailCommande($commande, $produits);
         }
 
-        $commande = $this->modele->getCommande($id);
-        $produits = $this->modele->getProduitsCommande($id);
-        $this->vue->afficherDetailCommande($commande, $produits);
+        return $resultat;
     }
 
-    private function afficherHistoriqueCommandes() {
-        $commandes = $this->modele->getHistoriqueCommandes();
-        $this->vue->afficherHistoriqueCommandes($commandes);
+    public function historiqueDeCommandes() {
+        return $this->modele->getHistoriqueCommandes();
     }
 
-    private function afficherDerniereTransaction() {
-        $transaction = $this->modele->getDerniereTransaction();
-        $this->vue->afficherDerniereTransaction($transaction);
+    public function derniereTransaction() {
+       return $this->modele->getDerniereTransaction();
     }
 
-    private function annulerTransaction() {
+    public function annulerTransaction() {
         $transaction_id = $_POST['transaction_id'] ?? null;
 
         if (!$transaction_id) {
-            $this->vue->afficherErreur("Aucune transaction spécifiée");
-            return;
+            $resulat = $this->vue->afficherErreur("Aucune transaction spécifiée");
         }
-
-        if ($this->modele->annulerTransaction($transaction_id)) {
-            $this->vue->afficherConfirmationAnnulation($transaction_id);
-        } else {
-            $this->vue->afficherErreur("Échec de l'annulation de la transaction");
+        else {
+            if ($this->modele->annulerTransaction($transaction_id)) {
+                $resulat = $this->vue->afficherConfirmationAnnulation($transaction_id);
+            } else {
+                $resulat = $this->vue->afficherErreur("Échec de l'annulation de la transaction");
+            }
         }
+        return $resulat;
     }
 
-    private function afficherFormTransaction($erreur = null, $donneesSaisies = null)
+    public function afficherFormTransaction($erreur = null, $donneesSaisies = null)
     {
         $produits = $this->modele->listerProduits();
-        $this->vue->afficherFormTransaction($produits, $erreur, $donneesSaisies);
+        return $this->vue->afficherFormTransaction($produits, $erreur, $donneesSaisies);
     }
 
-    private function traiterTransaction()
+    public function traiterTransaction()
     {
         try {
             error_log("DEBUG: POST reçu: " . print_r($_POST, true));
@@ -188,7 +145,7 @@ class Controleur_barman {
         }
     }
 
-    private function validerProduits($produits)
+    public function validerProduits($produits)
     {
         $produitsValides = [];
         $erreurs = [];

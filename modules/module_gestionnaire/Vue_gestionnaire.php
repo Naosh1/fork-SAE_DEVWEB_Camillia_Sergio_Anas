@@ -1,7 +1,5 @@
 <?php
-    include_once 'vue_generique.php';
-
-class VueGestionnaire extends VueGenerique {
+    class VueGestionnaire  {
 
     private function afficherAlerte($type, $message, $returnHTML = false)
     {
