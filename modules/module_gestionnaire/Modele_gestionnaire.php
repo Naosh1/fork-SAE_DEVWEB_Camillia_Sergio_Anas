@@ -37,7 +37,9 @@ class ModeleGestionnaire extends Connexion
             return $query->execute([$nom, $prenom, $email, $tel, $id]);
         }
     }
+    public function getInfosUtilisateurs($id_compte){
 
+    }
     public function rechercherClients($q = '')
     {
         try {

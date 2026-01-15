@@ -8,9 +8,9 @@ class VueGestionnaire extends VueGenerique
     {
         $icons = ['success' => 'check-circle', 'error' => 'exclamation-circle', 'info' => 'info-circle'];
         $classes = [
-                'success' => 'bg-green-100 border-green-500 text-green-700',
-                'error' => 'bg-red-100 border-red-500 text-red-700',
-                'info' => 'bg-blue-100 border-blue-500 text-blue-700'
+            'success' => 'bg-green-100 border-green-500 text-green-700',
+            'error' => 'bg-red-100 border-red-500 text-red-700',
+            'info' => 'bg-blue-100 border-blue-500 text-blue-700'
         ];
         $icon = $icons[$type] ?? 'info-circle';
         $class = $classes[$type] ?? 'bg-blue-100 border-blue-500 text-blue-700';
@@ -358,10 +358,10 @@ class VueGestionnaire extends VueGenerique
         $totalPertes = $data['totalPertes'] ?? 0;
 
         $raccourcis = [
-                ['action' => 'ajouterProduit', 'label' => 'Nouveau Produit', 'icon' => 'fa-plus-circle'],
-                ['action' => 'ajouterBarman',  'label' => 'Recruter Staff',  'icon' => 'fa-user-plus'],
-                ['action' => 'voirProduits',   'label' => 'Gestion Stocks',  'icon' => 'fa-boxes-stacked'],
-                ['action' => 'profil',         'label' => 'Mon Profil',      'icon' => 'fa-user-gear'],
+            ['action' => 'ajouterProduit', 'label' => 'Nouveau Produit', 'icon' => 'fa-plus-circle'],
+            ['action' => 'ajouterBarman',  'label' => 'Recruter Staff',  'icon' => 'fa-user-plus'],
+            ['action' => 'voirProduits',   'label' => 'Gestion Stocks',  'icon' => 'fa-boxes-stacked'],
+            ['action' => 'profil',         'label' => 'Mon Profil',      'icon' => 'fa-user-gear'],
         ];
         ?>
 
@@ -2376,6 +2376,11 @@ class VueGestionnaire extends VueGenerique
             </div>
         </div>
         <?php
+    }
+
+    public function afficherInfoBarman($barman){
+        $this->afficherNav();
+
     }
 
 
