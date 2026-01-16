@@ -1,6 +1,5 @@
 <?php
 include_once 'connexion/Connexion.php';
-include_once 'modules/module_commun/modele_commun.php';
 include_once 'modules/module_staff/modele_staff.php';
 
 
@@ -442,21 +441,6 @@ class ModeleGestionnaire extends ModeleStaff
             ]);
         } catch (PDOException $e) {
             error_log("Erreur distribuerStock : " . $e->getMessage());
-            return false;
-        }
-    }
-
-    public function mettreAJourTotalCommande($idCommande, $total)
-    {
-        try {
-            $sql = "UPDATE commandes_fournisseur SET total = :total WHERE id = :id";
-            $stmt = self::getBdd()->prepare($sql);
-            return $stmt->execute([
-                ':total' => $total,
-                ':id' => $idCommande
-            ]);
-        } catch (PDOException $e) {
-            error_log("Erreur mettreAJourTotalCommande: " . $e->getMessage());
             return false;
         }
     }

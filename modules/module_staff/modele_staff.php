@@ -1,6 +1,6 @@
 <?php
 
-include_once './connexion/connexion.php';
+include_once 'connexion/Connexion.php';
 include_once 'modules/module_commun/modele_commun.php';
 
 class ModeleStaff extends ModeleCommun

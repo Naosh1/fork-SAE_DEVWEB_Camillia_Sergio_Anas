@@ -7,10 +7,10 @@ class ControleurGestionnaire
     private $vueStaff;
 
     private $modeleCommun;
+    private $vueCommun;
 
     private $modele;
     private $vue;
-    private $vueCommun;
 
 
     public function __construct()
@@ -206,11 +206,7 @@ class ControleurGestionnaire
     {
         $idGest = $_SESSION['id'];
 
-        // 1. On récupère les données de l'association
         $assoUnique = $this->modele->getAssociationsParGestionnaire($idGest);
-
-        // 2. SÉCURITÉ : Si on n'a rien, on initialise un tableau vide,
-        // sinon on met l'unique asso dans une liste (un tableau contenant le tableau de l'asso)
         $associations = ($assoUnique) ? [$assoUnique] : [];
 
         $alertes = $this->modele->getStockCritique($idGest);
@@ -221,9 +217,7 @@ class ControleurGestionnaire
         $beneficeTotalNet = 0;
         $tousLesBarmans = [];
 
-        // Maintenant le foreach ne plantera plus
         foreach ($associations as $asso) {
-            // Correction ici : utilise l'ID de l'asso pour chercher ses barmans
             $barmansAsso = $this->modele->getBarmansDeMonAssociation($idGest);
 
             foreach ($barmansAsso as $b) {
@@ -500,16 +494,10 @@ class ControleurGestionnaire
     {
         $idGestionnaire = $_SESSION['id'];
 
-        // 1. On récupère les associations gérées par ce gestionnaire
-        // (On s'assure que c'est une liste d'associations)
         $assoUnique = $this->modele->getAssociationsParGestionnaire($idGestionnaire);
         $associations = ($assoUnique && isset($assoUnique['id'])) ? [$assoUnique] : $assoUnique;
 
-        // 2. On récupère UNIQUEMENT les barmans liés à ces associations
-        // On utilise la méthode qui filtre par gestionnaire
         $barmans = $this->modele->getBarmansDeMonAssociation($idGestionnaire);
-
-        // 3. On appelle la vue avec les données filtrées
         $this->vue->afficherBarmans($barmans, $associations);
     }
 
@@ -523,7 +511,6 @@ class ControleurGestionnaire
                 $res = $this->modele->ajouterClientCommeBarman($clientId, $assoId);
 
                 if ($res) {
-                    // AU LIEU DU HEADER, ON APPELLE L'ANIMATION
                     $this->vue->afficherSuccesPromotion();
                     exit();
                 } else {
@@ -533,7 +520,6 @@ class ControleurGestionnaire
                 }
             }
         } else {
-            // Affichage du formulaire (inchangé)
             $q = $_GET['q'] ?? '';
             $clients = $this->modele->rechercherClients($q);
             $assoData = $this->modele->getAssociationsParGestionnaire($_SESSION['id']);
@@ -575,23 +561,15 @@ class ControleurGestionnaire
 
     private function afficherProfilBarman()
     {
-        // On vérifie si l'ID arrive bien
         $id_cible = $_GET['id'] ?? null;
-
         if ($id_cible) {
             $infosBarman = $this->modele->getBarmanParId($id_cible);
-
-            // TEST : Décommente la ligne suivante pour voir si les données sortent de la BDD
-            // die(var_dump($infosBarman));
-
             if (!$infosBarman) {
-                // Si le modèle renvoie rien, on ne reste pas sur une page blanche
                 $_SESSION['error'] = "Données introuvables pour l'ID : " . $id_cible;
                 header('Location: index.php?action=barmans');
                 exit();
             }
 
-            // On appelle la vue
             $this->vue->afficherProfilBarman($infosBarman);
         } else {
             $_SESSION['error'] = "Aucun ID spécifié pour la consultation.";
