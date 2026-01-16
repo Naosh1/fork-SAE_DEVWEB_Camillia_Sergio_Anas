@@ -9,7 +9,27 @@ class ModeleCommun extends Connexion
         $stmt->execute([$id_user]);
         return $stmt->fetch()['total'];
     }
+    public function getBarmansParAssociation($id_association)
+    {
+        try {
+            $sql = "SELECT c.id, c.nom, c.prenom, c.email, c.tel, c.photo, a.role, asso.nom AS nom_association
+                FROM compte c
+                JOIN appartient a ON c.id = a.compte_id
+                JOIN association asso ON a.association_id = asso.id
+                WHERE a.association_id = :id_asso 
+                AND a.role = 'barman'";
 
+            $stmt = self::getBdd()->prepare($sql);
+            $stmt->execute([':id_asso' => $id_association]);
+
+            // On utilise fetchAll pour récupérer TOUS les barmans de l'asso
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        } catch (PDOException $e) {
+            error_log('Erreur getBarmansParAssociation : ' . $e->getMessage());
+            return [];
+        }
+    }
     public function enregistrerMessage($id_expediteur, $id_destinataire, $objet, $contenu)
     {
         try {

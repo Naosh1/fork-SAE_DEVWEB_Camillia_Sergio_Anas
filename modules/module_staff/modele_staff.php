@@ -50,17 +50,17 @@ class ModeleStaff extends ModeleCommun
         }
     }
 
-    public function getProduitsFiltres($id_gest, $id_asso = null, $tri = 'stock') {
-        // 1. Définition des tris (vérifie que les noms correspondent à la table 'produit')
+    public function getProduitsFiltres($id_gest, $id_asso = null, $tri = 'nom') {
         $trisAutorises = [
             'nom'   => 'p.nom ASC',
             'prix'  => 'p.prix ASC',
-            'stock' => 'p.quantiteActuelle ASC', // Dans ton SQL, c'est 'quantiteActuelle'
+            'stock' => 'g_table.stock_asso ASC',
         ];
         $orderBy = $trisAutorises[$tri] ?? 'p.nom ASC';
 
-        // 2. La requête correcte utilisant la table 'gere'
-        $sql = "SELECT DISTINCT p.*, a.nom as nom_association 
+        // Correction : Utilisation de 'quantiteActuelle' (vu dans ton SQL)
+        $sql = "SELECT p.id, p.nom, p.type, p.prix, p.quantiteActuelle as stock_global, 
+                   a.nom as nom_association, g_table.stock_asso 
             FROM produit p
             INNER JOIN gere g_table ON p.id = g_table.produit_id 
             INNER JOIN association a ON g_table.association_id = a.id
@@ -69,7 +69,6 @@ class ModeleStaff extends ModeleCommun
 
         $params = [$id_gest];
 
-        // 3. Filtrage par association si nécessaire
         if ($id_asso && $id_asso !== 'all') {
             $sql .= " AND a.id = ?";
             $params[] = $id_asso;
@@ -77,7 +76,7 @@ class ModeleStaff extends ModeleCommun
 
         $sql .= " ORDER BY " . $orderBy;
 
-        $req = $this->getBdd()->prepare($sql);
+        $req = self::getBdd()->prepare($sql);
         $req->execute($params);
         return $req->fetchAll(PDO::FETCH_ASSOC);
     }

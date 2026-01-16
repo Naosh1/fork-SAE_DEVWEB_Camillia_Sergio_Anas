@@ -40,6 +40,7 @@ class VueGestionnaire extends VueStaff
             .products-container {
                 padding: 40px 0 150px 0;
             }
+
             .product-card {
                 background: rgba(255, 255, 255, 0.02);
                 border: 1px solid rgba(139, 92, 246, 0.1);
@@ -70,7 +71,10 @@ class VueGestionnaire extends VueStaff
                 transition: all 0.2s;
             }
 
-            .qty-btn:hover { background: #8b5cf6; color: white; }
+            .qty-btn:hover {
+                background: #8b5cf6;
+                color: white;
+            }
 
             .qty-input {
                 background: transparent;
@@ -97,9 +101,9 @@ class VueGestionnaire extends VueStaff
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
-                box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+                box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
                 z-index: 1000;
-                border: 1px solid rgba(255,255,255,0.2);
+                border: 1px solid rgba(255, 255, 255, 0.2);
             }
 
             .confirm-btn {
@@ -127,7 +131,8 @@ class VueGestionnaire extends VueStaff
                         </h1>
                     </div>
                 </div>
-                <a href="index.php?module=gestionnaire&action=voirFournisseurs" class="opacity-50 hover:opacity-100 transition-opacity">
+                <a href="index.php?module=gestionnaire&action=voirFournisseurs"
+                   class="opacity-50 hover:opacity-100 transition-opacity">
                     <i class="fa-solid fa-circle-xmark text-3xl"></i>
                 </a>
             </div>
@@ -219,71 +224,95 @@ class VueGestionnaire extends VueStaff
             window.addEventListener('DOMContentLoaded', calculateTotals);
         </script>
         <?php
-    }public function afficherSuccesCommande() {
-    $this->afficherNav();
-    ?>
-    <div style="height: 80vh; display: flex; flex-direction: column; justify-content: center; align-items: center; background: #020617; color: white; font-family: 'Montserrat', sans-serif;">
+    }
 
-        <div style="background: rgba(16, 185, 129, 0.1); border: 2px solid #10b981; width: 100px; height: 100px; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin-bottom: 2rem;">
-            <i class="fa-solid fa-check" style="font-size: 3rem; color: #10b981;"></i>
+    public function afficherSuccesCommande()
+    {
+        $this->afficherNav();
+        ?>
+        <div style="height: 80vh; display: flex; flex-direction: column; justify-content: center; align-items: center; background: #020617; color: white; font-family: 'Montserrat', sans-serif;">
+
+            <div style="background: rgba(16, 185, 129, 0.1); border: 2px solid #10b981; width: 100px; height: 100px; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin-bottom: 2rem;">
+                <i class="fa-solid fa-check" style="font-size: 3rem; color: #10b981;"></i>
+            </div>
+
+            <h1 style="font-size: 2.5rem; font-weight: 900; text-transform: uppercase; font-style: italic; margin-bottom: 1rem;">
+                Commande bien passée !
+            </h1>
+
+            <p style="color: #94a3b8; font-size: 1.1rem; margin-bottom: 2rem;">
+                Le solde a été débité. Vous allez être redirigé vers l'historique...
+            </p>
+
+            <div style="width: 200px; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden;">
+                <div id="loader"
+                     style="width: 0%; height: 100%; background: #f59e0b; transition: width 3s linear;"></div>
+            </div>
+
+            <a href="index.php?module=gestionnaire&action=mesCommandes"
+               style="margin-top: 2rem; color: #f59e0b; text-decoration: none; font-weight: bold; font-size: 0.9rem; text-transform: uppercase; border-bottom: 1px solid #f59e0b;">
+                Cliquer ici si la redirection ne fonctionne pas
+            </a>
         </div>
 
-        <h1 style="font-size: 2.5rem; font-weight: 900; text-transform: uppercase; font-style: italic; margin-bottom: 1rem;">
-            Commande bien passée !
-        </h1>
+        <script>
+            setTimeout(() => {
+                document.getElementById('loader').style.width = '100%';
+            }, 100);
+            setTimeout(() => {
+                window.location.href = "index.php?module=gestionnaire&action=mesCommandes";
+            }, 3000);
+        </script>
+        <?php
+    }
 
-        <p style="color: #94a3b8; font-size: 1.1rem; margin-bottom: 2rem;">
-            Le solde a été débité. Vous allez être redirigé vers l'historique...
-        </p>
-
-        <div style="width: 200px; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden;">
-            <div id="loader" style="width: 0%; height: 100%; background: #f59e0b; transition: width 3s linear;"></div>
-        </div>
-
-        <a href="index.php?module=gestionnaire&action=mesCommandes" style="margin-top: 2rem; color: #f59e0b; text-decoration: none; font-weight: bold; font-size: 0.9rem; text-transform: uppercase; border-bottom: 1px solid #f59e0b;">
-            Cliquer ici si la redirection ne fonctionne pas
-        </a>
-    </div>
-
-    <script>
-        setTimeout(() => {
-            document.getElementById('loader').style.width = '100%';
-        }, 100);
-        setTimeout(() => {
-            window.location.href = "index.php?module=gestionnaire&action=mesCommandes";
-        }, 3000);
-    </script>
-    <?php
-}
-    public function afficherMesCommandes($commandes) {
+    public function afficherMesCommandes($commandes)
+    {
         $this->afficherNav();
         ?>
         <style>
             .status-badge {
-                padding: 0.4rem 0.8rem; border-radius: 8px; font-[900] uppercase text-[10px] tracking-widest;
+                padding: 0.4rem 0.8rem;
+                border-radius: 8px;
+
+                font-[
+
+                900 ] uppercase text- [10px] tracking-widest;
             }
-            .status-pending { background: rgba(245, 158, 11, 0.1); color: #f59e0b; border: 1px solid #f59e0b; }
+
+            .status-pending {
+                background: rgba(245, 158, 11, 0.1);
+                color: #f59e0b;
+                border: 1px solid #f59e0b;
+            }
+
             .order-row {
-                background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05);
+                background: rgba(255, 255, 255, 0.03);
+                border: 1px solid rgba(255, 255, 255, 0.05);
                 transition: 0.3s;
             }
-            .order-row:hover { background: rgba(255,255,255,0.07); border-color: #f59e0b; }
+
+            .order-row:hover {
+                background: rgba(255, 255, 255, 0.07);
+                border-color: #f59e0b;
+            }
         </style>
 
         <div class="max-w-[1000px] mx-auto p-8">
             <div class="mb-12">
                 <h1 class="text-4xl font-black italic uppercase tracking-tighter">Historique Commandes</h1>
-                <p class="text-slate-500 font-bold text-xs uppercase tracking-[0.3em] mt-2">Suivi des approvisionnements</p>
+                <p class="text-slate-500 font-bold text-xs uppercase tracking-[0.3em] mt-2">Suivi des
+                    approvisionnements</p>
             </div>
 
             <div class="space-y-4">
-                <?php if(empty($commandes)): ?>
+                <?php if (empty($commandes)): ?>
                     <div class="text-center py-20 opacity-30">
                         <i class="fa-solid fa-receipt text-6xl mb-4"></i>
                         <p class="font-black uppercase tracking-widest">Aucune commande enregistrée</p>
                     </div>
                 <?php else: ?>
-                    <?php foreach($commandes as $c): ?>
+                    <?php foreach ($commandes as $c): ?>
                         <div class="order-row p-6 rounded-3xl flex justify-between items-center">
                             <div class="flex gap-8 items-center">
                                 <div class="text-center">
@@ -303,10 +332,12 @@ class VueGestionnaire extends VueStaff
 
                             <div class="text-right">
                                 <p class="text-[10px] font-black text-slate-600 uppercase">Total HT</p>
-                                <p class="text-2xl font-black text-amber-500"><?= number_format($c['montant_total'], 2) ?>€</p>
+                                <p class="text-2xl font-black text-amber-500"><?= number_format($c['montant_total'], 2) ?>
+                                    €</p>
                             </div>
 
-                            <a href="index.php?action=detailCommande&id=<?= $c['id'] ?>" class="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center hover:bg-white hover:text-black transition-all">
+                            <a href="index.php?action=detailCommande&id=<?= $c['id'] ?>"
+                               class="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center hover:bg-white hover:text-black transition-all">
                                 <i class="fa-solid fa-chevron-right"></i>
                             </a>
                         </div>
@@ -316,9 +347,14 @@ class VueGestionnaire extends VueStaff
         </div>
         <?php
     }
+
     public function afficherProfilBarman($barmans)
     {
         $this->afficherNav();
+        if (!$barmans) {
+            echo '<div class="text-white p-10">Aucune donnée trouvée pour ce profil ou cette association.</div>';
+            return;
+        }
 
         $prenom = htmlspecialchars($barmans['prenom']);
         $nom = htmlspecialchars($barmans['nom']);
@@ -407,7 +443,8 @@ class VueGestionnaire extends VueStaff
         <?php
     }
 
-    public function afficherFormulaireCommande($fournisseur, $produits, $id_asso_choisie) {
+    public function afficherFormulaireCommande($fournisseur, $produits, $id_asso_choisie)
+    {
         ?>
         <div class="container">
             <h2>Passer une commande chez <?= htmlspecialchars($fournisseur['nom']) ?></h2>
@@ -454,6 +491,7 @@ class VueGestionnaire extends VueStaff
         </div>
         <?php
     }
+
     public function afficherFormulaireSolde($personne)
     {
         echo '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">';
@@ -788,6 +826,7 @@ class VueGestionnaire extends VueStaff
     </aside>
     <main class="flex-1">';
     }
+
     public function afficherTableauDeBordAccueil($prenom, $data)
     {
         $this->afficherNav();
@@ -1209,6 +1248,7 @@ class VueGestionnaire extends VueStaff
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
         <style>
+            /* On empêche le scroll sur le body pour tout bloquer */
             body {
                 background: #020617 radial-gradient(circle at 50% -20%, #064e3b 0%, #020617 80%) no-repeat fixed;
                 margin: 0;
@@ -1220,25 +1260,29 @@ class VueGestionnaire extends VueStaff
                 color: #f8fafc;
             }
 
-            .scrollable-content {
-                flex-grow: 1;
-                overflow-y: auto;
-                padding-bottom: 5rem;
-                scroll-behavior: smooth;
-            }
-
-            .content-limit {
+            /* Container principal : il prend toute la hauteur de l'écran */
+            .page-container {
                 max-width: 1300px;
                 margin: 0 auto;
-                padding: 3rem 2rem;
+                width: 100%;
+                height: 100vh;
+                display: flex;
+                flex-direction: column;
+                padding: 2rem;
+                box-sizing: border-box;
+            }
+
+            /* Le header et la recherche ne bougent pas */
+            .fixed-top-section {
+                flex-shrink: 0;
+                margin-bottom: 1rem;
             }
 
             .page-header {
                 display: flex;
                 justify-content: space-between;
                 align-items: flex-end;
-                margin-bottom: 3rem;
-                animation: fadeInDown 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+                margin-bottom: 2rem;
             }
 
             .glass-search-bar {
@@ -1246,61 +1290,47 @@ class VueGestionnaire extends VueStaff
                 backdrop-filter: blur(20px);
                 border: 1px solid rgba(16, 185, 129, 0.15);
                 border-radius: 2rem;
-                padding: 1.25rem 2.5rem;
+                padding: 1rem 2.5rem;
                 display: flex;
                 gap: 1.5rem;
                 align-items: center;
-                margin-bottom: 3rem;
                 box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
             }
 
+            /* LA ZONE SCROLLABLE : Elle prend le reste de la hauteur */
+            #barmanList {
+                flex-grow: 1;
+                overflow-y: auto;
+                padding-right: 15px; /* Espace pour la scrollbar */
+                padding-bottom: 3rem;
+                margin-top: 1rem;
+            }
+
+            /* Style des cartes */
             .member-card {
                 background: rgba(255, 255, 255, 0.02);
                 border: 1px solid rgba(255, 255, 255, 0.05);
                 border-radius: 2rem;
-                padding: 1.5rem 2.5rem;
+                padding: 1.2rem 2.5rem;
                 margin-bottom: 1rem;
                 display: grid;
-                grid-template-columns: 120px 1.5fr 1fr 1fr 150px;
+                grid-template-columns: 80px 1.5fr 1fr 1.2fr 150px;
                 align-items: center;
                 transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
                 text-decoration: none;
-                position: relative;
-                overflow: hidden;
+                color: inherit;
             }
 
             .member-card:hover {
                 background: rgba(16, 185, 129, 0.05);
                 border-color: #10b981;
-                transform: scale(1.01) translateX(10px);
-                box-shadow: -10px 10px 40px rgba(0, 0, 0, 0.4);
-            }
-
-            .member-card::before {
-                content: '';
-                position: absolute;
-                left: 0;
-                top: 0;
-                height: 100%;
-                width: 4px;
-                background: #10b981;
-                transform: scaleY(0);
-                transition: 0.3s;
-            }
-
-            .member-card:hover::before {
-                transform: scaleY(1);
+                transform: translateX(10px);
             }
 
             .id-pill {
-                font-family: 'JetBrains Mono', monospace;
-                font-size: 11px;
-                color: #10b981;
-                background: rgba(16, 185, 129, 0.1);
-                padding: 5px 12px;
-                border-radius: 8px;
+                font-size: 10px;
+                padding: 4px 10px;
                 width: fit-content;
-                font-weight: 800;
             }
 
             .avatar-box {
@@ -1308,26 +1338,17 @@ class VueGestionnaire extends VueStaff
                 height: 45px;
                 border-radius: 14px;
                 background: linear-gradient(135deg, #064e3b 0%, #020617 100%);
-                border: 1px solid rgba(16, 185, 129, 0.2);
                 display: flex;
                 align-items: center;
                 justify-content: center;
                 font-weight: 900;
                 color: #10b981;
-                transition: 0.3s;
-            }
-
-            .member-card:hover .avatar-box {
-                background: #10b981;
-                color: #020617;
-                transform: rotate(-5deg);
             }
 
             .status-tag {
                 font-size: 10px;
                 font-weight: 900;
                 text-transform: uppercase;
-                letter-spacing: 1px;
                 display: flex;
                 align-items: center;
                 gap: 8px;
@@ -1357,54 +1378,34 @@ class VueGestionnaire extends VueStaff
                 font-weight: 900;
                 text-transform: uppercase;
                 opacity: 0;
-                transform: translateX(20px);
                 transition: 0.4s;
             }
 
             .member-card:hover .btn-view {
                 opacity: 1;
-                transform: translateX(0);
             }
 
-            #filterAsso option {
-                background-color: #020617;
-                color: #ffffff;
-                font-family: 'Plus Jakarta Sans', sans-serif;
-                padding: 10px;
-            }
-
-            #filterAsso {
-                color: #10b981;
-            }
-
-            #filterAsso:hover {
-                color: #ffffff;
-            }
-
-            @keyframes fadeInDown {
-                from {
-                    opacity: 0;
-                    transform: translateY(-20px);
-                }
-                to {
-                    opacity: 1;
-                    transform: translateY(0);
-                }
-            }
-
-            .scrollable-content::-webkit-scrollbar {
+            /* Custom Scrollbar */
+            #barmanList::-webkit-scrollbar {
                 width: 6px;
             }
 
-            .scrollable-content::-webkit-scrollbar-thumb {
-                background: rgba(16, 185, 129, 0.3);
+            #barmanList::-webkit-scrollbar-thumb {
+                background: rgba(16, 185, 129, 0.2);
                 border-radius: 10px;
+            }
+
+            #barmanList::-webkit-scrollbar-thumb:hover {
+                background: rgba(16, 185, 129, 0.5);
+            }
+
+            #filterAsso option {
+                background: #020617;
             }
         </style>
 
-        <div class="scrollable-content">
-            <div class="content-limit">
-
+        <div class="page-container">
+            <div class="fixed-top-section">
                 <header class="page-header">
                     <div>
                         <h1 class="text-6xl font-black italic tracking-tighter uppercase leading-none text-white">
@@ -1415,7 +1416,7 @@ class VueGestionnaire extends VueStaff
                         </p>
                     </div>
                     <a href="index.php?action=ajouterBarman"
-                       class="group flex items-center gap-4 bg-emerald-500 text-slate-950 px-8 py-4 rounded-2xl font-black text-xs uppercase transition-all hover:bg-white hover:scale-105 shadow-lg shadow-emerald-900/20">
+                       class="group flex items-center gap-4 bg-emerald-500 text-slate-950 px-8 py-4 rounded-2xl font-black text-xs uppercase transition-all hover:bg-white shadow-lg shadow-emerald-900/20">
                         Recruter un membre
                         <i class="fa-solid fa-plus transition-transform group-hover:rotate-90"></i>
                     </a>
@@ -1430,57 +1431,61 @@ class VueGestionnaire extends VueStaff
 
                     <select id="filterAsso"
                             class="bg-transparent text-white border-none outline-none font-black text-[10px] uppercase tracking-widest cursor-pointer hover:text-emerald-500 transition-colors">
-                        <option value="all" class="text-white">Toutes les associations</option>
+                        <option value="all">Toutes les associations</option>
                         <?php foreach ($associations as $asso): ?>
-                            <option value="<?= htmlspecialchars($asso['nom']) ?>" class="text-white">
+                            <option value="<?= htmlspecialchars($asso['nom']) ?>">
                                 <?= htmlspecialchars($asso['nom']) ?>
                             </option>
                         <?php endforeach; ?>
                     </select>
                 </div>
+            </div>
 
-                <div id="barmanList">
-                    <?php foreach ($barmans as $barman):
-                        $isActif = $barman['actif'] ?? true;
-                        ?>
-                        <a href="index.php?action=voirProfilBarman&id=<?= $barman['id'] ?>"
-                           class="member-card barman-row"
-                           data-asso="<?= htmlspecialchars($barman['nom_association'] ?? 'Aucune') ?>">
+            <div id="barmanList">
+                <?php foreach ($barmans as $barman):
+                    $isActif = $barman['actif'] ?? true;
+                    $nomAsso = !empty($barman['nom_association']) ? $barman['nom_association'] : 'Non assigné';
+                    ?>
+                    <a href="index.php?action=voirProfilBarman&id=<?= $barman['id'] ?>"
+                       class="member-card barman-row"
+                       data-asso="<?= htmlspecialchars($nomAsso) ?>"
+                       style="display: grid; text-decoration: none; color: inherit;">
 
+                        <div style="display: flex; align-items: center;">
                             <span class="id-pill">ID-<?= str_pad($barman['id'], 3, '0', STR_PAD_LEFT) ?></span>
+                        </div>
 
-                            <div class="flex items-center gap-5">
-                                <div class="avatar-box">
-                                    <?= strtoupper(substr($barman['prenom'], 0, 1)) ?>
-                                </div>
-                                <div>
-                                    <h3 class="text-sm font-black text-white uppercase search-target leading-none mb-1">
-                                        <?= htmlspecialchars($barman['prenom'] . ' ' . $barman['nom']) ?>
-                                    </h3>
-                                    <p class="text-[10px] text-emerald-500/40 font-bold tracking-tight lowercase">
-                                        <?= htmlspecialchars($barman['email']) ?>
-                                    </p>
-                                </div>
+                        <div class="flex items-center gap-5">
+                            <div class="avatar-box">
+                                <?= strtoupper(substr($barman['prenom'], 0, 1)) ?>
                             </div>
+                            <div>
+                                <h3 class="text-sm font-black text-white uppercase leading-none mb-1">
+                                    <?= htmlspecialchars($barman['prenom'] . ' ' . $barman['nom']) ?>
+                                </h3>
+                                <p class="text-[10px] text-emerald-500/40 font-bold lowercase">
+                                    <?= htmlspecialchars($barman['email']) ?>
+                                </p>
+                            </div>
+                        </div>
 
-                            <div class="status-tag <?= $isActif ? 'text-emerald-400' : 'text-slate-500' ?>">
-                                <span class="dot <?= $isActif ? 'dot-online' : 'dot-offline' ?>"></span>
-                                <?= $isActif ? 'En service' : 'Inactif' ?>
-                            </div>
+                        <div class="status-tag <?= $isActif ? 'text-emerald-400' : 'text-slate-500' ?>">
+                            <span class="dot <?= $isActif ? 'dot-online' : 'dot-offline' ?>"></span>
+                            <?= $isActif ? 'En service' : 'Inactif' ?>
+                        </div>
 
-                            <div class="flex flex-col">
-                                <span class="text-[9px] font-black text-emerald-900 uppercase mb-1">Rattachement</span>
-                                <span class="text-[11px] font-extrabold text-white uppercase tracking-tighter">
-                                <?= htmlspecialchars($barman['nom_association'] ?? 'Non assigné') ?>
-                            </span>
-                            </div>
+                        <div class="flex flex-col">
+                            <span class="text-[9px] font-black text-emerald-500/50 uppercase mb-1">Rattachement</span>
+                            <span class="text-[11px] font-extrabold text-white uppercase tracking-tighter">
+            <?= htmlspecialchars($nomAsso) ?>
+        </span>
+                        </div>
 
-                            <div class="text-right">
-                                <span class="btn-view">Consulter</span>
-                            </div>
-                        </a>
-                    <?php endforeach; ?>
-                </div>
+                        <div class="text-right">
+                            <span class="btn-view" style="opacity: 1; visibility: visible;">Consulter</span>
+                        </div>
+                    </a>
+                <?php endforeach; ?>
             </div>
         </div>
 
@@ -1501,13 +1506,7 @@ class VueGestionnaire extends VueStaff
                         const matchesSearch = content.includes(searchValue);
                         const matchesAsso = (assoValue === 'all' || rowAsso === assoValue);
 
-                        if (matchesSearch && matchesAsso) {
-                            row.style.display = 'grid';
-                            row.style.opacity = '1';
-                        } else {
-                            row.style.display = 'none';
-                            row.style.opacity = '0';
-                        }
+                        row.style.display = (matchesSearch && matchesAsso) ? 'grid' : 'none';
                     });
                 }
 
@@ -1518,6 +1517,57 @@ class VueGestionnaire extends VueStaff
         <?php
     }
 
+    public function afficherSuccesPromotion()
+    {
+        $this->afficherNav();
+        ?>
+        <div style="height: 80vh; display: flex; flex-direction: column; justify-content: center; align-items: center; background: #020617; color: white; font-family: 'Plus Jakarta Sans', sans-serif;">
+
+            <div style="background: rgba(16, 185, 129, 0.1); border: 2px solid #10b981; width: 100px; height: 100px; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin-bottom: 2rem; animation: pulse 2s infinite;">
+                <i class="fa-solid fa-user-check" style="font-size: 3rem; color: #10b981;"></i>
+            </div>
+
+            <h1 style="font-size: 2.5rem; font-weight: 900; text-transform: uppercase; font-style: italic; margin-bottom: 1rem; letter-spacing: -1px;">
+                Recrutement <span style="color: #10b981;">Confirmé !</span>
+            </h1>
+
+            <p style="color: #94a3b8; font-size: 1.1rem; margin-bottom: 2rem; font-weight: 500;">
+                Le membre a été promu Barman. Redirection en cours...
+            </p>
+
+            <div style="width: 240px; height: 4px; background: rgba(255,255,255,0.05); border-radius: 10px; overflow: hidden;">
+                <div id="loader-bar"
+                     style="width: 0%; height: 100%; background: linear-gradient(90deg, #10b981, #34d399); transition: width 2s cubic-bezier(0.4, 0, 0.2, 1);"></div>
+            </div>
+
+            <style>
+                @keyframes pulse {
+                    0% {
+                        transform: scale(1);
+                        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+                    }
+                    70% {
+                        transform: scale(1.05);
+                        box-shadow: 0 0 0 20px rgba(16, 185, 129, 0);
+                    }
+                    100% {
+                        transform: scale(1);
+                        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+                    }
+                }
+            </style>
+        </div>
+
+        <script>
+            setTimeout(() => {
+                document.getElementById('loader-bar').style.width = '100%';
+            }, 100);
+            setTimeout(() => {
+                window.location.href = "index.php?action=barmans";
+            }, 2200);
+        </script>
+        <?php
+    }
 
     public function formulaireModificationProduit($produit)
     {
@@ -2549,10 +2599,11 @@ class VueGestionnaire extends VueStaff
                 --silver: #94a3b8;
                 --glass: rgba(255, 255, 255, 0.03);
             }
+
             /* Style pour le sélecteur d'asso */
             .select-asso {
                 width: 100%;
-                background: rgba(0,0,0,0.3);
+                background: rgba(0, 0, 0, 0.3);
                 border: 1px solid rgba(245, 158, 11, 0.3);
                 color: #fff;
                 padding: 0.6rem;
@@ -2564,25 +2615,89 @@ class VueGestionnaire extends VueStaff
                 outline: none;
                 cursor: pointer;
             }
-            .select-asso:focus { border-color: var(--electric-orange); }
+
+            .select-asso:focus {
+                border-color: var(--electric-orange);
+            }
 
             /* Tes autres styles restent identiques */
-            body { background-color: var(--chrome-bg); font-family: 'Plus Jakarta Sans', sans-serif; color: var(--silver); margin: 0; }
-            .fixed-top-section { position: sticky; top: 0; width: 100%; background: rgba(2, 6, 23, 0.95); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(245, 158, 11, 0.2); z-index: 1000; padding: 1.5rem 0; }
-            .header-title { font-size: 2.8rem; font-weight: 900; text-transform: uppercase; font-style: italic; background: linear-gradient(to bottom, #ffffff, #475569); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: -0.02em; }
-            .supplier-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 2.5rem; padding: 3rem 40px; max-width: 1600px; margin: 0 auto; }
-            .supplier-card { background: var(--chrome-card); border-radius: 1.8rem; padding: 2.2rem; border: 1px solid rgba(255, 255, 255, 0.05); transition: all 0.4s; }
-            .btn-base { font-size: 0.7rem; font-weight: 800; text-transform: uppercase; padding: 0.8rem 1.2rem; border-radius: 0.8rem; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
-            .btn-primary { background: var(--electric-orange); color: #000; border:none; cursor:pointer;}
+            body {
+                background-color: var(--chrome-bg);
+                font-family: 'Plus Jakarta Sans', sans-serif;
+                color: var(--silver);
+                margin: 0;
+            }
+
+            .fixed-top-section {
+                position: sticky;
+                top: 0;
+                width: 100%;
+                background: rgba(2, 6, 23, 0.95);
+                backdrop-filter: blur(20px);
+                border-bottom: 1px solid rgba(245, 158, 11, 0.2);
+                z-index: 1000;
+                padding: 1.5rem 0;
+            }
+
+            .header-title {
+                font-size: 2.8rem;
+                font-weight: 900;
+                text-transform: uppercase;
+                font-style: italic;
+                background: linear-gradient(to bottom, #ffffff, #475569);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                letter-spacing: -0.02em;
+            }
+
+            .supplier-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+                gap: 2.5rem;
+                padding: 3rem 40px;
+                max-width: 1600px;
+                margin: 0 auto;
+            }
+
+            .supplier-card {
+                background: var(--chrome-card);
+                border-radius: 1.8rem;
+                padding: 2.2rem;
+                border: 1px solid rgba(255, 255, 255, 0.05);
+                transition: all 0.4s;
+            }
+
+            .btn-base {
+                font-size: 0.7rem;
+                font-weight: 800;
+                text-transform: uppercase;
+                padding: 0.8rem 1.2rem;
+                border-radius: 0.8rem;
+                text-decoration: none;
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+            }
+
+            .btn-primary {
+                background: var(--electric-orange);
+                color: #000;
+                border: none;
+                cursor: pointer;
+            }
         </style>
 
         <div class="fixed-top-section">
             <div class="max-w-[1600px] mx-auto px-10 flex justify-between items-center">
                 <div>
-                    <h1 class="header-title">RÉSEAU <span style="color: var(--electric-orange); -webkit-text-fill-color: var(--electric-orange);">FOURNISSEURS</span></h1>
-                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-[0.4em] mt-1">HUB Logistique & Négociations</p>
+                    <h1 class="header-title">RÉSEAU <span
+                                style="color: var(--electric-orange); -webkit-text-fill-color: var(--electric-orange);">FOURNISSEURS</span>
+                    </h1>
+                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-[0.4em] mt-1">HUB Logistique &
+                        Négociations</p>
                 </div>
-                <a href="index.php?action=rechercherPrix" class="btn-base border border-amber-500 text-amber-500 hover:bg-amber-500 hover:text-black">
+                <a href="index.php?action=rechercherPrix"
+                   class="btn-base border border-amber-500 text-amber-500 hover:bg-amber-500 hover:text-black">
                     <i class="fa-solid fa-magnifying-glass"></i> Comparer les prix
                 </a>
             </div>
@@ -2591,7 +2706,8 @@ class VueGestionnaire extends VueStaff
         <div class="supplier-grid">
             <?php foreach ($fournisseurs as $f): ?>
                 <div class="supplier-card">
-                    <div class="icon-box" style="width:50px; height:50px; background:rgba(245,158,11,0.1); color:var(--electric-orange); display:flex; align-items:center; justify-content:center; border-radius:14px; margin-bottom:1.5rem;">
+                    <div class="icon-box"
+                         style="width:50px; height:50px; background:rgba(245,158,11,0.1); color:var(--electric-orange); display:flex; align-items:center; justify-content:center; border-radius:14px; margin-bottom:1.5rem;">
                         <i class="fa-solid fa-truck-ramp-box"></i>
                     </div>
 
@@ -2603,10 +2719,11 @@ class VueGestionnaire extends VueStaff
                         <input type="hidden" name="action" value="voirFournisseur">
                         <input type="hidden" name="id" value="<?= $f['id'] ?>">
 
-                        <label class="text-[9px] font-black uppercase text-slate-500 mb-2 block tracking-widest">Commander pour :</label>
+                        <label class="text-[9px] font-black uppercase text-slate-500 mb-2 block tracking-widest">Commander
+                            pour :</label>
                         <select name="id_asso" required class="select-asso">
                             <option value="" disabled selected>-- Choisir une association --</option>
-                            <?php foreach($associations as $asso): ?>
+                            <?php foreach ($associations as $asso): ?>
                                 <option value="<?= $asso['id'] ?>">
                                     <?= htmlspecialchars($asso['nom']) ?> (Solde: <?= $asso['solde'] ?>€)
                                 </option>
@@ -2621,7 +2738,8 @@ class VueGestionnaire extends VueStaff
                     </form>
 
                     <div class="flex justify-between items-center mt-6">
-                        <a href="mailto:<?= $f['email'] ?>" class="text-[10px] font-bold text-slate-400 hover:text-white">
+                        <a href="mailto:<?= $f['email'] ?>"
+                           class="text-[10px] font-bold text-slate-400 hover:text-white">
                             <i class="fa-solid fa-envelope"></i> Contact
                         </a>
                         <a href="index.php?action=supprimerFournisseur&id=<?= $f['id'] ?>"
@@ -2641,34 +2759,60 @@ class VueGestionnaire extends VueStaff
         $this->afficherNav();
         ?>
         <style>
-            body, html { overflow: hidden; height: 100%; }
+            body, html {
+                overflow: hidden;
+                height: 100%;
+            }
+
             .page-container {
                 background: radial-gradient(circle at top right, #0f172a, #020617);
-                height: 100vh; display: flex; flex-direction: column;
-                color: white; font-family: 'Plus Jakarta Sans', sans-serif;
+                height: 100vh;
+                display: flex;
+                flex-direction: column;
+                color: white;
+                font-family: 'Plus Jakarta Sans', sans-serif;
             }
+
             .scroll-section {
-                flex-grow: 1; overflow-y: auto; padding-bottom: 5rem;
-                scrollbar-width: thin; scrollbar-color: #f59e0b transparent;
+                flex-grow: 1;
+                overflow-y: auto;
+                padding-bottom: 5rem;
+                scrollbar-width: thin;
+                scrollbar-color: #f59e0b transparent;
             }
-            .scroll-section::-webkit-scrollbar { width: 6px; }
-            .scroll-section::-webkit-scrollbar-thumb { background-color: #f59e0b; border-radius: 20px; }
+
+            .scroll-section::-webkit-scrollbar {
+                width: 6px;
+            }
+
+            .scroll-section::-webkit-scrollbar-thumb {
+                background-color: #f59e0b;
+                border-radius: 20px;
+            }
 
             .result-card {
-                background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(12px);
-                border: 1px solid rgba(255, 255, 255, 0.05); transition: all 0.3s ease;
+                background: rgba(15, 23, 42, 0.6);
+                backdrop-filter: blur(12px);
+                border: 1px solid rgba(255, 255, 255, 0.05);
+                transition: all 0.3s ease;
             }
+
             .result-card:hover {
-                transform: translateY(-2px); background: rgba(30, 41, 59, 0.8);
-                border-color: rgba(245, 158, 11, 0.4); box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+                transform: translateY(-2px);
+                background: rgba(30, 41, 59, 0.8);
+                border-color: rgba(245, 158, 11, 0.4);
+                box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
             }
+
             .price-tag {
                 background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-                -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
             }
+
             .sort-select {
-                background: rgba(255,255,255,0.05);
-                border: 1px solid rgba(255,255,255,0.1);
+                background: rgba(255, 255, 255, 0.05);
+                border: 1px solid rgba(255, 255, 255, 0.1);
                 color: #94a3b8;
                 font-size: 0.75rem;
                 font-weight: 800;
@@ -2678,6 +2822,7 @@ class VueGestionnaire extends VueStaff
                 cursor: pointer;
                 transition: all 0.2s;
             }
+
             .sort-select:focus,
             .sort-select:active {
                 background: rgba(15, 23, 42, 0.95);
@@ -2696,7 +2841,10 @@ class VueGestionnaire extends VueStaff
                 appearance: none;
             }
 
-            .sort-select:hover { border-color: #f59e0b; color: white; }
+            .sort-select:hover {
+                border-color: #f59e0b;
+                color: white;
+            }
 
         </style>
 
@@ -2717,7 +2865,8 @@ class VueGestionnaire extends VueStaff
                                    placeholder="Ex: Coca, Bière Blonde..."
                                    class="w-full bg-slate-900/80 border border-white/10 rounded-2xl py-5 pl-14 pr-4 focus:border-amber-500 outline-none transition-all text-lg shadow-2xl">
                         </div>
-                        <button type="submit" class="bg-amber-500 text-black font-black px-10 py-5 rounded-2xl hover:bg-amber-400 hover:scale-105 active:scale-95 transition-all shadow-lg shadow-amber-500/20">
+                        <button type="submit"
+                                class="bg-amber-500 text-black font-black px-10 py-5 rounded-2xl hover:bg-amber-400 hover:scale-105 active:scale-95 transition-all shadow-lg shadow-amber-500/20">
                             RECHERCHER
                         </button>
                     </div>
@@ -2762,7 +2911,8 @@ class VueGestionnaire extends VueStaff
                                     </span>
                                         <h4 class="text-xl font-extrabold tracking-tight"><?= htmlspecialchars($res['produit_nom']) ?></h4>
                                         <p class="text-slate-400 text-sm">
-                                            Vendu par : <span class="text-slate-200 font-semibold italic"><?= htmlspecialchars($res['fournisseur_nom']) ?></span>
+                                            Vendu par : <span
+                                                    class="text-slate-200 font-semibold italic"><?= htmlspecialchars($res['fournisseur_nom']) ?></span>
                                         </p>
                                     </div>
 
@@ -2784,7 +2934,7 @@ class VueGestionnaire extends VueStaff
         </div>
 
         <script>
-            document.getElementById('sortResults')?.addEventListener('change', function() {
+            document.getElementById('sortResults')?.addEventListener('change', function () {
                 const grid = document.getElementById('resultsGrid');
                 const cards = Array.from(grid.children);
                 const sortBy = this.value;
@@ -2811,7 +2961,8 @@ class VueGestionnaire extends VueStaff
         <?php
     }
 
-    public function afficherListeCommandes($commandes) {
+    public function afficherListeCommandes($commandes)
+    {
         $this->afficherNav();
         ?>
         <style>
@@ -2841,7 +2992,7 @@ class VueGestionnaire extends VueStaff
                 background: rgba(255, 255, 255, 0.06);
                 border-color: #f59e0b;
                 transform: translateY(-2px);
-                box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
+                box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
             }
 
             .status-pill {
@@ -2856,9 +3007,23 @@ class VueGestionnaire extends VueStaff
                 gap: 6px;
             }
 
-            .status-en_attente { background: rgba(245, 158, 11, 0.1); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.2); }
-            .status-livree { background: rgba(34, 197, 94, 0.1); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.2); }
-            .status-annulee { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); }
+            .status-en_attente {
+                background: rgba(245, 158, 11, 0.1);
+                color: #f59e0b;
+                border: 1px solid rgba(245, 158, 11, 0.2);
+            }
+
+            .status-livree {
+                background: rgba(34, 197, 94, 0.1);
+                color: #22c55e;
+                border: 1px solid rgba(34, 197, 94, 0.2);
+            }
+
+            .status-annulee {
+                background: rgba(239, 68, 68, 0.1);
+                color: #ef4444;
+                border: 1px solid rgba(239, 68, 68, 0.2);
+            }
 
             .label-text {
                 font-size: 9px;
@@ -2872,7 +3037,7 @@ class VueGestionnaire extends VueStaff
             .view-btn {
                 width: 45px;
                 height: 45px;
-                background: rgba(255,255,255,0.05);
+                background: rgba(255, 255, 255, 0.05);
                 border-radius: 14px;
                 display: flex;
                 align-items: center;
@@ -2893,7 +3058,8 @@ class VueGestionnaire extends VueStaff
                 <div class="flex justify-between items-end mb-12">
                     <div>
                         <h1 class="text-5xl font-black italic uppercase tracking-tighter">Historique</h1>
-                        <p class="text-amber-500 font-bold text-xs uppercase tracking-[0.4em] mt-2">Suivi des commandes fournisseurs</p>
+                        <p class="text-amber-500 font-bold text-xs uppercase tracking-[0.4em] mt-2">Suivi des commandes
+                            fournisseurs</p>
                     </div>
                     <div class="bg-white/5 px-6 py-3 rounded-2xl border border-white/10">
                         <span class="text-slate-500 font-bold text-[10px] uppercase mr-3">Total Commandes</span>
@@ -2916,7 +3082,8 @@ class VueGestionnaire extends VueStaff
                                 <div>
                                     <p class="label-text">Fournisseur & Date</p>
                                     <p class="text-xl font-black uppercase italic leading-none mb-1"><?= htmlspecialchars($c['nom_fournisseur']) ?></p>
-                                    <p class="text-[11px] font-bold text-slate-400 italic">Passée le <?= date('d/m/Y', strtotime($c['date_commande'])) ?></p>
+                                    <p class="text-[11px] font-bold text-slate-400 italic">Passée
+                                        le <?= date('d/m/Y', strtotime($c['date_commande'])) ?></p>
                                 </div>
 
                                 <div>
@@ -2934,11 +3101,13 @@ class VueGestionnaire extends VueStaff
 
                                 <div class="text-right pr-8">
                                     <p class="label-text">Investissement HT</p>
-                                    <p class="text-2xl font-black text-amber-500 tracking-tighter"><?= number_format($c['montant_total'], 2, ',', ' ') ?>€</p>
+                                    <p class="text-2xl font-black text-amber-500 tracking-tighter"><?= number_format($c['montant_total'], 2, ',', ' ') ?>
+                                        €</p>
                                 </div>
 
                                 <div class="flex justify-end">
-                                    <a href="index.php?action=detailCommande&id=<?= $c['id'] ?>" class="view-btn" title="Voir les détails">
+                                    <a href="index.php?action=detailCommande&id=<?= $c['id'] ?>" class="view-btn"
+                                       title="Voir les détails">
                                         <i class="fa-solid fa-plus text-lg"></i>
                                     </a>
                                 </div>
@@ -2951,14 +3120,20 @@ class VueGestionnaire extends VueStaff
         <?php
     }
 
-    public function afficherAffectationStock($associations, $reserve, $commandesFournisseurs, $historiqueAchats) {
+    public function afficherAffectationStock($associations, $reserve, $commandesFournisseurs, $historiqueAchats)
+    {
         $this->afficherNav();
         ?>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
         <style>
             @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
-            body { background: #020617; font-family: 'Plus Jakarta Sans', sans-serif; color: #f8fafc; }
+
+            body {
+                background: #020617;
+                font-family: 'Plus Jakarta Sans', sans-serif;
+                color: #f8fafc;
+            }
 
             .glass-card {
                 background: rgba(30, 41, 59, 0.4);
@@ -2967,7 +3142,11 @@ class VueGestionnaire extends VueStaff
                 border-radius: 1.5rem;
             }
 
-            .filter-group { display: flex; gap: 8px; margin-bottom: 20px; }
+            .filter-group {
+                display: flex;
+                gap: 8px;
+                margin-bottom: 20px;
+            }
 
             .filter-input {
                 background: rgba(15, 23, 42, 0.8);
@@ -2979,25 +3158,48 @@ class VueGestionnaire extends VueStaff
                 outline: none;
                 width: 100%;
             }
-            .filter-input:focus { border-color: #3b82f6; }
 
-            .hidden-item { display: none !important; }
-            .view-more-btn {
-                width: 100%; padding: 12px; margin-top: 15px;
-                background: rgba(255, 255, 255, 0.03);
-                border: 1px dashed rgba(255, 255, 255, 0.1);
-                border-radius: 12px; font-size: 10px; font-weight: 800;
-                color: #64748b; cursor: pointer;
+            .filter-input:focus {
+                border-color: #3b82f6;
             }
 
-            .status-livré { color: #10b981; background: rgba(16, 185, 129, 0.1); padding: 2px 8px; border-radius: 4px; }
-            .status-en_attente { color: #f59e0b; background: rgba(245, 158, 11, 0.1); padding: 2px 8px; border-radius: 4px; }
+            .hidden-item {
+                display: none !important;
+            }
+
+            .view-more-btn {
+                width: 100%;
+                padding: 12px;
+                margin-top: 15px;
+                background: rgba(255, 255, 255, 0.03);
+                border: 1px dashed rgba(255, 255, 255, 0.1);
+                border-radius: 12px;
+                font-size: 10px;
+                font-weight: 800;
+                color: #64748b;
+                cursor: pointer;
+            }
+
+            .status-livré {
+                color: #10b981;
+                background: rgba(16, 185, 129, 0.1);
+                padding: 2px 8px;
+                border-radius: 4px;
+            }
+
+            .status-en_attente {
+                color: #f59e0b;
+                background: rgba(245, 158, 11, 0.1);
+                padding: 2px 8px;
+                border-radius: 4px;
+            }
         </style>
 
         <div class="max-w-[1500px] mx-auto p-6">
 
             <div class="mb-8 text-center lg:text-left">
-                <h1 class="text-3xl font-black italic uppercase tracking-tighter">Flux <span class="text-blue-500">Logistique</span></h1>
+                <h1 class="text-3xl font-black italic uppercase tracking-tighter">Flux <span class="text-blue-500">Logistique</span>
+                </h1>
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -3008,7 +3210,8 @@ class VueGestionnaire extends VueStaff
                     </h2>
 
                     <div class="filter-group">
-                        <input type="text" id="searchCmd" onkeyup="filterCommandes()" placeholder="Fournisseur..." class="filter-input">
+                        <input type="text" id="searchCmd" onkeyup="filterCommandes()" placeholder="Fournisseur..."
+                               class="filter-input">
                         <select id="statusCmd" onchange="filterCommandes()" class="filter-input">
                             <option value="all">Statuts</option>
                             <option value="livré">Livré</option>
@@ -3019,7 +3222,7 @@ class VueGestionnaire extends VueStaff
                     <div id="container-commandes" class="space-y-3">
                         <?php
                         $limitC = ceil(count($commandesFournisseurs) / 2);
-                        foreach($commandesFournisseurs as $idx => $cmd):
+                        foreach ($commandesFournisseurs as $idx => $cmd):
                             $hide = ($idx >= $limitC) ? 'hidden-item' : '';
                             ?>
                             <div class="cmd-item bg-slate-900/60 p-4 rounded-xl border border-white/5 <?= $hide ?>"
@@ -3046,13 +3249,14 @@ class VueGestionnaire extends VueStaff
                     </h2>
 
                     <div class="filter-group">
-                        <input type="text" id="searchHist" onkeyup="filterEntrees()" placeholder="Produit ou Source..." class="filter-input">
+                        <input type="text" id="searchHist" onkeyup="filterEntrees()" placeholder="Produit ou Source..."
+                               class="filter-input">
                     </div>
 
                     <div id="container-historique" class="space-y-2">
                         <?php
                         $limitH = ceil(count($historiqueAchats) / 2);
-                        foreach($historiqueAchats as $idx => $h):
+                        foreach ($historiqueAchats as $idx => $h):
                             $hide = ($idx >= $limitH) ? 'hidden-item' : '';
                             ?>
                             <div class="hist-item flex justify-between items-center p-3 bg-white/[0.02] border border-white/5 rounded-xl <?= $hide ?>"

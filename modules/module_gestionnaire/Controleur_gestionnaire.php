@@ -202,10 +202,17 @@ class ControleurGestionnaire
     }
 
 
-    private function afficherTableauDeBord() {
+    private function afficherTableauDeBord()
+    {
         $idGest = $_SESSION['id'];
 
-        $associations = $this->modele->getAssociationsParGestionnaire($idGest);
+        // 1. On récupère les données de l'association
+        $assoUnique = $this->modele->getAssociationsParGestionnaire($idGest);
+
+        // 2. SÉCURITÉ : Si on n'a rien, on initialise un tableau vide,
+        // sinon on met l'unique asso dans une liste (un tableau contenant le tableau de l'asso)
+        $associations = ($assoUnique) ? [$assoUnique] : [];
+
         $alertes = $this->modele->getStockCritique($idGest);
         $topProduits = $this->modele->getTopProduits($idGest);
         $totalPertesGlobal = $this->modele->getTotalPertes($idGest);
@@ -214,8 +221,11 @@ class ControleurGestionnaire
         $beneficeTotalNet = 0;
         $tousLesBarmans = [];
 
+        // Maintenant le foreach ne plantera plus
         foreach ($associations as $asso) {
-            $barmansAsso = $this->modele->getBarmansParAssociation($asso['id']);
+            // Correction ici : utilise l'ID de l'asso pour chercher ses barmans
+            $barmansAsso = $this->modele->getBarmansDeMonAssociation($idGest);
+
             foreach ($barmansAsso as $b) {
                 $tousLesBarmans[$b['id']] = $b;
             }
@@ -236,10 +246,10 @@ class ControleurGestionnaire
             'beneficeNet' => $beneficeTotalNet,
             'nbBarmans' => count($tousLesBarmans),
             'courbes' => [
-                'labels' => $statsQuotidiennes['dates'],
-                'tresorerie' => $statsQuotidiennes['recettes'],
-                'pertes' => $statsQuotidiennes['pertes'],
-                'benefices' => $statsQuotidiennes['benefices']
+                'labels' => $statsQuotidiennes['dates'] ?? [],
+                'tresorerie' => $statsQuotidiennes['recettes'] ?? [],
+                'pertes' => $statsQuotidiennes['pertes'] ?? [],
+                'benefices' => $statsQuotidiennes['benefices'] ?? []
             ]
         ];
 
@@ -261,6 +271,7 @@ class ControleurGestionnaire
 
         $this->vue->afficherProduits($produits, $associations, $titre);
     }
+
     private function gererAjoutProduit()
     {
         if ($_SERVER['REQUEST_METHOD'] === 'GET') {
@@ -422,10 +433,13 @@ class ControleurGestionnaire
     private function afficherAssociations()
     {
         $id_gestionnaire = $_SESSION['id'] ?? '';
-        $associations = $this->modele->getAssociationsParGestionnaire($id_gestionnaire);
+
+        // On utilise la fonction qui fait le fetchAll() pour éviter que la vue soit vide
+        $associations = $this->modele->getAssociationsGerees($id_gestionnaire);
+
+        // On passe le résultat à la vue
         $this->vue->afficherAssociationsValidees($associations);
     }
-
     private function accepterAssociation()
     {
         if (isset($_GET['id'])) {
@@ -485,8 +499,17 @@ class ControleurGestionnaire
     private function afficherBarmans()
     {
         $idGestionnaire = $_SESSION['id'];
-        $associations = $this->modele->getAssociationsParGestionnaire($idGestionnaire);
-        $barmans = $this->modele->getBarmans();
+
+        // 1. On récupère les associations gérées par ce gestionnaire
+        // (On s'assure que c'est une liste d'associations)
+        $assoUnique = $this->modele->getAssociationsParGestionnaire($idGestionnaire);
+        $associations = ($assoUnique && isset($assoUnique['id'])) ? [$assoUnique] : $assoUnique;
+
+        // 2. On récupère UNIQUEMENT les barmans liés à ces associations
+        // On utilise la méthode qui filtre par gestionnaire
+        $barmans = $this->modele->getBarmansDeMonAssociation($idGestionnaire);
+
+        // 3. On appelle la vue avec les données filtrées
         $this->vue->afficherBarmans($barmans, $associations);
     }
 
@@ -500,20 +523,22 @@ class ControleurGestionnaire
                 $res = $this->modele->ajouterClientCommeBarman($clientId, $assoId);
 
                 if ($res) {
-                    $_SESSION['success'] = "Barman ajouté avec succès";
-                    header('Location: index.php?action=barmans');
+                    // AU LIEU DU HEADER, ON APPELLE L'ANIMATION
+                    $this->vue->afficherSuccesPromotion();
                     exit();
                 } else {
-                    die("Erreur lors de l'insertion en base de données.");
+                    $_SESSION['error'] = "Ce membre est déjà barman ou une erreur est survenue.";
+                    header('Location: index.php?action=barmans');
+                    exit();
                 }
-            } else {
-                header('Location: index.php?action=ajouterBarman&error=missing_data');
-                exit();
             }
         } else {
+            // Affichage du formulaire (inchangé)
             $q = $_GET['q'] ?? '';
             $clients = $this->modele->rechercherClients($q);
-            $associations = $this->modele->getAssociationsParGestionnaire($_SESSION['id']);
+            $assoData = $this->modele->getAssociationsParGestionnaire($_SESSION['id']);
+            $associations = (isset($assoData['id'])) ? [$assoData] : $assoData;
+
             $this->vue->formulaireAjouterBarman($clients, $associations);
         }
     }
@@ -550,18 +575,64 @@ class ControleurGestionnaire
 
     private function afficherProfilBarman()
     {
+        // On vérifie si l'ID arrive bien
         $id_cible = $_GET['id'] ?? null;
+
         if ($id_cible) {
-            $data = $this->modele->getBarmanParId($id_cible);
-            $this->vue->afficherProfilBarman($data);
+            $infosBarman = $this->modele->getBarmanParId($id_cible);
+
+            // TEST : Décommente la ligne suivante pour voir si les données sortent de la BDD
+            // die(var_dump($infosBarman));
+
+            if (!$infosBarman) {
+                // Si le modèle renvoie rien, on ne reste pas sur une page blanche
+                $_SESSION['error'] = "Données introuvables pour l'ID : " . $id_cible;
+                header('Location: index.php?action=barmans');
+                exit();
+            }
+
+            // On appelle la vue
+            $this->vue->afficherProfilBarman($infosBarman);
+        } else {
+            $_SESSION['error'] = "Aucun ID spécifié pour la consultation.";
+            header('Location: index.php?action=barmans');
+            exit();
+        }
+    }
+    public function getBarmansParAssociation($id_gestionnaire)
+    {
+        try {
+            $sql = "SELECT c.*, asso.nom AS nom_association 
+                FROM compte c
+                JOIN appartient a ON c.id = a.compte_id
+                JOIN association asso ON a.association_id = asso.id
+                JOIN gestionne g ON asso.id = g.association_id
+                WHERE g.compte_id = ? AND a.role = 'barman'";
+
+            $stmt = self::getBdd()->prepare($sql);
+            $stmt->execute([$id_gestionnaire]);
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            return [];
         }
     }
 
-    private function afficherBarmansAssociation()
+    public function afficherBarmansAssociation()
     {
-        $id_assos = $_GET['id'] ?? null;
-        $barmans = $this->modele->getBarmansParAssociation($id_assos);
-        $this->vue->afficherBarmans($barmans, $id_assos);
+        $id_gestionnaire = $_SESSION['id'];
+        $asso = $this->modele->getAssociationsParGestionnaire($id_gestionnaire);
+
+        if ($asso && isset($asso['id'])) {
+            $id_asso = $asso['id'];
+
+            $barmans = $this->modele->getBarmansParAssociation($id_asso);
+
+            $associations = [$asso];
+
+            $this->vue->afficherBarmans($barmans, $associations);
+        } else {
+            $this->vue->afficherBarmans([], []);
+        }
     }
 
     private function gererSoldeClient()
@@ -613,10 +684,11 @@ class ControleurGestionnaire
             if ($id_client && $id_assos) {
                 $success = $this->modele->ajouterClient($id_client, $id_assos);
                 if ($success) {
-                    header("Location: index.php?action=tableauDeBord&status=success");
+                    // Redirige vers l'accueil ou la liste des clients
+                    header("Location: index.php?action=accueil&success=client_ajoute");
                     exit();
                 } else {
-                    $this->preparerVueAjout("Ce client fait déjà partie de cette association.");
+                    $this->preparerVueAjout("Ce client fait déjà partie de cette association ou erreur technique.");
                 }
             } else {
                 $this->preparerVueAjout("Veuillez remplir tous les champs.");
@@ -628,11 +700,13 @@ class ControleurGestionnaire
 
     private function preparerVueAjout($erreur = null)
     {
-        $associations = $this->modele->getAssociationsParGestionnaire($_SESSION['id']);
+        $id_gest = $_SESSION['id'];
+        // On utilise getAssociationsGerees car elle fait un fetchAll()
+        $associations = $this->modele->getAssociationsGerees($id_gest);
         $clients = $this->modele->getClientSansAssos();
+
         $this->vue->afficherFormulaireAjoutClient($associations, $clients, $erreur);
     }
-
     private function afficherClientsAssociation()
     {
         $idAsso = $_GET['id'] ?? $_SESSION['id_association'] ?? null;
@@ -649,7 +723,8 @@ class ControleurGestionnaire
     }
 
 
-    private function afficherFournisseurs() {
+    private function afficherFournisseurs()
+    {
         $fournisseurs = $this->modele->getTousLesFournisseurs();
 
 
@@ -659,7 +734,8 @@ class ControleurGestionnaire
         $this->vue->afficherFournisseurs($fournisseurs, $associations);
     }
 
-    private function afficherDetailsFournisseur() {
+    private function afficherDetailsFournisseur()
+    {
         $id = $_GET['id'];
         $tri = $_GET['tri'] ?? 'nom';
         $search = $_GET['search'] ?? '';
@@ -708,12 +784,16 @@ class ControleurGestionnaire
             $erreur
         );
     }
-    private function afficherMesCommandes() {
+
+    private function afficherMesCommandes()
+    {
         $idGestionnaire = $_SESSION['id'];
         $commandes = $this->modele->getCommandesParGestionnaire($idGestionnaire);
         $this->vue->afficherListeCommandes($commandes);
     }
-    public function validerDistribution() {
+
+    public function validerDistribution()
+    {
         $idAsso = $_POST['id_association'] ?? null;
         $distribution = $_POST['distribution'] ?? [];
 
@@ -727,7 +807,9 @@ class ControleurGestionnaire
             exit;
         }
     }
-    private function afficherDistribution() {
+
+    private function afficherDistribution()
+    {
         $idGest = $_SESSION['id'];
 
         $associations = $this->modele->getAssociationsParGestionnaire($idGest);
@@ -741,8 +823,8 @@ class ControleurGestionnaire
     }
 
 
-
-    public function validerCommandeFournisseur() {
+    public function validerCommandeFournisseur()
+    {
         $idAsso = $_POST['id_association'] ?? null;
         $idFournisseur = $_POST['id_fournisseur'] ?? null;
         $produitsPost = $_POST['produits'] ?? [];
@@ -798,7 +880,9 @@ class ControleurGestionnaire
             die("Erreur lors de la validation : " . $e->getMessage());
         }
     }
-    public function commanderFournisseur() {
+
+    public function commanderFournisseur()
+    {
         $id = $_GET['id'] ?? null;
         if ($id) {
             $fournisseur = $this->modele->getFournisseurParId($id);
@@ -807,6 +891,7 @@ class ControleurGestionnaire
             $this->vue->afficherDetailsFournisseur($fournisseur, $produits);
         }
     }
+
     private function afficherDetailCommande()
     {
         if (!isset($_GET['id'])) {

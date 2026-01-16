@@ -133,6 +133,7 @@ class VueStaff extends VueCommun
         </div>
         <?php
     }
+
     public function afficherProduits($produits, $associations, $titre = "Stock")
     {
         $this->afficherNav();
@@ -140,16 +141,14 @@ class VueStaff extends VueCommun
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
         <style>
-            /* On permet au document de scroller naturellement */
             html, body {
-                height: auto; /* Important : on enlève le 100vh */
-                overflow-y: visible; /* On autorise le scroll vertical */
+                height: auto;
+                overflow-y: visible;
                 background-color: #020617;
                 margin: 0;
                 font-family: 'Plus Jakarta Sans', sans-serif;
             }
 
-            /* Le header devient collant (Sticky) : il reste en haut au scroll sans figer la page */
             .header-section {
                 position: sticky;
                 top: 0;
@@ -167,10 +166,9 @@ class VueStaff extends VueCommun
             }
 
             .products-grid {
-                padding: 40px 0 100px 0; /* On gère l'espacement ici */
+                padding: 40px 0 100px 0;
             }
 
-            /* --- DA CONSERVÉE --- */
             .product-card {
                 position: relative;
                 background: rgba(255, 255, 255, 0.02);
@@ -225,7 +223,7 @@ class VueStaff extends VueCommun
                         <i class="fa-solid fa-boxes-stacked text-xl text-white"></i>
                     </div>
                     <h1 class="text-4xl font-black uppercase italic tracking-tighter text-white leading-none">
-                        <?= htmlspecialchars($titre) ?>
+                        <?= htmlspecialchars($titre ?? "Stock") ?>
                     </h1>
                 </div>
 
@@ -234,9 +232,13 @@ class VueStaff extends VueCommun
                         <i class="fa-solid fa-house-user text-violet-500"></i>
                         <select id="filterAsso" class="filter-select">
                             <option value="all">Toutes les assos</option>
-                            <?php foreach ($associations as $asso): ?>
-                                <option value="<?= htmlspecialchars($asso['nom']) ?>"><?= htmlspecialchars($asso['nom']) ?></option>
-                            <?php endforeach; ?>
+                            <?php if (is_iterable($associations)): ?>
+                                <?php foreach ($associations as $asso): ?>
+                                    <?php if (!empty($asso['nom'])): ?>
+                                        <option value="<?= htmlspecialchars($asso['nom']) ?>"><?= htmlspecialchars($asso['nom']) ?></option>
+                                    <?php endif; ?>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
                         </select>
                     </div>
 
@@ -255,59 +257,70 @@ class VueStaff extends VueCommun
 
         <div class="content-limit products-grid">
             <div id="productsWrapper" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-8 gap-y-12">
-                <?php foreach ($produits as $p):
-                    $stock = (int)($p['quantiteActuelle'] ?? 0);
-                    $isLow = $stock < 15;
-                    $colorHex = $isLow ? '#f43f5e' : '#8b5cf6';
-                    ?>
-                    <div class="product-card group p-8 <?= $isLow ? 'card-urgent' : '' ?>"
-                         data-nom="<?= htmlspecialchars(strtolower($p['nom'])) ?>"
-                         data-asso="<?= htmlspecialchars($p['nom_association'] ?? 'Général') ?>"
-                         data-stock="<?= $stock ?>"
-                         data-prix="<?= $p['prix'] ?? 0 ?>">
+                <?php
+                if (is_iterable($produits)):
+                    foreach ($produits as $p):
+                        if (!is_array($p)) continue;
 
-                        <div class="absolute -top-3 left-8 px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-tighter shadow-md"
-                             style="background: <?= $colorHex ?>; color: white;">
-                            <?= htmlspecialchars($p['nom_association'] ?? 'Général') ?>
-                        </div>
+                        $stock = (int)($p['stock_asso'] ?? 0);
+                        $nom = $p['nom'] ?? 'Inconnu';
+                        $assoNom = $p['nom_association'] ?? 'Général';
+                        $type = $p['type'] ?? '';
+                        $prix = (float)($p['prix'] ?? 0);
+                        $id = $p['id'] ?? 0;
 
-                        <div class="flex justify-between items-start mb-6">
-                            <div class="w-16 h-16 rounded-2xl flex items-center justify-center border border-white/10 bg-white/5"
-                                 style="color: <?= $colorHex ?>; border-color: <?= $colorHex ?>44">
-                                <i class="fa-solid <?= ($p['type'] ?? '') == 'boisson' ? 'fa-wine-glass' : 'fa-utensils' ?> text-2xl"></i>
+                        $isLow = $stock < 15;
+                        $colorHex = $isLow ? '#f43f5e' : '#8b5cf6';
+                        ?>
+                        <div class="product-card group p-8 <?= $isLow ? 'card-urgent' : '' ?>"
+                             data-nom="<?= htmlspecialchars(strtolower($nom)) ?>"
+                             data-asso="<?= htmlspecialchars($assoNom) ?>"
+                             data-stock="<?= $stock ?>"
+                             data-prix="<?= $prix ?>">
+
+                            <div class="absolute -top-3 left-8 px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-tighter shadow-md"
+                                 style="background: <?= $colorHex ?>; color: white;">
+                                <?= htmlspecialchars($assoNom) ?>
                             </div>
-                            <div class="text-right">
-                                <span class="font-black italic text-2xl tracking-tighter text-white"><?= number_format($p['prix'] ?? 0, 2) ?>€</span>
+
+                            <div class="flex justify-between items-start mb-6">
+                                <div class="w-16 h-16 rounded-2xl flex items-center justify-center border border-white/10 bg-white/5"
+                                     style="color: <?= $colorHex ?>; border-color: <?= $colorHex ?>44">
+                                    <i class="fa-solid <?= ($type == 'boisson') ? 'fa-wine-glass' : 'fa-utensils' ?> text-2xl"></i>
+                                </div>
+                                <div class="text-right">
+                                    <span class="font-black italic text-2xl tracking-tighter text-white"><?= number_format($prix, 2) ?>€</span>
+                                </div>
+                            </div>
+
+                            <div class="mb-8">
+                                <h3 class="text-xl font-black uppercase mb-1 truncate text-white"><?= htmlspecialchars($nom) ?></h3>
+                                <span class="text-[10px] font-bold uppercase" style="color: <?= $colorHex ?>">
+                                <?= $isLow ? '<i class="fa-solid fa-triangle-exclamation mr-1"></i>Urgence Stock' : 'Stock Optimal' ?>
+                            </span>
+                            </div>
+
+                            <div class="bg-black/40 rounded-3xl p-5 border border-white/5">
+                                <div class="flex justify-between text-[10px] font-black mb-3 uppercase tracking-widest">
+                                    <span class="text-slate-500">Stock</span>
+                                    <span style="color: <?= $colorHex ?>"><?= $stock ?> UNITÉS</span>
+                                </div>
+                                <div class="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
+                                    <div class="h-full"
+                                         style="width: <?= min(100, ($stock / 100) * 100) ?>%; background-color: <?= $colorHex ?>; box-shadow: 0 0 10px <?= $colorHex ?>;"></div>
+                                </div>
+                            </div>
+
+                            <div class="mt-8 flex gap-3 opacity-0 group-hover:opacity-100 transition-all">
+                                <a href="index.php?action=modifierProduit&id=<?= $id ?>"
+                                   class="flex-1 bg-white/5 py-4 rounded-xl text-center text-[9px] font-black uppercase text-white hover:bg-white/10 border border-white/5">Éditer</a>
+                                <a href="index.php?action=ajouterStock&id=<?= $id ?>"
+                                   class="flex-[2] py-4 rounded-xl text-center text-[9px] font-black uppercase text-white shadow-md"
+                                   style="background-color: <?= $colorHex ?>;">+ Stock</a>
                             </div>
                         </div>
-
-                        <div class="mb-8">
-                            <h3 class="text-xl font-black uppercase mb-1 truncate text-white"><?= htmlspecialchars($p['nom']) ?></h3>
-                            <span class="text-[10px] font-bold uppercase" style="color: <?= $colorHex ?>">
-                            <?= $isLow ? '<i class="fa-solid fa-triangle-exclamation mr-1"></i>Urgence Stock' : 'Stock Optimal' ?>
-                        </span>
-                        </div>
-
-                        <div class="bg-black/40 rounded-3xl p-5 border border-white/5">
-                            <div class="flex justify-between text-[10px] font-black mb-3 uppercase tracking-widest">
-                                <span class="text-slate-500">Stock</span>
-                                <span style="color: <?= $colorHex ?>"><?= $stock ?> UNITÉS</span>
-                            </div>
-                            <div class="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
-                                <div class="h-full"
-                                     style="width: <?= min(100, ($stock / 100) * 100) ?>%; background-color: <?= $colorHex ?>; box-shadow: 0 0 10px <?= $colorHex ?>;"></div>
-                            </div>
-                        </div>
-
-                        <div class="mt-8 flex gap-3 opacity-0 group-hover:opacity-100 transition-all">
-                            <a href="index.php?action=modifierProduit&id=<?= $p['id'] ?>"
-                               class="flex-1 bg-white/5 py-4 rounded-xl text-center text-[9px] font-black uppercase text-white hover:bg-white/10 border border-white/5">Éditer</a>
-                            <a href="index.php?action=ajouterStock&id=<?= $p['id'] ?>"
-                               class="flex-[2] py-4 rounded-xl text-center text-[9px] font-black uppercase text-white shadow-md"
-                               style="background-color: <?= $colorHex ?>;">+ Stock</a>
-                        </div>
-                    </div>
-                <?php endforeach; ?>
+                    <?php endforeach;
+                endif; ?>
             </div>
         </div>
 
@@ -343,6 +356,7 @@ class VueStaff extends VueCommun
         </script>
         <?php
     }
+
     public function formulaireStock($produit)
     {
         ?>
@@ -383,7 +397,7 @@ class VueStaff extends VueCommun
                             <div class="flex flex-col">
                                 <span class="text-[9px] font-black uppercase tracking-widest text-slate-500">État actuel</span>
                                 <span class="text-xl font-bold text-white"><?= $produit['quantiteActuelle'] ?> <small
-                                        class="text-[10px] text-slate-500 uppercase">unités</small></span>
+                                            class="text-[10px] text-slate-500 uppercase">unités</small></span>
                             </div>
                             <div class="h-10 w-[1px] bg-white/10"></div>
                             <div class="flex flex-col text-right">
