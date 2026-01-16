@@ -31,6 +31,13 @@ class Controleur_barman
             case 'accueil':
                 $this->afficherAccueil();
                 break;
+            case 'rechercherClientAjax':
+                $this->rechercherClientAjax();
+                break;
+
+            case 'rechercherProduitAjax':
+                $this->rechercherProduitAjax();
+                break;
             case 'afficherProduits':
                 $this->afficherProduits();
                 break;
@@ -54,8 +61,31 @@ class Controleur_barman
                 $this->vueCommun->afficherProfil($utilisateur);
                 break;
             case 'messagerie':
-                $messages = $this->modeleCommun->getMesMessages($_SESSION['id']);
+                $messages = $this->modeleStaff->getMesMessages($_SESSION['id']);
+                $this->vue->afficherNav();
                 $this->vueStaff->afficherMesMessages($messages, $_SESSION['id']);
+                break;
+            case 'ecrireMessage':
+                $destinataires = $this->modele->getToutStaff();
+                $idCible = $_GET['id_dest'] ?? null;
+                $sujet = $_GET['objet'] ?? "";
+                $this->vue->afficherNav();
+                $this->vueStaff->afficherFormulaireEnvoi($destinataires, $sujet, $idCible);
+                break;
+
+            case 'envoyerMessage':
+                if (!empty($_POST['id_destinataire']) && !empty($_POST['contenu'])) {
+                    $id_exp = $_SESSION['id'];
+                    $id_dest = $_POST['id_destinataire'];
+                    $objet = $_POST['objet'];
+                    $contenu = $_POST['contenu'];
+
+                    $this->modeleStaff->enregistrerMessage($id_exp, $id_dest, $objet, $contenu);
+                    header("Location: index.php?action=messagerie");                }
+                break;
+            case 'listeStaff':
+                $membres = $this->modeleStaff->getToutStaff();
+                $this->vue->afficherClients($membres);
                 break;
             case 'modifierProfil':
                 break;
@@ -84,7 +114,7 @@ class Controleur_barman
     {
         $produits = $this->modele->listerProduits();
         $assos = $this->modele->getAssociationIdParBarman($_SESSION['id']);
-        $this->vue->afficherProduits($produits, $assos,);
+        $this->vue->afficherProduits($produits, $assos);
     }
 
     private function rechercherClient()
@@ -153,6 +183,29 @@ class Controleur_barman
         $this->vue->afficherFormTransaction($produits, $erreur, $donneesSaisies);
     }
 
+    public function rechercherClientAjax()
+    {
+        $recherche = $_GET['q'] ?? '';
+        if (strlen($recherche) < 1) {
+            echo json_encode([]);
+            exit;
+        }
+        $clients = $this->modele->rechercherClient($recherche);
+        $clients = array_slice($clients, 0, 10);
+        header('Content-Type: application/json');
+        echo json_encode($clients);
+        exit;
+    }
+
+    public function rechercherProduitAjax() {
+        $recherche = $_GET['q'] ?? '';
+        $idAsso = 1;
+
+        $produits = $this->modele->rechercherProduitsParNom($recherche, $idAsso);
+        header('Content-Type: application/json');
+        echo json_encode($produits);
+        exit;
+    }
     private function traiterTransaction()
     {
         try {

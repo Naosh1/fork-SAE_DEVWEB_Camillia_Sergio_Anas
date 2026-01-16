@@ -35,8 +35,6 @@ class ModeleStaff extends ModeleCommun
     public function getAssociationIdParBarman($idBarman)
     {
         try {
-            // On sélectionne l'id de l'association dans la table 'appartient'
-            // où le compte correspond à l'ID du barman connecté
             $sql = "SELECT association_id 
                 FROM appartient 
                 WHERE compte_id = ? 
@@ -44,8 +42,6 @@ class ModeleStaff extends ModeleCommun
 
             $stmt = self::getBdd()->prepare($sql);
             $stmt->execute([$idBarman]);
-
-            // On récupère uniquement la valeur de la colonne 'association_id'
             return $stmt->fetchColumn();
 
         } catch (PDOException $e) {
@@ -70,6 +66,16 @@ class ModeleStaff extends ModeleCommun
         }
     }
 
+    public function rechercherProduitsParNom($recherche, $idAsso) {
+        $sql = "SELECT p.id, p.nom, p.prix 
+            FROM produit p
+            INNER JOIN gere g ON p.id = g.produit_id
+            WHERE g.association_id = ? 
+            AND p.nom LIKE ?";
+        $stmt = self::getBdd()->prepare($sql);
+        $stmt->execute([$idAsso, "%$recherche%"]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
     public function getProduitsFiltres($id_gest, $id_asso = null, $tri = 'nom') {
         $trisAutorises = [
             'nom'   => 'p.nom ASC',
@@ -78,7 +84,6 @@ class ModeleStaff extends ModeleCommun
         ];
         $orderBy = $trisAutorises[$tri] ?? 'p.nom ASC';
 
-        // Correction : Utilisation de 'quantiteActuelle' (vu dans ton SQL)
         $sql = "SELECT p.id, p.nom, p.type, p.prix, p.quantiteActuelle as stock_global, 
                    a.nom as nom_association, g_table.stock_asso 
             FROM produit p
@@ -153,7 +158,52 @@ class ModeleStaff extends ModeleCommun
         $stmt = self::getBdd()->prepare($sql);
         return $stmt->execute([$quantite, $id]);
     }
+    public function enregistrerMessage($id_expediteur, $id_destinataire, $objet, $contenu)
+    {
+        try {
+            $sql = "INSERT INTO messages (id_expediteur, id_destinataire, objet, contenu, date_envoi) 
+                VALUES (?, ?, ?, ?, NOW())";
 
+            $req = self::getBdd()->prepare($sql);
+
+            return $req->execute([
+                $id_expediteur,
+                $id_destinataire,
+                $objet,
+                $contenu
+            ]);
+        } catch (PDOException $e) {
+            error_log("Erreur enregistrerMessage : " . $e->getMessage());
+            return false;
+        }
+    }public function getNbMessagesNonLus($id_user)
+{
+    $sql = "SELECT COUNT(*) as total FROM messages WHERE id_destinataire = ? AND lu = 0";
+    $stmt = self::getBdd()->prepare($sql);
+    $stmt->execute([$id_user]);
+    return $stmt->fetch()['total'];
+}
+
+    public function getMesMessages($id_user)
+    {
+        $sql = "SELECT m.*, 
+        exp.nom as nom, exp.prenom as prenom,
+        dest.nom as dest_nom, dest.prenom as dest_prenom
+        FROM messages m
+        JOIN compte exp ON m.id_expediteur = exp.id
+        JOIN compte dest ON m.id_destinataire = dest.id
+        WHERE m.id_destinataire = :id_dest OR m.id_expediteur = :id_exp
+        ORDER BY m.date_envoi DESC";
+
+        $stmt = self::getBdd()->prepare($sql);
+
+        $stmt->execute([
+            'id_dest' => $id_user,
+            'id_exp'  => $id_user
+        ]);
+
+        return $stmt->fetchAll();
+    }
     public function getClientsParAssociation($associationId)
     {
         try {
@@ -260,5 +310,16 @@ class ModeleStaff extends ModeleCommun
         }
     }
 
+    public function getToutStaff()
+    {
+        $sql = "SELECT id, nom, prenom, email, role 
+            FROM compte 
+            WHERE role = 'barman' OR role = 'gestionnaire'
+            ORDER BY role DESC, nom ASC";
+
+        $req = self::getBdd()->prepare($sql);
+        $req->execute();
+        return $req->fetchAll(PDO::FETCH_ASSOC);
+    }
 
 }

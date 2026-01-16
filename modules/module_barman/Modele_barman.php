@@ -61,6 +61,7 @@ class ModeleBarman extends ModeleStaff {
         return $statuts[$statut] ?? 'Terminée';
     }
 
+
     public function getProduitsCommande($id) {
         try {
             $requete = self::getBdd()->prepare('
@@ -287,37 +288,26 @@ class ModeleBarman extends ModeleStaff {
     }
 
     public function getHistoriqueCommandes() {
-        try {
-            $requete = self::getBdd()->prepare('
-            SELECT v.id as commande_id, v.date_vente, v.montant_total, v.statut, 
-                   c.prenom, c.nom
-            FROM vente v 
-            JOIN compte c ON v.compte_id = c.id 
-            ORDER BY v.id DESC
-        ');
-            $requete->execute();
-            $commandes = $requete->fetchAll(PDO::FETCH_ASSOC);
+        $sql = "SELECT 
+                v.id AS commande_id, 
+                v.date_vente AS date_heure_affichage, 
+                v.montant_total, 
+                v.statut,
+                c.nom, 
+                c.prenom
+            FROM vente v
+            JOIN compte c ON v.compte_id = c.id
+            ORDER BY v.date_vente DESC";
 
-            foreach ($commandes as &$commande) {
-                if (!empty($commande['date_vente'])) {
-                    $date = new DateTime($commande['date_vente']);
-                    // 'd/m/Y à H:i' affichera par exemple : 16/01/2026 à 14:30
-                    $commande['date_heure_affichage'] = $date->format('d/m/Y à H:i');
-                }
-                $commande['statut_affichage'] = ($commande['statut'] === 'annulee') ? 'Annulée' : 'Validée';
-            }
-
-            return $commandes;
-        } catch (PDOException $e) {
-            return [];
-        }
+        $stmt = self::getBdd()->prepare($sql);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function creerTransaction($produits, $compte_id, $montant_total) {
         try {
             self::getBdd()->beginTransaction();
 
-            // Utilisation de NOW() pour le DATETIME
             $requete = self::getBdd()->prepare("
             INSERT INTO vente (date_vente, montant_total, compte_id, statut) 
             VALUES(NOW(), ?, ?, 'payee')

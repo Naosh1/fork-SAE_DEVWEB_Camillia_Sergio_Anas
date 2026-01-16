@@ -4,8 +4,14 @@ include_once 'vue_generique.php';
 class VueStaff extends VueCommun
 {public function afficherMesMessages($messages, $id_gestionnaire)
 {
+    echo '<script src="https://cdn.tailwindcss.com"></script>';
+    echo '<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">';
+    echo '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">';
     $this->afficherNav();
+
     ?>
+
+
     <style>
         .font-cyber {
             font-family: 'Montserrat', sans-serif;
@@ -184,19 +190,28 @@ class VueStaff extends VueCommun
 
     public function afficherFormulaireEnvoi($destinataires, $sujetPredefini = "", $idCible = null)
     {
+        // 1. Charger la navigation
         $this->afficherNav();
+
+        // 2. Charger les dépendances manquantes AVANT le HTML du formulaire
         echo '
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
     <script src="js/recherche_contact.js"></script>
     <style>
         .custom-font, .custom-font input, .custom-font select, .custom-font textarea, .custom-font button {
             font-family: "Inter", sans-serif !important;
         }
+        /* Forcer l affichage des icônes si un style parent les cache */
+        .fa-solid {
+            display: inline-block !important;
+        }
     </style>';
         ?>
         <div class="w-full h-full px-6 md:px-12 py-10 bg-[#020617] min-h-screen text-white custom-font">
             <div class="max-w-4xl mx-auto">
-                <form action="index.php?action=envoyerMessageGlobal" method="POST"
+                <form action="index.php?action=envoyerMessage" method="POST"
                       class="bg-white/5 border border-white/5 rounded-[3rem] p-10 shadow-2xl backdrop-blur-md">
 
                     <div class="flex items-center justify-between mb-10 border-b border-white/5 pb-6">
@@ -255,9 +270,9 @@ class VueStaff extends VueCommun
                     <div class="flex gap-4">
                         <button type="submit"
                                 class="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-[900] uppercase py-5 rounded-2xl transition-all flex items-center justify-center gap-3">
-                            ENVOYER LE MESSAGE
+                            ENVOYER LE MESSAGE <i class="fa-solid fa-paper-plane"></i>
                         </button>
-                        <a href="index.php?action=mesMessages"
+                        <a href="index.php?action=messagerie"
                            class="px-8 py-5 bg-white/5 hover:bg-white/10 text-slate-400 rounded-2xl transition-all font-black uppercase text-[10px] flex items-center">
                             ANNULER
                         </a>

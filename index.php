@@ -17,7 +17,12 @@ $bdd = Connexion::getBdd();
 $stmt = $bdd->prepare("SELECT prenom, nom, email, role FROM compte WHERE id = ?");
 $stmt->execute([$_SESSION['id']]);
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
-
+if (isset($_GET['action']) && $_GET['action'] === 'deconnexion') {
+    session_unset();
+    session_destroy();
+    header('Location: index.php');
+    exit();
+}
 if (!$user) {
     session_unset();
     session_destroy();
