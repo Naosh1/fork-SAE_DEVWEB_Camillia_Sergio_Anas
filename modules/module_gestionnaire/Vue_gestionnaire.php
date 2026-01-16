@@ -766,7 +766,7 @@ class VueGestionnaire extends VueStaff
                     <i class="fa-solid fa-paper-plane text-lg"></i>
                     <span class="font-bold text-sm tracking-tight">Messages</span>
                 </div>' .
-            ($nb > 0 ? '<span class="bg-blue-600 text-[10px] font-black text-white px-2 py-0.5 rounded-lg shadow-lg shadow-blue-600/20">' . $nb . '</span>' : '') . '
+                ($nb > 0 ? '<span class="bg-blue-600 text-[10px] font-black text-white px-2 py-0.5 rounded-lg shadow-lg shadow-blue-600/20">' . $nb . '</span>' : '') . '
             </a>
 
             <a href="index.php?action=monPlanning" class="flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all duration-300 ' . ($actionActuelle == 'monPlanning' ? $activeClass : $inactiveClass) . '">
@@ -808,8 +808,8 @@ class VueGestionnaire extends VueStaff
                 <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-blue-400 p-0.5 shadow-lg shadow-blue-600/20">
                     <div class="w-full h-full rounded-[10px] bg-[#020617] overflow-hidden flex items-center justify-center">
                         ' . (($cheminPhoto && file_exists($cheminPhoto))
-                ? '<img src="' . $cheminPhoto . '" class="w-full h-full object-cover">'
-                : '<span class="text-xs font-black text-white">' . strtoupper(substr($prenom, 0, 1)) . '</span>') . '
+                        ? '<img src="' . $cheminPhoto . '" class="w-full h-full object-cover">'
+                        : '<span class="text-xs font-black text-white">' . strtoupper(substr($prenom, 0, 1)) . '</span>') . '
                     </div>
                 </div>
                 <div class="flex-1 min-w-0">
@@ -1357,48 +1357,49 @@ class VueGestionnaire extends VueStaff
             .dot {
                 width: 8px;
 
-            .dot-online {
-                background: #10b981;
-                box-shadow: 0 0 12px #10b981;
-            }
+                .dot-online {
+                    background: #10b981;
+                    box-shadow: 0 0 12px #10b981;
+                }
 
-            .dot-offline {
-                background: #475569;
-            }
+                .dot-offline {
+                    background: #475569;
+                }
 
-            .btn-view {
-                background: #10b981;
-                color: #020617;
-                padding: 10px 20px;
-                border-radius: 12px;
-                font-size: 10px;
-                font-weight: 900;
-                text-transform: uppercase;
-                opacity: 0;
-                transition: 0.4s;
-            }
+                .btn-view {
+                    background: #10b981;
+                    color: #020617;
+                    padding: 10px 20px;
+                    border-radius: 12px;
+                    font-size: 10px;
+                    font-weight: 900;
+                    text-transform: uppercase;
+                    opacity: 0;
+                    transition: 0.4s;
+                }
 
-            .member-card:hover .btn-view {
-                opacity: 1;
-            }
+                .member-card:hover .btn-view {
+                    opacity: 1;
+                }
 
-            /* Custom Scrollbar */
-            #barmanList::-webkit-scrollbar {
-                width: 6px;
-            }
+                /* Custom Scrollbar */
 
-            #barmanList::-webkit-scrollbar-thumb {
-                background: rgba(16, 185, 129, 0.2);
-                border-radius: 10px;
-            }
+                #barmanList::-webkit-scrollbar {
+                    width: 6px;
+                }
 
-            #barmanList::-webkit-scrollbar-thumb:hover {
-                background: rgba(16, 185, 129, 0.5);
-            }
+                #barmanList::-webkit-scrollbar-thumb {
+                    background: rgba(16, 185, 129, 0.2);
+                    border-radius: 10px;
+                }
 
-            #filterAsso option {
-                background: #020617;
-            }
+                #barmanList::-webkit-scrollbar-thumb:hover {
+                    background: rgba(16, 185, 129, 0.5);
+                }
+
+                #filterAsso option {
+                    background: #020617;
+                }
         </style>
 
         <div class="page-container">
@@ -2587,37 +2588,15 @@ class VueGestionnaire extends VueStaff
         $this->afficherNav();
         ?>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
         <style>
-            /* ... Tes styles précédents ... */
             :root {
                 --chrome-bg: #020617;
                 --chrome-card: #0f172a;
                 --electric-orange: #f59e0b;
                 --silver: #94a3b8;
-                --glass: rgba(255, 255, 255, 0.03);
             }
 
-            /* Style pour le sélecteur d'asso */
-            .select-asso {
-                width: 100%;
-                background: rgba(0, 0, 0, 0.3);
-                border: 1px solid rgba(245, 158, 11, 0.3);
-                color: #fff;
-                padding: 0.6rem;
-                border-radius: 0.8rem;
-                font-size: 11px;
-                font-weight: 700;
-                text-transform: uppercase;
-                margin-bottom: 1rem;
-                outline: none;
-                cursor: pointer;
-            }
-
-            .select-asso:focus {
-                border-color: var(--electric-orange);
-            }
-
-            /* Tes autres styles restent identiques */
             body {
                 background-color: var(--chrome-bg);
                 font-family: 'Plus Jakarta Sans', sans-serif;
@@ -2633,23 +2612,66 @@ class VueGestionnaire extends VueStaff
                 backdrop-filter: blur(20px);
                 border-bottom: 1px solid rgba(245, 158, 11, 0.2);
                 z-index: 1000;
-                padding: 1.5rem 0;
+                padding: 1.2rem 0;
             }
 
-            .header-title {
-                font-size: 2.8rem;
-                font-weight: 900;
-                text-transform: uppercase;
-                font-style: italic;
-                background: linear-gradient(to bottom, #ffffff, #475569);
-                -webkit-background-clip: text;
-                -webkit-text-fill-color: transparent;
-                letter-spacing: -0.02em;
+            .global-selector-bar {
+                background: rgba(15, 23, 42, 0.8);
+                border: 1px solid rgba(245, 158, 11, 0.3);
+                padding: 0.6rem 1.2rem;
+                border-radius: 1rem;
+                display: flex;
+                align-items: center;
+                gap: 15px;
+                width: 100%;
+                max-width: 550px;
+            }
+
+            .search-box {
+                position: relative;
+                flex-grow: 1;
+            }
+
+            .search-box input {
+                width: 100%;
+                background: rgba(2, 6, 23, 0.6);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                padding: 10px 12px;
+                border-radius: 8px;
+                color: white;
+                outline: none;
+            }
+
+            .search-results {
+                position: absolute;
+                top: 115%;
+                left: 0;
+                right: 0;
+                background: #1e293b;
+                border: 1px solid var(--electric-orange);
+                max-height: 250px;
+                overflow-y: auto;
+                display: none;
+                z-index: 2000;
+                border-radius: 8px;
+            }
+
+            .result-item {
+                padding: 12px;
+                cursor: pointer;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+                color: #fff;
+                font-size: 13px;
+            }
+
+            .result-item:hover {
+                background: var(--electric-orange);
+                color: black;
             }
 
             .supplier-grid {
                 display: grid;
-                grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+                grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
                 gap: 2.5rem;
                 padding: 3rem 40px;
                 max-width: 1600px;
@@ -2658,97 +2680,94 @@ class VueGestionnaire extends VueStaff
 
             .supplier-card {
                 background: var(--chrome-card);
-                border-radius: 1.8rem;
+                border-radius: 2rem;
                 padding: 2.2rem;
                 border: 1px solid rgba(255, 255, 255, 0.05);
-                transition: all 0.4s;
             }
 
-            .btn-base {
-                font-size: 0.7rem;
+            .catalog-btn {
+                background: #1e293b;
+                color: #475569;
+                pointer-events: none;
+                font-size: 0.75rem;
                 font-weight: 800;
                 text-transform: uppercase;
-                padding: 0.8rem 1.2rem;
+                padding: 1rem;
                 border-radius: 0.8rem;
                 text-decoration: none;
-                display: inline-flex;
+                display: flex;
                 align-items: center;
-                gap: 6px;
+                justify-content: center;
+                gap: 8px;
+                transition: 0.3s;
             }
 
-            .btn-primary {
+            .catalog-btn.active {
                 background: var(--electric-orange);
                 color: #000;
-                border: none;
-                cursor: pointer;
+                pointer-events: auto;
+            }
+
+            .action-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
+                margin-top: 1.5rem;
+                padding-top: 1.5rem;
+                border-top: 1px solid rgba(255, 255, 255, 0.05);
             }
         </style>
 
         <div class="fixed-top-section">
             <div class="max-w-[1600px] mx-auto px-10 flex justify-between items-center">
-                <div>
-                    <h1 class="header-title">RÉSEAU <span
-                                style="color: var(--electric-orange); -webkit-text-fill-color: var(--electric-orange);">FOURNISSEURS</span>
-                    </h1>
-                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-[0.4em] mt-1">HUB Logistique &
-                        Négociations</p>
+                <h1 class="font-black italic text-2xl text-white uppercase">LOGISTIQUE <span
+                            style="color:var(--electric-orange)">RÉSEAU</span></h1>
+
+                <div class="global-selector-bar">
+                    <span class="text-[9px] font-black uppercase text-amber-500">ASSOCIATION :</span>
+                    <div class="search-box">
+                        <input type="text" id="mainAssoInput" placeholder="Rechercher...">
+                        <div id="mainAssoResults" class="search-results">
+                            <?php foreach ($associations as $asso): ?>
+                                <div class="result-item" data-id="<?= $asso['id'] ?>">
+                                    <?= htmlspecialchars($asso['nom']) ?>
+                                    <span style="opacity:0.5; font-size:11px;">(<?= number_format($asso['solde'], 2) ?>€)</span>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
                 </div>
-                <a href="index.php?action=rechercherPrix"
-                   class="btn-base border border-amber-500 text-amber-500 hover:bg-amber-500 hover:text-black">
-                    <i class="fa-solid fa-magnifying-glass"></i> Comparer les prix
-                </a>
+
+                <a href="index.php?module=gestionnaire&action=rechercherPrix"
+                   class="text-amber-500 font-bold uppercase text-[10px] border border-amber-500 px-4 py-2 rounded-lg">Comparer</a>
             </div>
         </div>
 
         <div class="supplier-grid">
             <?php foreach ($fournisseurs as $f): ?>
                 <div class="supplier-card">
-                    <div class="icon-box"
-                         style="width:50px; height:50px; background:rgba(245,158,11,0.1); color:var(--electric-orange); display:flex; align-items:center; justify-content:center; border-radius:14px; margin-bottom:1.5rem;">
-                        <i class="fa-solid fa-truck-ramp-box"></i>
-                    </div>
+                    <h2 class="text-2xl font-black text-white italic uppercase mb-6"><?= htmlspecialchars($f['nom']) ?></h2>
 
-                    <span class="sup-name italic font-black text-white text-2xl mb-4 block uppercase">
-                    <?= htmlspecialchars($f['nom']) ?>
-                </span>
+                    <a href="#"
+                       data-base-url="index.php?module=gestionnaire&action=voirFournisseur&id=<?= $f['id'] ?>"
+                       class="catalog-btn">
+                        Ouvrir Catalogue
+                    </a>
 
-                    <form action="index.php?action=voirFournisseur" method="GET" class="mt-4">
-                        <input type="hidden" name="action" value="voirFournisseur">
-                        <input type="hidden" name="id" value="<?= $f['id'] ?>">
-
-                        <label class="text-[9px] font-black uppercase text-slate-500 mb-2 block tracking-widest">Commander
-                            pour :</label>
-                        <select name="id_asso" required class="select-asso">
-                            <option value="" disabled selected>-- Choisir une association --</option>
-                            <?php foreach ($associations as $asso): ?>
-                                <option value="<?= $asso['id'] ?>">
-                                    <?= htmlspecialchars($asso['nom']) ?> (Solde: <?= $asso['solde'] ?>€)
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-
-                        <div class="flex items-center gap-3 border-t border-white/5 pt-4">
-                            <button type="submit" class="btn-base btn-primary w-full justify-center">
-                                <i class="fa-solid fa-cart-shopping"></i> Ouvrir le Catalogue
-                            </button>
-                        </div>
-                    </form>
-
-                    <div class="flex justify-between items-center mt-6">
-                        <a href="mailto:<?= $f['email'] ?>"
-                           class="text-[10px] font-bold text-slate-400 hover:text-white">
-                            <i class="fa-solid fa-envelope"></i> Contact
-                        </a>
-                        <a href="index.php?action=supprimerFournisseur&id=<?= $f['id'] ?>"
-                           onclick="return confirm('Retirer ce fournisseur ?')"
-                           class="text-[9px] font-black text-slate-600 hover:text-red-500 uppercase">
-                            Retirer
-                        </a>
+                    <div class="action-grid">
+                        <a href="mailto:<?= $f['email'] ?>" class="catalog-btn active"
+                           style="background: #0f172a; color: #fff; border: 1px solid rgba(255,255,255,0.1);">Contacter</a>
+                        <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'SuperAdmin'): ?>
+                            <a href="index.php?module=gestionnaire&action=supprimerFournisseur&id=<?= $f['id'] ?>"
+                               class="catalog-btn active" style="background: transparent; color: #64748b;"
+                               onclick="return confirm('Supprimer ?')">Retirer</a>
+                        <?php endif; ?>
                     </div>
                 </div>
             <?php endforeach; ?>
         </div>
-        <?php
+
+        <script src="js/recherche_assos.js"></script>        <?php
     }
 
     public function afficherRechercheGlobale($resultats, $recherche)
