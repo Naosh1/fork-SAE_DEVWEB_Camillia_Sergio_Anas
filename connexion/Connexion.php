@@ -24,18 +24,18 @@
 
 class Connexion
 {
-    private
-    static $bdd = null;
-    private
-    static $dsn = 'mysql:dbname=dutinfopw201655;host=database-etudiants.iut.univ-paris8.fr';
-    private
-    static $user = 'dutinfopw201655';
-    private
-    static $password = 'hevenequ';
-//    private static $bdd = null;
-//    private static $dsn = 'mysql:host=localhost;dbname=buvette;charset=utf8';
-//    private static $user = 'root';
-//    private static $password = '';
+//    private
+//    static $bdd = null;
+//    private
+//    static $dsn = 'mysql:dbname=dutinfopw201655;host=database-etudiants.iut.univ-paris8.fr';
+//    private
+//    static $user = 'dutinfopw201655';
+//    private
+//    static $password = 'hevenequ';
+    private static $bdd = null;
+    private static $dsn = 'mysql:host=localhost;dbname=buvette;charset=utf8';
+    private static $user = 'root';
+    private static $password = '';
     public
     function __construct()
     {
