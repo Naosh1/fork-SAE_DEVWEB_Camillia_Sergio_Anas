@@ -19,22 +19,6 @@ class ModeleBarman extends ModeleStaff {
         }
     }
 
-    public function rechercherClient($search) {
-        try {
-            $requete = self::getBdd()->prepare('
-                SELECT id, nom, prenom, solde 
-                FROM compte 
-                WHERE nom LIKE ? OR prenom LIKE ? OR id = ?
-            ');
-            $searchTerm = "%$search%";
-            $requete->execute([$searchTerm, $searchTerm, $search]);
-            return $requete->fetchAll(PDO::FETCH_ASSOC);
-        } catch (PDOException $e) {
-            error_log("Erreur recherche client: " . $e->getMessage());
-            return [];
-        }
-    }
-
     public function listerCommandesEnCours() {
         try {
             $requete = self::getBdd()->prepare('
