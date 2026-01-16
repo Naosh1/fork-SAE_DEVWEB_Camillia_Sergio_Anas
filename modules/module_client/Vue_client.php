@@ -180,57 +180,147 @@
         }
 
         public function form_espace($solde, $historique) {
-                    ob_start();
-                    ?>
-                    <div class="bfor-card">
-                        <div class="bfor-top">
-                            <div class="bfor-bank">SOLDE</div>
-                            <div class="bfor-badge">VIRTUELLE</div>
-                        </div>
+           ob_start();
+           ?>
+           <div class="bfor-card">
+               <div class="bfor-top">
+                    <div class="bfor-bank">SOLDE</div>
+                    <div class="bfor-badge">VIRTUELLE</div>
+               </div>
 
-                        <div class="bfor-account">
-                            <p>Mon compte</p>
-                            <h1>
-                                <?php
-                                    echo htmlspecialchars(number_format($solde,2));
-                                ?>
-                            </h1>
-                        </div>
+               <div class="bfor-account">
+                   <p>Mon compte</p>
+                      <h1>
+                          <?php
+                            echo htmlspecialchars(number_format($solde,2));
+                          ?>
+                      </h1>
+                   </div>
+               </div>
+
+               <br>
+
+               <div class="bfor-card">
+                   <div class="bfor-top">
+                       <div class="bfor-bank">RECHARGEMENT</div>
+                       <div class="bfor-badge">VIRTUELLE</div>
+                   </div>
+
+                   <div class="bfor-account">
+                    <?php if (empty($historique)): ?>
+                       <br>
+                       <p>Aucun rechargement effectué.</p>
+                    <?php else: ?>
+                        <table>
+                           <thead>
+                               <tr>
+                                   <th>Date</th>
+                                   <th>Montant</th>
+                               </tr>
+                           </thead>
+                           <tbody>
+                              <?php foreach ($historique as $r): ?>
+                                 <tr>
+                                    <td><?= htmlspecialchars($r['date_rechargement']) ?></td>
+                                    <td><?= htmlspecialchars(number_format($r['valeur'], 2)) ?> €</td>
+                                 </tr>
+                              <?php endforeach; ?>
+                           </tbody>
+                        </table>
+                    <?php endif; ?>
+               </div>
+           </div>
+           <?php
+           return ob_get_clean();
+        }
+
+        public function form_liste_produits($produits) {
+            ob_start();
+            ?>
+
+            <h2>Produits disponibles</h2>
+
+            <?php if (empty($produits)): ?>
+                <p>Aucun produit disponible pour le moment.</p>
+            <?php else: ?>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Nom</th>
+                            <th>Type</th>
+                            <th>Prix (€)</th>
+                            <th>Stock</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($produits as $p): ?>
+                            <tr>
+                                <td><?= htmlspecialchars($p['nom']) ?></td>
+                                <td><?= htmlspecialchars($p['type']) ?></td>
+                                <td><?= number_format($p['prix'], 2) ?> €</td>
+                                <td><?= (int)$p['quantiteActuelle'] ?></td>
+                                <td>
+                                    <form method="post" action="index.php?module=client&action=ajouter_panier">
+                                        <input type="hidden" name="idProduit" value="<?= (int)$p['id'] ?>">
+                                        <button type="submit"> Ajouter </button>
+                                   </form>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            <?php endif; ?>
+
+            <?php
+            return ob_get_clean();
+        }
+
+        public function form_panier_utilisateur($panier_details, $total_general) {
+            ob_start();
+            ?>
+            <main>
+                <h2> Votre Panier</h2>
+
+                <?php if (empty($panier_details)): ?>
+                    <div class="card" style="text-align: center;">
+                        <p>Votre panier est vide.</p>
+                        <nav><a href="index.php?module=client&action=form_produits_utilisateur">Voir les produits</a></nav>
                     </div>
-
-                    <br>
-
-                    <div class="bfor-card">
-                        <div class="bfor-top">
-                            <div class="bfor-bank">RECHARGEMENT</div>
-                            <div class="bfor-badge">VIRTUELLE</div>
-                        </div>
-
-                        <div class="bfor-account">
-                        <?php if (empty($historique)): ?>
-                            <br>
-                            <p>Aucun rechargement effectué.</p>
-                        <?php else: ?>
-                            <table>
-                                <thead>
+                <?php else: ?>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Produit</th>
+                                <th>Prix</th>
+                                <th>Quantité</th>
+                                <th>Sous-total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($panier_details as $item): ?>
                                 <tr>
-                                    <th>Date</th>
-                                    <th>Montant</th>
+                                    <td><?= htmlspecialchars($item['nom']) ?></td>
+                                    <td><?= number_format($item['prix'], 2) ?> €</td>
+                                    <td>x <?= (int)$item['qte'] ?></td>
+                                    <td><strong><?= number_format($item['sous_total'], 2) ?> €</strong></td>
                                 </tr>
-                                </thead>
-                                <tbody>
-                                <?php foreach ($historique as $r): ?>
-                                    <tr>
-                                        <td><?= htmlspecialchars($r['date_rechargement']) ?></td>
-                                        <td><?= htmlspecialchars(number_format($r['valeur'], 2)) ?> €</td>
-                                    </tr>
-                                <?php endforeach; ?>
-                                </tbody>
-                            </table>
-                        <?php endif; ?>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+
+                    <div class="bfor-card" style="margin-top: 30px;">
+                        <div class="bfor-account">
+                            <p>TOTAL À RÉGLER</p>
+                            <h1><?= number_format($total_general, 2) ?> €</h1>
                         </div>
+
+                        <form method="post" action="index.php?module=client&action=valider_commande" style="background:none; border:none; padding:0; box-shadow:none;">
+                            <input type="submit" value="Valider la commande">
+                        </form>
                     </div>
-                    <?php
-                    return ob_get_clean();
-                }
+                <?php endif; ?>
+            </main>
+            <?php
+            return ob_get_clean();
+        }
     }
