@@ -1,10 +1,25 @@
 <?php
-class Controleur_barman {
+
+class Controleur_barman
+{
     private $modele;
+
     private $vue;
 
-    public function __construct() {
+    private $modeleStaff;
+    private $vueStaff;
+
+    private $modeleCommun;
+    private $vueCommun;
+
+    public function __construct()
+    {
         $this->modele = new ModeleBarman();
+
+        $this->modeleCommun = new ModeleCommun();
+        $this->modeleStaff = new ModeleStaff();
+        $this->vueCommun = new VueCommun();
+        $this->vueStaff = new VueStaff();
         $this->vue = new Vue_barman();
     }
 
@@ -34,6 +49,16 @@ class Controleur_barman {
             case 'traiterTransaction':
                 $this->traiterTransaction();
                 break;
+            case 'monProfil':
+                $utilisateur = $this->modeleCommun->getUtilisateur($_SESSION['id']);
+                $this->vueCommun->afficherProfil($utilisateur);
+                break;
+            case 'messagerie':
+                $messages = $this->modeleCommun->getMesMessages($_SESSION['id']);
+                $this->vueCommun->afficherMesMessages($messages, $_SESSION['id']);
+                break;
+            case 'modifierProfil':
+                break;
             case 'historiqueCommandes':
                 $this->afficherHistoriqueCommandes();
                 break;
@@ -58,7 +83,8 @@ class Controleur_barman {
     private function afficherProduits()
     {
         $produits = $this->modele->listerProduits();
-        $this->vue->afficherProduits($produits);
+        $assos = $this->modele->getAssociationIdParBarman($_SESSION['id']);
+        $this->vue->afficherProduits($produits, $assos,);
     }
 
     private function rechercherClient()
@@ -93,17 +119,20 @@ class Controleur_barman {
         $this->vue->afficherDetailCommande($commande, $produits);
     }
 
-    private function afficherHistoriqueCommandes() {
+    private function afficherHistoriqueCommandes()
+    {
         $commandes = $this->modele->getHistoriqueCommandes();
         $this->vue->afficherHistoriqueCommandes($commandes);
     }
 
-    private function afficherDerniereTransaction() {
+    private function afficherDerniereTransaction()
+    {
         $transaction = $this->modele->getDerniereTransaction();
         $this->vue->afficherDerniereTransaction($transaction);
     }
 
-    private function annulerTransaction() {
+    private function annulerTransaction()
+    {
         $transaction_id = $_POST['transaction_id'] ?? null;
 
         if (!$transaction_id) {

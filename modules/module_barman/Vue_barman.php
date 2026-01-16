@@ -5,6 +5,25 @@ include "modules/module_staff/vue_staff.php";
 
 class Vue_barman extends VueStaff
 {
+    public function afficherCommandes($commandes) {
+        $this->afficherHeader("Commandes");
+        $this->afficherMenu();
+        echo "<h2>Commandes du jour</h2>";
+        echo "<table border='1'><tr><th>ID</th><th>Client</th><th>Montant</th><th>Statut</th><th>Action</th></tr>";
+        foreach ($commandes as $commande) {
+            $color = ($commande['statut'] == 'payee') ? 'green' : 'red';
+            echo "<tr>
+                <td>{$commande['commande_id']}</td>
+                <td>{$commande['prenom']} {$commande['nom']}</td>
+                <td>{$commande['montant_total']} €</td>
+                <td style='color:$color; font-weight:bold;'>".ucfirst($commande['statut'])."</td>
+                <td><a href='index.php?action=detailCommande&id={$commande['commande_id']}'>Voir</a></td>
+            </tr>";
+        }
+        echo "</table>";
+        $this->afficherFooter();
+    }
+
 
 private function afficherHeader($titre = "Gestionnaire de buvette")
 {
@@ -122,16 +141,28 @@ private function afficherHeader($titre = "Gestionnaire de buvette")
 
     private function afficherMenu()
     {
+        // On récupère le nombre de messages non lus via le modèle commun
+        $modeleCom = new ModeleCommun();
+        $nbMessages = $modeleCom->getNbMessagesNonLus($_SESSION['id']);
+        $badge = ($nbMessages > 0) ? " ($nbMessages)" : "";
+
         ?>
-        <div class="menu">
-            <a href="index.php?action=accueil">Accueil</a>
-            <a href="index.php?action=afficherProduits">Produits</a>
-            <a href="index.php?action=rechercherClient">Rechercher Client</a>
-            <a href="index.php?action=commandesEnCours">Commandes</a>
-            <a href="index.php?action=creerTransaction">Nouvelle Transaction</a>
-            <a href="index.php?action=derniereTransaction">Dernière Transaction</a>
-            <a href="index.php?action=historiqueCommandes">Historique</a>
-        </div>
+        <nav class="menu">
+            <div class="nav-section">
+                <strong>Boutique :</strong>
+                <a href="index.php?module=barman&action=accueil">Accueil</a>
+                <a href="index.php?module=barman&action=creerTransaction">Vendre</a>
+                <a href="index.php?module=barman&action=commandesEnCours">Commandes du jour</a>
+                <a href="index.php?module=barman&action=historiqueCommandes">Historique</a>
+            </div>
+
+            <div class="nav-section" style="margin-top: 10px; border-top: 1px solid #ccc; padding-top: 10px;">
+                <strong>Compte :</strong>
+                <a href="index.php?module=barman&action=messagerie">Messagerie<?= $badge ?></a>
+                <a href="index.php?module=barman&action=monProfil">Mon Profil</a>
+                <a href="index.php?action=deconnexion" style="color: red;">Déconnexion</a>
+            </div>
+        </nav>
         <?php
     }
 
@@ -350,39 +381,6 @@ private function afficherHeader($titre = "Gestionnaire de buvette")
         $this->afficherFooter();
     }
 
-    public function afficherProduits($produits)
-    {
-        $this->afficherHeader("Liste des produits");
-        $this->afficherMenu();
-        ?>
-        <h2>Produits en vente</h2>
-        <?php if (empty($produits)): ?>
-        <p>Aucun produit disponible.</p>
-    <?php else: ?>
-        <table>
-            <thead>
-            <tr>
-                <th>ID</th>
-                <th>Nom</th>
-                <th>Prix</th>
-                <th>Stock</th>
-            </tr>
-            </thead>
-            <tbody>
-            <?php foreach ($produits as $p): ?>
-                <tr>
-                    <td><?= htmlspecialchars($p['id']) ?></td>
-                    <td><?= htmlspecialchars($p['nom']) ?></td>
-                    <td><?= htmlspecialchars($p['prix']) ?> €</td>
-                    <td><?= htmlspecialchars($p['disponibilite']) ?></td>
-                </tr>
-            <?php endforeach; ?>
-            </tbody>
-        </table>
-    <?php endif; ?>
-        <?php
-        $this->afficherFooter();
-    }
 
     public function afficherClients($clients, $search = null)
     {
@@ -427,48 +425,6 @@ private function afficherHeader($titre = "Gestionnaire de buvette")
         $this->afficherFooter();
     }
 
-    public function afficherCommandes($commandes)
-    {
-        $this->afficherHeader("Commandes");
-        $this->afficherMenu();
-        ?>
-        <h2>Commandes en cours (du jour)</h2>
-        <p style="color: #666; font-style: italic;">Liste des commandes payées aujourd'hui en attente de préparation</p>
-
-        <?php if (empty($commandes)): ?>
-        <p>Aucune commande en cours aujourd'hui.</p>
-    <?php else: ?>
-        <table>
-            <thead>
-            <tr>
-                <th>N° Commande</th>
-                <th>Client</th>
-                <th>Heure</th>
-                <th>Montant</th>
-                <th>Action</th>
-            </tr>
-            </thead>
-            <tbody>
-            <?php foreach ($commandes as $c):
-                $datetime = new DateTime($c['date_vente']);
-                ?>
-                <tr>
-                    <td><strong>#<?= htmlspecialchars($c['commande_id']) ?></strong></td>
-                    <td><?= htmlspecialchars($c['prenom'] . ' ' . $c['nom']) ?></td>
-                    <td><?= $datetime->format('H:i') ?></td>
-                    <td><?= htmlspecialchars(number_format($c['montant_total'], 2)) ?> €</td>
-                    <td>
-                        <a href="index.php?action=detailCommande&id=<?= $c['commande_id'] ?>" class="btn btn-secondary">Voir
-                            détails</a>
-                    </td>
-                </tr>
-            <?php endforeach; ?>
-            </tbody>
-        </table>
-    <?php endif; ?>
-        <?php
-        $this->afficherFooter();
-    }
 
     public function afficherDetailCommande($commande, $produits)
     {

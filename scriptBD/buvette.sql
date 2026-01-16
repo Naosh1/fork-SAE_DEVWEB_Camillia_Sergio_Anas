@@ -79,6 +79,7 @@ CREATE TABLE `association` (
                                `telephone` varchar(50) NOT NULL,
                                `solde` decimal(10,2) NOT NULL,
                                `status` enum('en_attente','validee','refusee') DEFAULT 'en_attente'
+                               `status` enum('en_attente','validee','refusee') DEFAULT 'en_attente'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --

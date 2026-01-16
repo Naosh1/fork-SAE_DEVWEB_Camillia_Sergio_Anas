@@ -19,22 +19,6 @@ class ModeleBarman extends ModeleStaff {
         }
     }
 
-    public function listerCommandesEnCours() {
-        try {
-            $requete = self::getBdd()->prepare('
-            SELECT v.id as commande_id, c.prenom, c.nom, v.date_vente, v.montant_total, v.statut
-            FROM vente v 
-            JOIN compte c ON v.compte_id = c.id 
-            WHERE v.statut = "payee" AND DATE(v.date_vente) = CURDATE()
-            ORDER BY v.id DESC
-        ');
-            $requete->execute();
-            return $requete->fetchAll(PDO::FETCH_ASSOC);
-        } catch (PDOException $e) {
-            error_log("Erreur liste commandes: " . $e->getMessage());
-            return [];
-        }
-    }
 
     public function getCommande($id) {
         try {
@@ -52,38 +36,20 @@ class ModeleBarman extends ModeleStaff {
         }
     }
 
-    public function getHistoriqueCommandes() {
-        try {
-            $requete = self::getBdd()->prepare('
-            SELECT 
-                v.id as commande_id, 
-                v.date_vente, 
-                v.montant_total,
-                COALESCE(v.statut, "payee") as statut,
-                c.id as client_id,
-                c.prenom, 
-                c.nom
+
+    public function listerCommandesParAssociation($idAsso) {
+        $sql = "SELECT v.id, v.date_vente, v.montant_total, c.nom, c.prenom 
             FROM vente v 
-            JOIN compte c ON v.compte_id = c.id 
-            ORDER BY v.id DESC
-        ');
-            $requete->execute();
-            $commandes = $requete->fetchAll(PDO::FETCH_ASSOC);
+            JOIN compte c ON v.compte_id = c.id
+            JOIN appartient a ON v.compte_id = a.compte_id
+            WHERE a.association_id = ? 
+            AND a.role = 'barman'
+            ORDER BY v.date_vente DESC";
 
-            foreach ($commandes as &$commande) {
-                $datetime = new DateTime($commande['date_vente']);
-                $commande['date_heure_affichage'] = $datetime->format('d/m/Y à H:i');
-
-                $commande['statut_affichage'] = $this->getStatutAffichage($commande['statut']);
-            }
-
-            return $commandes;
-        } catch (PDOException $e) {
-            error_log("Erreur récupération historique commandes: " . $e->getMessage());
-            return [];
-        }
+        $stmt = self::getBdd()->prepare($sql);
+        $stmt->execute([$idAsso]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
-
     private function getStatutAffichage($statut) {
         $statuts = [
             'payee' => 'Terminée',
@@ -138,43 +104,6 @@ class ModeleBarman extends ModeleStaff {
         }
     }
 
-    public function creerTransaction($produits, $compte_id, $montant_total) {
-        try {
-            self::getBdd()->beginTransaction();
-
-            if (!$this->verifierCompteExiste($compte_id)) {
-                error_log("Compte non trouvé lors de la transaction: " . $compte_id);
-                self::getBdd()->rollBack();
-                return false;
-            }
-
-            if (!$this->debiterCompte($compte_id, $montant_total)) {
-                error_log("Échec du débit pour le compte: " . $compte_id);
-                self::getBdd()->rollBack();
-                return false;
-            }
-
-            $date = date("Y-m-d");
-            $requete = self::getBdd()->prepare("
-                INSERT INTO vente (date_vente, montant_total, compte_id, statut) 
-                VALUES(?, ?, ?, 'payee')
-            ");
-            $requete->execute([$date, $montant_total, $compte_id]);
-            $vente_id = self::getBdd()->lastInsertId();
-
-            $this->insererProduitsVente($vente_id, $produits);
-
-            $this->mettreAJourStocks($produits);
-
-            self::getBdd()->commit();
-            return $vente_id;
-
-        } catch (PDOException $e) {
-            self::getBdd()->rollBack();
-            error_log("Erreur dans la création d'une Transaction: " . $e->getMessage());
-            return false;
-        }
-    }
 
     private function verifierCompteExiste($compte_id) {
         try {
@@ -242,37 +171,6 @@ class ModeleBarman extends ModeleStaff {
         }
     }
 
-    public function getDerniereTransaction() {
-        try {
-            $requete = self::getBdd()->prepare('
-            SELECT v.id as transaction_id, v.date_vente, v.montant_total, v.statut, 
-                   c.id as client_id, c.nom, c.prenom, c.solde
-            FROM vente v 
-            JOIN compte c ON v.compte_id = c.id 
-            WHERE v.statut != "annulee" OR v.statut IS NULL
-            ORDER BY v.id DESC 
-            LIMIT 1
-        ');
-            $requete->execute();
-            $transaction = $requete->fetch(PDO::FETCH_ASSOC);
-
-            if ($transaction) {
-                $requeteProduits = self::getBdd()->prepare('
-                SELECT p.id, p.nom, c.quantite, c.prix_unitaire 
-                FROM contient c 
-                JOIN produit p ON c.produit_id = p.id 
-                WHERE c.vente_id = ?
-            ');
-                $requeteProduits->execute([$transaction['transaction_id']]);
-                $transaction['produits'] = $requeteProduits->fetchAll(PDO::FETCH_ASSOC);
-            }
-
-            return $transaction;
-        } catch (PDOException $e) {
-            error_log("Erreur récupération dernière transaction: " . $e->getMessage());
-            return false;
-        }
-    }
 
     public function annulerTransaction($transaction_id) {
         try {
@@ -369,6 +267,97 @@ class ModeleBarman extends ModeleStaff {
         } catch (PDOException $e) {
             error_log("Erreur mise à jour stock: " . $e->getMessage());
             throw $e;
+        }
+    }
+    public function listerCommandesEnCours() {
+        try {
+            $requete = self::getBdd()->prepare('
+            SELECT v.id as commande_id, c.prenom, c.nom, v.date_vente, v.montant_total, v.statut
+            FROM vente v 
+            JOIN compte c ON v.compte_id = c.id 
+            WHERE v.statut = "payee" 
+            AND DATE(v.date_vente) = CURDATE()
+            ORDER BY v.id DESC
+        ');
+            $requete->execute();
+            return $requete->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            return [];
+        }
+    }
+
+    public function getHistoriqueCommandes() {
+        try {
+            $requete = self::getBdd()->prepare('
+            SELECT v.id as commande_id, v.date_vente, v.montant_total, v.statut, 
+                   c.prenom, c.nom
+            FROM vente v 
+            JOIN compte c ON v.compte_id = c.id 
+            ORDER BY v.id DESC
+        ');
+            $requete->execute();
+            $commandes = $requete->fetchAll(PDO::FETCH_ASSOC);
+
+            foreach ($commandes as &$commande) {
+                if (!empty($commande['date_vente'])) {
+                    $date = new DateTime($commande['date_vente']);
+                    // 'd/m/Y à H:i' affichera par exemple : 16/01/2026 à 14:30
+                    $commande['date_heure_affichage'] = $date->format('d/m/Y à H:i');
+                }
+                $commande['statut_affichage'] = ($commande['statut'] === 'annulee') ? 'Annulée' : 'Validée';
+            }
+
+            return $commandes;
+        } catch (PDOException $e) {
+            return [];
+        }
+    }
+
+    public function creerTransaction($produits, $compte_id, $montant_total) {
+        try {
+            self::getBdd()->beginTransaction();
+
+            // Utilisation de NOW() pour le DATETIME
+            $requete = self::getBdd()->prepare("
+            INSERT INTO vente (date_vente, montant_total, compte_id, statut) 
+            VALUES(NOW(), ?, ?, 'payee')
+        ");
+            $requete->execute([$montant_total, $compte_id]);
+            $vente_id = self::getBdd()->lastInsertId();
+
+            $this->insererProduitsVente($vente_id, $produits);
+            $this->mettreAJourStocks($produits);
+
+            self::getBdd()->commit();
+            return $vente_id;
+        } catch (Exception $e) {
+            self::getBdd()->rollBack();
+            error_log("Erreur transaction: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    public function getDerniereTransaction() {
+        try {
+            $requete = self::getBdd()->prepare('
+            SELECT 
+                v.id as transaction_id, 
+                v.date_vente, 
+                v.montant_total, 
+                v.statut, 
+                c.id as client_id,
+                c.nom, 
+                c.prenom
+            FROM vente v
+            JOIN compte c ON v.compte_id = c.id
+            ORDER BY v.id DESC
+            LIMIT 1
+        ');
+            $requete->execute();
+            return $requete->fetch(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Erreur derniereTransaction : " . $e->getMessage());
+            return null;
         }
     }
 }

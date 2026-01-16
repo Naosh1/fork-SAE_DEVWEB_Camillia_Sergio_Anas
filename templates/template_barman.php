@@ -3,18 +3,18 @@
 if (isset($_GET['action']) && $_GET['action'] === 'deconnexion') {
     session_unset();
     session_destroy();
-    header('Location: connexion.php');
+    header('Location: templates/connexion.php');
     exit();
 }
 
 if (!isset($_SESSION['id'])) {
-    header('Location: connexion.php');
+    header('Location: templates/connexion.php');
     exit();
 }
 
 $role = $_SESSION['role'] ?? '';
 if ($role !== 'barman') {
-    header('Location: index.php');
+    header('Location: templates/index.php');
     exit();
 }
 

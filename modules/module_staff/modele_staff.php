@@ -32,7 +32,27 @@ class ModeleStaff extends ModeleCommun
         $stmt->execute([$id]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
+    public function getAssociationIdParBarman($idBarman)
+    {
+        try {
+            // On sélectionne l'id de l'association dans la table 'appartient'
+            // où le compte correspond à l'ID du barman connecté
+            $sql = "SELECT association_id 
+                FROM appartient 
+                WHERE compte_id = ? 
+                LIMIT 1";
 
+            $stmt = self::getBdd()->prepare($sql);
+            $stmt->execute([$idBarman]);
+
+            // On récupère uniquement la valeur de la colonne 'association_id'
+            return $stmt->fetchColumn();
+
+        } catch (PDOException $e) {
+            error_log('Erreur getAssociationIdParBarman : ' . $e->getMessage());
+            return null;
+        }
+    }
     public function getProduitsParAssociation($associationId)
     {
         try {
