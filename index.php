@@ -3,8 +3,8 @@ session_start();
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-include_once '../vue_generique.php';
-include_once '../connexion/Connexion.php';
+include_once 'vue_generique.php';
+include_once 'connexion/Connexion.php';
 Connexion::initConnexion();
 
 if (isset($_GET['action']) && $_GET['action'] === 'deconnexion') {
@@ -43,22 +43,22 @@ $role  = $_SESSION['role'];
 switch ($role) {
     case 'gestionnaire':
     case 'admin':
-        include_once '../modules/module_gestionnaire/Mod_gestionnaire.php';
+        include_once 'modules/module_gestionnaire/Mod_gestionnaire.php';
         new Mod_gestionnaire();
-        include_once '../template_gestionnaire.php';
+        include_once 'templates/template_gestionnaire.php';
         break;
 
     case 'barman':
-        include_once '../modules/module_barman/Mod_barman.php';
+        include_once 'modules/module_barman/Mod_barman.php';
         new Mod_barman();
-        include_once '../template_barman.php';
+        include_once 'templates/template_barman.php';
         break;
 
     case 'client':
     default:
-        include_once '../modules/module_client/Mod_client.php';
+        include_once 'modules/module_client/Mod_client.php';
         new Mod_client();
-        include_once '../template_client.php';
+        include_once 'templates/template_client.php';
         break;
 }
 ?>
