@@ -22,7 +22,6 @@ class ControleurGestionnaire
         $this->vueCommun = new VueCommun();
         $this->vueStaff = new VueStaff();
 
-
     }
 
     public function gererAction($action)

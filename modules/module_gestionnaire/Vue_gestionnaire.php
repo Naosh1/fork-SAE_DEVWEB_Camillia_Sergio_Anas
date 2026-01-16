@@ -1356,9 +1356,6 @@ class VueGestionnaire extends VueStaff
 
             .dot {
                 width: 8px;
-                height: 8px;
-                border-radius: 50%;
-            }
 
             .dot-online {
                 background: #10b981;
