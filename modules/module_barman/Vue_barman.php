@@ -1,108 +1,236 @@
 <?php
+include_once 'vue_generique.php';
+include "modules/module_commun/vue_commun.php";
+include "modules/module_staff/vue_staff.php";
 
-class Vue_barman {
+class Vue_barman extends VueStaff
+{
 
-    public function afficherAccueil() {
-        ob_start();
-        echo "Accueil barman";
-        return ob_get_clean();
+private function afficherHeader($titre = "Gestionnaire de buvette")
+{
+    ?>
+    <!DOCTYPE html>
+    <html lang="fr">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title><?= htmlspecialchars($titre) ?></title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                margin: 0;
+                padding: 20px;
+            }
+
+            .menu {
+                background-color: #f0f0f0;
+                padding: 10px;
+                margin-bottom: 20px;
+                border-radius: 5px;
+            }
+
+            .menu a {
+                margin-right: 15px;
+                text-decoration: none;
+                color: #333;
+                font-weight: bold;
+            }
+
+            .menu a:hover {
+                color: #007bff;
+            }
+
+            .erreur {
+                color: red;
+                padding: 10px;
+                border: 1px solid red;
+                margin-bottom: 15px;
+                border-radius: 5px;
+            }
+
+            .succes {
+                border: 2px solid green;
+                padding: 15px;
+                margin: 15px 0;
+                border-radius: 5px;
+            }
+
+            .produit-row {
+                margin-bottom: 10px;
+                padding: 10px;
+                border: 1px solid #ddd;
+                border-radius: 5px;
+            }
+
+            .btn {
+                padding: 10px 15px;
+                border-radius: 4px;
+                text-decoration: none;
+                display: inline-block;
+                margin-right: 10px;
+            }
+
+            .btn-primary {
+                background-color: #4CAF50;
+                color: white;
+                border: none;
+                cursor: pointer;
+            }
+
+            .btn-secondary {
+                background-color: #2196F3;
+                color: white;
+                border: none;
+                cursor: pointer;
+            }
+
+            .btn-danger {
+                background-color: #f44336;
+                color: white;
+                border: none;
+                cursor: pointer;
+            }
+
+            table {
+                border-collapse: collapse;
+                width: 100%;
+                margin-top: 20px;
+            }
+
+            table th, table td {
+                border: 1px solid #ddd;
+                padding: 8px;
+                text-align: left;
+            }
+
+            table th {
+                background-color: #4CAF50;
+                color: white;
+            }
+
+            input, select {
+                padding: 8px;
+                margin: 5px 0;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+            }
+        </style>
+    </head>
+    <body>
+    <?php
     }
 
-    public function afficherDerniereTransaction($transaction) {
-        ob_start();
+    private function afficherMenu()
+    {
         ?>
-
-        <main>
-            <?php if (!$transaction): ?>
-
-                <div class="card">
-                    <h2>Aucune transaction</h2>
-                    <p>Aucune transaction récente n’a été trouvée.</p>
-                </div>
-
-            <?php else:
-                $isAnnulee = ($transaction['statut'] ?? 'payee') === 'annulee';
-            ?>
-
-                <div class="card">
-                    <h2>Détails de la transaction</h2>
-
-                    <p><strong>Numéro :</strong> #<?= htmlspecialchars($transaction['transaction_id']) ?></p>
-                    <p><strong>Date :</strong> <?= htmlspecialchars($transaction['date_vente']) ?></p>
-                    <p>
-                        <strong>Client :</strong>
-                        <?= htmlspecialchars($transaction['prenom'] . ' ' . $transaction['nom']) ?>
-                    </p>
-                    <p>
-                        <strong>Montant total :</strong>
-                        <?= number_format($transaction['montant_total'], 2) ?> €
-                    </p>
-
-                    <p>
-                        <strong>Statut :</strong>
-                        <?= $isAnnulee ? 'Annulée' : 'Confirmée' ?>
-                    </p>
-                </div>
-
-                <?php if (!empty($transaction['produits'])): ?>
-
-                    <div class="card">
-                        <h3>Produits commandés</h3>
-
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Produit</th>
-                                    <th>Quantité</th>
-                                    <th>Prix unitaire</th>
-                                    <th>Total</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php foreach ($transaction['produits'] as $produit): ?>
-                                    <tr>
-                                        <td><?= htmlspecialchars($produit['nom']) ?></td>
-                                        <td><?= (int)$produit['quantite'] ?></td>
-                                        <td><?= number_format($produit['prix_unitaire'], 2) ?> €</td>
-                                        <td>
-                                            <?= number_format(
-                                                $produit['quantite'] * $produit['prix_unitaire'],
-                                                2
-                                            ) ?> €
-                                        </td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
-                    </div>
-
-                <?php endif; ?>
-
-                <?php if (!$isAnnulee): ?>
-                    <div class="card">
-                        <h3>Action</h3>
-
-                        <form method="post" action="index.php"
-                              onsubmit="return confirm('Voulez-vous vraiment annuler cette transaction ?')">
-                            <input type="hidden" name="action" value="annulerTransaction">
-                            <input type="hidden" name="transaction_id"
-                                   value="<?= htmlspecialchars($transaction['transaction_id']) ?>">
-
-                            <input type="submit" value="Annuler la transaction">
-                        </form>
-                    </div>
-                <?php endif; ?>
-
-            <?php endif; ?>
-        </main>
+        <div class="menu">
+            <a href="index.php?action=accueil">Accueil</a>
+            <a href="index.php?action=afficherProduits">Produits</a>
+            <a href="index.php?action=rechercherClient">Rechercher Client</a>
+            <a href="index.php?action=commandesEnCours">Commandes</a>
+            <a href="index.php?action=creerTransaction">Nouvelle Transaction</a>
+            <a href="index.php?action=derniereTransaction">Dernière Transaction</a>
+            <a href="index.php?action=historiqueCommandes">Historique</a>
+        </div>
         <?php
-
-        return ob_get_clean();
     }
 
+    private function afficherFooter() {
+    ?>
+    </body>
+    </html>
+    <?php
+}
 
-    public function afficherConfirmationAnnulation($transaction_id) {
-        ob_start();
+    public function afficherAccueil()
+    {
+        $this->afficherHeader("Accueil");
+        $this->afficherMenu();
+        ?>
+        <h1>Bienvenue dans le gestionnaire de buvette</h1>
+        <p>Veuillez choisir une section dans le menu ci-dessus.</p>
+        <?php
+        $this->afficherFooter();
+    }
+
+    public function afficherDerniereTransaction($transaction)
+    {
+        $this->afficherHeader("Dernière transaction");
+        $this->afficherMenu();
+        ?>
+        <h2>Dernière transaction effectuée</h2>
+
+        <?php if (!$transaction): ?>
+        <p>Aucune transaction trouvée.</p>
+    <?php else: ?>
+        <div style="background-color: <?= ($transaction['statut'] ?? 'payee') === 'annulee' ? '#ffebee' : '#f9f9f9' ?>; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+            <h3>Transaction #<?= htmlspecialchars($transaction['transaction_id']) ?></h3>
+            <p><strong>Date:</strong> <?= htmlspecialchars($transaction['date_vente']) ?></p>
+            <p><strong>Client:</strong> <?= htmlspecialchars($transaction['prenom'] . ' ' . $transaction['nom']) ?>
+                (ID: <?= htmlspecialchars($transaction['client_id']) ?>)</p>
+            <p><strong>Montant total:</strong> <?= htmlspecialchars($transaction['montant_total']) ?> €</p>
+            <p><strong>Statut:</strong>
+                <span style="color: <?= ($transaction['statut'] ?? 'payee') === 'annulee' ? 'red' : 'green' ?>; font-weight: bold;">
+                    <?= htmlspecialchars(ucfirst($transaction['statut'] ?? 'payee')) ?>
+                </span>
+            </p>
+        </div>
+
+        <?php if (!empty($transaction['produits'])): ?>
+            <h3>Produits commandés</h3>
+            <table>
+                <thead>
+                <tr>
+                    <th>Produit</th>
+                    <th>Quantité</th>
+                    <th>Prix unitaire</th>
+                    <th>Total</th>
+                </tr>
+                </thead>
+                <tbody>
+                <?php foreach ($transaction['produits'] as $produit): ?>
+                    <tr>
+                        <td><?= htmlspecialchars($produit['nom']) ?></td>
+                        <td><?= htmlspecialchars($produit['quantite']) ?></td>
+                        <td><?= htmlspecialchars($produit['prix_unitaire']) ?> €</td>
+                        <td><?= htmlspecialchars($produit['quantite'] * $produit['prix_unitaire']) ?> €</td>
+                    </tr>
+                <?php endforeach; ?>
+                </tbody>
+            </table>
+        <?php endif; ?>
+
+        <?php if (($transaction['statut'] ?? 'payee') !== 'annulee'): ?>
+            <div style="margin-top: 20px; padding: 15px; background-color: #fff3cd; border: 1px solid #ffc107; border-radius: 5px;">
+                <h4>⚠️ Annuler cette transaction</h4>
+                <p>L'annulation de cette transaction va:</p>
+                <ul>
+                    <li>Rembourser le client de <?= htmlspecialchars($transaction['montant_total']) ?> €</li>
+                    <li>Remettre les produits en stock</li>
+                    <li>Marquer la transaction comme annulée</li>
+                </ul>
+                <form method="post" action="index.php"
+                      onsubmit="return confirm('Êtes-vous sûr de vouloir annuler cette transaction ? Cette action est irréversible.')">
+                    <input type="hidden" name="action" value="annulerTransaction">
+                    <input type="hidden" name="transaction_id"
+                           value="<?= htmlspecialchars($transaction['transaction_id']) ?>">
+                    <button type="submit" class="btn btn-danger">Annuler la transaction</button>
+                </form>
+            </div>
+        <?php else: ?>
+            <div style="margin-top: 20px; padding: 15px; background-color: #ffebee; border: 1px solid #f44336; border-radius: 5px;">
+                <p><strong>Cette transaction a déjà été annulée.</strong></p>
+            </div>
+        <?php endif; ?>
+    <?php endif; ?>
+        <?php
+        $this->afficherFooter();
+    }
+
+    public function afficherConfirmationAnnulation($transaction_id)
+    {
+        $this->afficherHeader("Transaction annulée");
+        $this->afficherMenu();
         ?>
         <h2>Transaction annulée avec succès</h2>
         <div class="succes" style="background-color: #d4edda; border-color: #c3e6cb;">
@@ -121,153 +249,231 @@ class Vue_barman {
             <a href="index.php?action=commandesEnCours" class="btn btn-secondary">Voir toutes les commandes</a>
         </div>
         <?php
-        return ob_get_clean();
+        $this->afficherFooter();
     }
 
-    public function afficherHistoriqueCommandes($commandes) {
-        ob_start();
-       ?>
+    public function afficherHistoriqueCommandes($commandes)
+    {
+        $this->afficherHeader("Historique des commandes");
+        $this->afficherMenu();
+        ?>
+        <h2>Historique des commandes</h2>
 
-       <h2>Historique des commandes</h2>
+        <?php if (empty($commandes)): ?>
+        <p>Aucune commande dans l'historique.</p>
+    <?php else: ?>
+        <div style="margin-bottom: 20px;">
+            <p><strong>Total des commandes :</strong> <?= count($commandes) ?></p>
+        </div>
 
-       <?php if (empty($commandes)): ?>
-           <p>Aucune commande enregistrée.</p>
-       <?php else: ?>
-          <table>
-             <thead>
+        <table>
+            <thead>
+            <tr>
+                <th>N° Commande</th>
+                <th>Date et Heure</th>
+                <th>Client</th>
+                <th>Montant Total</th>
+                <th>Statut</th>
+                <th>Action</th>
+            </tr>
+            </thead>
+            <tbody>
+            <?php
+            $totalTerminees = 0;
+            $totalAnnulees = 0;
+            $montantTotal = 0;
+
+            foreach ($commandes as $commande):
+                $classeStatut = '';
+                $couleurStatut = '';
+
+                switch ($commande['statut']) {
+                    case 'payee':
+                        $classeStatut = 'statut-terminee';
+                        $couleurStatut = '#4CAF50';
+                        $totalTerminees++;
+                        $montantTotal += $commande['montant_total'];
+                        break;
+                    case 'annulee':
+                        $classeStatut = 'statut-annulee';
+                        $couleurStatut = '#f44336';
+                        $totalAnnulees++;
+                        break;
+                    default:
+                        $couleurStatut = '#FF9800';
+                        break;
+                }
+                ?>
                 <tr>
-                   <th>ID</th>
-                      <th>Date</th>
-                      <th>Client</th>
-                      <th>Montant</th>
-                      <th>Statut</th>
-                      </tr>
-             </thead>
-               <tbody>
-                  <?php foreach ($commandes as $c): ?>
-                      <tr>
-                         <td><?= htmlspecialchars($c['commande_id']) ?></td>
-                         <td><?= htmlspecialchars($c['date_heure_affichage']) ?></td>
-                         <td><?= htmlspecialchars($c['prenom'].' '.$c['nom']) ?></td>
-                         <td><?= number_format($c['montant_total'], 2) ?> €</td>
-                         <td><?= htmlspecialchars($c['statut']) ?></td>
-                      </tr>
-                  <?php endforeach; ?>
-               </tbody>
-          </table>
-       <?php endif; ?>
-       <?php
+                    <td><strong>#<?= htmlspecialchars($commande['commande_id']) ?></strong></td>
+                    <td><?= htmlspecialchars($commande['date_heure_affichage']) ?></td>
+                    <td><?= htmlspecialchars($commande['prenom'] . ' ' . $commande['nom']) ?></td>
+                    <td><?= htmlspecialchars(number_format($commande['montant_total'], 2)) ?> €</td>
+                    <td>
+                                <span style="color: <?= $couleurStatut ?>; font-weight: bold;">
+                                    <?= htmlspecialchars($commande['statut_affichage']) ?>
+                                </span>
+                    </td>
+                    <td>
+                        <a href="index.php?action=detailCommande&id=<?= $commande['commande_id'] ?>"
+                           class="btn btn-secondary" style="padding: 5px 10px; font-size: 12px;">
+                            Détails
+                        </a>
+                    </td>
+                </tr>
+            <?php endforeach; ?>
+            </tbody>
+        </table>
 
-        return ob_get_clean();
-    }
-
-    public function afficherProduits($produits) {
-        ob_start();
-        ?>
-
-        <h2>Liste des produits</h2>
-
-        <?php if (empty($produits)): ?>
-            <p>Aucun produit disponible.</p>
-        <?php else: ?>
-            <table>
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Nom</th>
-                        <th>Prix</th>
-                        <th>Stock</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($produits as $p): ?>
-                        <tr>
-                            <td><?= $p['id'] ?></td>
-                            <td><?= htmlspecialchars($p['nom']) ?></td>
-                            <td><?= number_format($p['prix'], 2) ?> €</td>
-                            <td><?= (int)$p['disponibilite'] ?></td>
-                        </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-        <?php endif; ?>
-
+        <!-- Bilan récapitulatif -->
+        <div style="margin-top: 30px; padding: 20px; background-color: #f0f0f0; border-radius: 5px;">
+            <h3>📊 Bilan récapitulatif</h3>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 15px;">
+                <div style="background-color: white; padding: 15px; border-radius: 5px; text-align: center;">
+                    <h4 style="margin: 0; color: #4CAF50;">Commandes terminées</h4>
+                    <p style="font-size: 24px; font-weight: bold; margin: 10px 0;"><?= $totalTerminees ?></p>
+                </div>
+                <div style="background-color: white; padding: 15px; border-radius: 5px; text-align: center;">
+                    <h4 style="margin: 0; color: #f44336;">Commandes annulées</h4>
+                    <p style="font-size: 24px; font-weight: bold; margin: 10px 0;"><?= $totalAnnulees ?></p>
+                </div>
+                <div style="background-color: white; padding: 15px; border-radius: 5px; text-align: center;">
+                    <h4 style="margin: 0; color: #2196F3;">Chiffre d'affaires</h4>
+                    <p style="font-size: 24px; font-weight: bold; margin: 10px 0;"><?= number_format($montantTotal, 2) ?>
+                        €</p>
+                    <small style="color: #666;">(Commandes terminées uniquement)</small>
+                </div>
+            </div>
+        </div>
+    <?php endif; ?>
         <?php
-        return ob_get_clean();
+        $this->afficherFooter();
     }
 
-    public function afficherClients($clients) {
-        ob_start();
+    public function afficherProduits($produits)
+    {
+        $this->afficherHeader("Liste des produits");
+        $this->afficherMenu();
         ?>
+        <h2>Produits en vente</h2>
+        <?php if (empty($produits)): ?>
+        <p>Aucun produit disponible.</p>
+    <?php else: ?>
+        <table>
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nom</th>
+                <th>Prix</th>
+                <th>Stock</th>
+            </tr>
+            </thead>
+            <tbody>
+            <?php foreach ($produits as $p): ?>
+                <tr>
+                    <td><?= htmlspecialchars($p['id']) ?></td>
+                    <td><?= htmlspecialchars($p['nom']) ?></td>
+                    <td><?= htmlspecialchars($p['prix']) ?> €</td>
+                    <td><?= htmlspecialchars($p['disponibilite']) ?></td>
+                </tr>
+            <?php endforeach; ?>
+            </tbody>
+        </table>
+    <?php endif; ?>
+        <?php
+        $this->afficherFooter();
+    }
 
-        <h2>Clients</h2>
+    public function afficherClients($clients, $search = null)
+    {
+        $this->afficherHeader("Recherche client");
+        $this->afficherMenu();
+        ?>
+        <h2>Recherche client</h2>
+        <form method="get">
+            <input type="hidden" name="action" value="rechercherClient">
+            <input type="text" name="search" placeholder="Nom, prénom ou ID"
+                   value="<?= htmlspecialchars($search ?? '') ?>">
+            <button type="submit" class="btn btn-primary">Rechercher</button>
+        </form>
 
+        <?php if ($search): ?>
         <?php if (empty($clients)): ?>
             <p>Aucun client trouvé.</p>
         <?php else: ?>
             <table>
                 <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Nom</th>
-                        <th>Prénom</th>
-                        <th>Solde</th>
-                    </tr>
+                <tr>
+                    <th>ID</th>
+                    <th>Nom</th>
+                    <th>Prénom</th>
+                    <th>Solde</th>
+                </tr>
                 </thead>
                 <tbody>
-                    <?php foreach ($clients as $c): ?>
-                        <tr>
-                            <td>#<?= $c['id'] ?></td>
-                            <td><?= htmlspecialchars($c['nom']) ?></td>
-                            <td><?= htmlspecialchars($c['prenom']) ?></td>
-                            <td><?= number_format($c['solde'], 2) ?> €</td>
-                        </tr>
-                    <?php endforeach; ?>
+                <?php foreach ($clients as $c): ?>
+                    <tr>
+                        <td><?= htmlspecialchars($c['id']) ?></td>
+                        <td><?= htmlspecialchars($c['nom']) ?></td>
+                        <td><?= htmlspecialchars($c['prenom']) ?></td>
+                        <td><?= htmlspecialchars($c['solde']) ?> €</td>
+                    </tr>
+                <?php endforeach; ?>
                 </tbody>
             </table>
         <?php endif; ?>
-
+    <?php endif; ?>
         <?php
-        return ob_get_clean();
+        $this->afficherFooter();
     }
 
-    public function afficherCommandes($commandes) {
-        ob_start();
+    public function afficherCommandes($commandes)
+    {
+        $this->afficherHeader("Commandes");
+        $this->afficherMenu();
         ?>
-
-        <h2>Commandes en attente</h2>
+        <h2>Commandes en cours (du jour)</h2>
+        <p style="color: #666; font-style: italic;">Liste des commandes payées aujourd'hui en attente de préparation</p>
 
         <?php if (empty($commandes)): ?>
-            <p>Aucune commande en cours.</p>
-        <?php else: ?>
-            <table>
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Client</th>
-                        <th>Heure</th>
-                        <th>Total</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($commandes as $c): ?>
-                        <tr>
-                            <td>#<?= $c['commande_id'] ?></td>
-                            <td><?= htmlspecialchars($c['prenom'].' '.$c['nom']) ?></td>
-                            <td><?= htmlspecialchars($c['heure']) ?></td>
-                            <td><?= number_format($c['montant_total'], 2) ?> €</td>
-                        </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-        <?php endif; ?>
-
+        <p>Aucune commande en cours aujourd'hui.</p>
+    <?php else: ?>
+        <table>
+            <thead>
+            <tr>
+                <th>N° Commande</th>
+                <th>Client</th>
+                <th>Heure</th>
+                <th>Montant</th>
+                <th>Action</th>
+            </tr>
+            </thead>
+            <tbody>
+            <?php foreach ($commandes as $c):
+                $datetime = new DateTime($c['date_vente']);
+                ?>
+                <tr>
+                    <td><strong>#<?= htmlspecialchars($c['commande_id']) ?></strong></td>
+                    <td><?= htmlspecialchars($c['prenom'] . ' ' . $c['nom']) ?></td>
+                    <td><?= $datetime->format('H:i') ?></td>
+                    <td><?= htmlspecialchars(number_format($c['montant_total'], 2)) ?> €</td>
+                    <td>
+                        <a href="index.php?action=detailCommande&id=<?= $c['commande_id'] ?>" class="btn btn-secondary">Voir
+                            détails</a>
+                    </td>
+                </tr>
+            <?php endforeach; ?>
+            </tbody>
+        </table>
+    <?php endif; ?>
         <?php
-        return ob_get_clean();
+        $this->afficherFooter();
     }
 
-    public function afficherDetailCommande($commande, $produits) {
-        ob_start();
+    public function afficherDetailCommande($commande, $produits)
+    {
+        $this->afficherHeader("Détail commande");
+        $this->afficherMenu();
         ?>
         <h2>Détail de la commande</h2>
         <?php if (!$commande): ?>
@@ -329,78 +535,81 @@ class Vue_barman {
         </div>
     <?php endif; ?>
         <?php
+        $this->afficherFooter();
     }
 
-    public function afficherErreur($message) {
+    public function afficherErreur($message)
+    {
+        $this->afficherHeader("Erreur");
+        $this->afficherMenu();
         ?>
         <div class="erreur">
             <strong>Erreur:</strong> <?= htmlspecialchars($message) ?>
         </div>
         <?php
-        return ob_get_clean();
+        $this->afficherFooter();
     }
 
-    public function afficherFormTransaction($produits = [], $erreur = null, $donneesSaisies = null) {
-        ob_start();
+    public function afficherFormTransaction($produits = [], $erreur = null, $donneesSaisies = null)
+    {
+        $this->afficherHeader("Nouvelle transaction");
+        $this->afficherMenu();
         ?>
-
-        <h2>Nouvelle vente</h2>
+        <h2>Créer une transaction</h2>
 
         <?php if ($erreur): ?>
-            <div class="card">
-                <p style="color:red; font-weight:bold;">
-                    Erreur : <?= htmlspecialchars($erreur) ?>
-                </p>
-            </div>
-        <?php endif; ?>
+        <div class="erreur">
+            <strong>Erreur:</strong> <?= $erreur ?>
+        </div>
+    <?php endif; ?>
 
         <form method="post" action="index.php" onsubmit="return validerFormulaire()">
             <input type="hidden" name="action" value="traiterTransaction">
 
-            <!-- Client -->
-            <label>ID Client</label>
-            <input type="number"
-                   name="client_id"
-                   value="<?= htmlspecialchars($donneesSaisies['client_id'] ?? '') ?>"
-                   min="1"
-                   required>
-
-            <h3>Produits</h3>
-
-            <div id="produits-container">
-                <?php
-                $produits_saisis = $donneesSaisies['produits'] ?? [['id' => '', 'quantite' => 1]];
-                foreach ($produits_saisis as $index => $produit_saisi):
-                ?>
-                    <div class="card produit-row">
-                        <select name="produits[<?= $index ?>][id]" required>
-                            <option value="">-- Sélectionner un produit --</option>
-                            <?php foreach ($produits as $p): ?>
-                                <option value="<?= $p['id'] ?>"
-                                    <?= ($produit_saisi['id'] ?? '') == $p['id'] ? 'selected' : '' ?>>
-                                    <?= htmlspecialchars($p['nom']) ?> (<?= number_format($p['prix'], 2) ?> €)
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-
-                        <input type="number"
-                               name="produits[<?= $index ?>][quantite]"
-                               value="<?= htmlspecialchars($produit_saisi['quantite'] ?? 1) ?>"
-                               min="1"
-                               required>
-
-                        <?php if ($index > 0): ?>
-                            <button type="button" onclick="supprimerProduit(this)">
-                                Supprimer
-                            </button>
-                        <?php endif; ?>
-                    </div>
-                <?php endforeach; ?>
+            <div style="margin-bottom: 15px;">
+                <label for="client_id"><strong>ID Client:</strong></label><br>
+                <input type="number" name="client_id" id="client_id"
+                       value="<?= htmlspecialchars($donneesSaisies['client_id'] ?? '') ?>"
+                       min="1" required style="width: 200px;">
             </div>
 
-            <button type="button" onclick="ajouterProduit()">Ajouter un produit</button>
+            <div style="margin-bottom: 15px;">
+                <h3>Produits</h3>
+                <div id="produits-container">
+                    <?php
+                    $produits_saisis = $donneesSaisies['produits'] ?? [['id' => '', 'quantite' => '1']];
+                    foreach ($produits_saisis as $index => $produit_saisi):
+                        ?>
+                        <div class="produit-row">
+                            <label>Produit:</label><br>
+                            <select name="produits[<?= $index ?>][id]" required style="width: 300px;">
+                                <option value="">-- Sélectionner un produit --</option>
+                                <?php foreach ($produits as $produit): ?>
+                                    <option value="<?= $produit['id'] ?>"
+                                        <?= ($produit_saisi['id'] ?? '') == $produit['id'] ? 'selected' : '' ?>>
+                                        <?= htmlspecialchars($produit['nom']) ?> - <?= $produit['prix'] ?> €
+                                        (Stock: <?= $produit['disponibilite'] ?>)
+                                    </option>
+                                <?php endforeach; ?>
+                            </select><br>
 
-            <input type="submit" value="Encaisser">
+                            <label>Quantité:</label><br>
+                            <input type="number" name="produits[<?= $index ?>][quantite]"
+                                   value="<?= htmlspecialchars($produit_saisi['quantite'] ?? '1') ?>"
+                                   min="1" required style="width: 100px;">
+
+                            <?php if ($index > 0): ?>
+                                <button type="button" class="btn btn-danger" onclick="supprimerProduit(this)">
+                                    Supprimer
+                                </button>
+                            <?php endif; ?>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+                <button type="button" class="btn btn-secondary" onclick="ajouterProduit()">Ajouter un produit</button>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Créer la transaction</button>
         </form>
 
         <script>
@@ -410,90 +619,97 @@ class Vue_barman {
             function ajouterProduit() {
                 const container = document.getElementById("produits-container");
                 const div = document.createElement("div");
-                div.className = "card produit-row";
+                div.className = "produit-row";
 
-                let options = '<option value="">-- Sélectionner un produit --</option>';
-                produitsDisponibles.forEach(p => {
-                    options += `<option value="${p.id}">${p.nom} (${parseFloat(p.prix).toFixed(2)} €)</option>`;
+                let html = '<label>Produit:</label><br>';
+                html += '<select name="produits[' + compteurProduit + '][id]" required style="width: 300px;">';
+                html += '<option value="">-- Sélectionner un produit --</option>';
+
+                produitsDisponibles.forEach(function (produit) {
+                    html += '<option value="' + produit.id + '">' +
+                        produit.nom + ' - ' + produit.prix + ' € (Stock: ' + produit.disponibilite + ')</option>';
                 });
 
-                div.innerHTML = `
-                    <select name="produits[${compteurProduit}][id]" required>
-                        ${options}
-                    </select>
+                html += '</select><br>';
+                html += '<label>Quantité:</label><br>';
+                html += '<input type="number" name="produits[' + compteurProduit + '][quantite]" value="1" min="1" required style="width: 100px;">';
+                html += ' <button type="button" class="btn btn-danger" onclick="supprimerProduit(this)">Supprimer</button>';
 
-                    <input type="number"
-                           name="produits[${compteurProduit}][quantite]"
-                           value="1"
-                           min="1"
-                           required>
-
-                    <button type="button" onclick="supprimerProduit(this)">
-                        Supprimer
-                    </button>
-                `;
-
+                div.innerHTML = html;
                 container.appendChild(div);
                 compteurProduit++;
             }
 
-            function supprimerProduit(btn) {
-                btn.closest('.produit-row').remove();
+            function supprimerProduit(bouton) {
+                if (document.querySelectorAll(".produit-row").length > 1) {
+                    bouton.parentElement.remove();
+                } else {
+                    alert("Vous devez avoir au moins un produit dans la transaction.");
+                }
             }
 
             function validerFormulaire() {
-                const selects = document.querySelectorAll('select[name^="produits"]');
-                let ok = false;
-
-                selects.forEach(s => {
-                    if (s.value !== "") ok = true;
-                });
-
-                if (!ok) {
-                    alert("Veuillez sélectionner au moins un produit.");
+                const clientId = document.getElementById("client_id").value;
+                if (clientId <= 0) {
+                    alert("L'ID client doit être un nombre positif.");
                     return false;
                 }
 
-                return confirm("Confirmer la vente ?");
+                const selectsProduits = document.querySelectorAll("select[name^='produits[']");
+                let produitIds = [];
+
+                for (let select of selectsProduits) {
+                    if (!select.value) {
+                        alert("Tous les produits doivent être sélectionnés.");
+                        return false;
+                    }
+
+                    if (produitIds.includes(select.value)) {
+                        alert("Un produit ne peut pas être ajouté deux fois.");
+                        return false;
+                    }
+                    produitIds.push(select.value);
+
+                    const quantiteInput = select.parentElement.querySelector("input[type='number']");
+                    if (quantiteInput.value <= 0) {
+                        alert("La quantité doit être au moins de 1.");
+                        return false;
+                    }
+
+                    const produitInfo = produitsDisponibles.find(p => p.id == select.value);
+                    if (produitInfo && quantiteInput.value > produitInfo.disponibilite) {
+                        alert("Stock insuffisant pour \"" + produitInfo.nom + "\". Stock disponible: " + produitInfo.disponibilite);
+                        return false;
+                    }
+                }
+
+                return confirm("Êtes-vous sûr de vouloir créer cette transaction ?");
             }
         </script>
-
         <?php
-        return ob_get_clean();
+        $this->afficherFooter();
     }
 
-    public function afficherResultatTransaction($vente_id) {
-        ob_start();
-            ?>
+    public function afficherResultatTransaction($vente_id)
+    {
+        $this->afficherHeader("Transaction réussie");
+        $this->afficherMenu();
+        ?>
+        <h2>Transaction créée avec succès !</h2>
+        <div class="succes">
+            <h3>Transaction #<?= htmlspecialchars($vente_id) ?></h3>
+            <p><strong>Numéro de transaction:</strong> <?= htmlspecialchars($vente_id) ?></p>
+            <p><strong>Statut:</strong> Transaction créée avec succès</p>
+        </div>
 
-            <div class="card">
-                <h2>Transaction validée</h2>
+        <p>La transaction a été enregistrée sous le numéro: <strong><?= htmlspecialchars($vente_id) ?></strong></p>
+        <p>Le solde du client a été débité et les stocks ont été mis à jour.</p>
 
-                <p>
-                    La transaction <strong>#<?= htmlspecialchars($vente_id) ?></strong> a été enregistrée avec succès.
-                </p>
-
-                <p>
-                    Le solde du client a été débité et les stocks ont été mis à jour.
-                </p>
-
-                <nav class="nav-user">
-                    <ul>
-                        <li>
-                            <a href="index.php?action=creerTransaction">
-                                Nouvelle transaction
-                            </a>
-                        </li>
-                        <li>
-                            <a href="index.php?action=detailCommande&id=<?= $vente_id ?>">
-                                Voir les détails
-                            </a>
-                        </li>
-                    </ul>
-                </nav>
-            </div>
-
+        <div style="margin-top: 20px;">
+            <a href="index.php?action=creerTransaction" class="btn btn-primary">Nouvelle transaction</a>
+            <a href="index.php?action=detailCommande&id=<?= $vente_id ?>" class="btn btn-secondary">Voir les détails</a>
+        </div>
         <?php
-        return ob_get_clean();
+        $this->afficherFooter();
     }
 }
