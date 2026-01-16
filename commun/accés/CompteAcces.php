@@ -205,11 +205,4 @@ class CompteAcces {
 
         return $stmt->fetchAll();
     }
-
-<<<<<<< HEAD
 }
-=======
-
-
-    }
->>>>>>> travailClientIUT
