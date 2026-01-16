@@ -4,7 +4,7 @@ include_once "../connexion/Connexion.php";
 Connexion::initConnexion();
 
 if (isset($_SESSION['id'])) {
-    header('Location: .//index.php');
+    header('Location: ../index.php');
     exit();
 }
 
