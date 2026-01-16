@@ -328,6 +328,51 @@ footer p {
 }
 
 /* =========================
+    Panier
+   ========================= */
+
+.panier{
+    margin: 0 24px;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+
+    background: var(--color-secondary);
+    color: var(--color-white);
+    text-decoration: none;
+
+    padding: 12px 18px;
+    border-radius: 999px;
+
+    font-weight: 600;
+    box-shadow: var(--shadow-md);
+    transition: var(--transition);
+}
+
+/* petite icone panier (emoji) */
+.panier::before{
+    font-size: 16px;
+    line-height: 1;
+}
+
+.panier:hover{
+    background: var(--color-tertiary);
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-2px);
+}
+
+.panier:active{
+    transform: translateY(0);
+    box-shadow: var(--shadow-sm);
+}
+
+/* accessibilité clavier */
+.panier:focus-visible{
+    outline: 3px solid var(--color-link);
+    outline-offset: 3px;
+}
+
+/* =========================
    Typographie raffinée
    ========================= */
 h1 {

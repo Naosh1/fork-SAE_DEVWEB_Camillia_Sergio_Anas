@@ -85,6 +85,18 @@ include_once "Controleur_client.php";
                         VueGenerique::setAffichage($contenu);
                     }
                     break;
+                case "form_produits_utilisateur" :
+                    $contenu = $this->controleur->getVue()->form_liste_produits($this->controleur->lesProduits());
+                    VueGenerique::setAffichage($contenu);
+                    break;
+                case "form_panier_utilisateur" :
+                    $donneesPanier = $this->controleur->panier();
+                    $contenu = $this->controleur->getVue()->form_panier_utilisateur(
+                        $donneesPanier['details'],
+                        $donneesPanier['total']
+                    );
+                    VueGenerique::setAffichage($contenu);
+                    break;
                 case "ajout_utilisateur" :
                     $this->controleur->ajout();
                     break;
@@ -96,6 +108,9 @@ include_once "Controleur_client.php";
                     break;
                 case "verif_rechargement" :
                     $this->controleur->rechargement();
+                    break;
+                case "ajouter_panier" :
+                    $this->controleur->ajouter_panier();
                     break;
                 case "deconnexion" :
                     $this->controleur->deconnexion();

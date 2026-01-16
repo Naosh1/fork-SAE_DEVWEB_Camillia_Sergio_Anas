@@ -6,17 +6,22 @@
             $this->bdd = Connexion::getBdd();
         }
 
-        public function enregistrerProduit(Produit $produit) {
+        public function enregistrerProduit() {
+            $nom = $_POST['nom'];
+            $type = $_POST['type'];
+            $prix = $_POST['prix'];
+            $quantiteActuelle = $_POST['quantiteActuelle'];
+
             $stmt = $this->bdd->prepare(
                 "INSERT INTO produit (nom, type, prix, quantiteActuelle)
-             VALUES (?, ?, ?, ?)"
+             VALUES (:nom, :type, :prix, :quantiteActuelle)"
             );
 
             $stmt->execute([
-                $produit->getNom(),
-                $produit->getType(),
-                $produit->getPrix(),
-                $produit->getQuantiteActuelle()
+                ":nom"   => $nom,
+                ":type" => $type,
+                ":prix"  => $prix,
+                ":quantiteActuelle" => $quantiteActuelle
             ]);
         }
 
@@ -36,32 +41,19 @@
                 return null;
             }
 
-            return new Produit(
-                $row["id"],
-                $row["nom"],
-                $row["type"],
-                $row["prix"],
-                $row["quantiteActuelle"]
-            );
+            return $row;
         }
 
         public function tousLesProduits() {
-            $stmt = $this->bdd->query("SELECT * FROM produit");
-            $rows = $stmt->fetchAll();
+           $stmt = $this->bdd->prepare(
+            "SELECT id, nom, type, prix, quantiteActuelle
+             FROM produit
+             WHERE quantiteActuelle > 0
+             ORDER BY nom"
+           );
 
-            $produits = [];
-
-            foreach ($rows as $row) {
-                $produits[] = new Produit(
-                    $row["id"],
-                    $row["nom"],
-                    $row["type"],
-                    $row["prix"],
-                    $row["quantiteActuelle"]
-                );
-            }
-
-            return $produits;
+           $stmt->execute();
+           return $stmt->fetchAll();
         }
 
         public function miseAJourDuStock($idProduit, $nouveauStock) {
@@ -70,4 +62,5 @@
             );
             $stmt->execute([$nouveauStock, $idProduit]);
         }
+
     }
