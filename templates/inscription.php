@@ -4,7 +4,7 @@ include_once "../connexion/Connexion.php";
 Connexion::initConnexion();
 
 if (isset($_SESSION['id'])) {
-    header('Location: index.php');
+    header('Location: ../index.php');
     exit();
 }
 
@@ -55,7 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['email'] = $email;
             $_SESSION['role'] = $role;
             $_SESSION['login'] = $email;
-            header('Location: index.php');
+            header('Location: ../index.php');
             exit();
         } else {
             $erreurs[] = "Erreur lors de l'inscription";

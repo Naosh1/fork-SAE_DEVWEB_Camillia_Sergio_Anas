@@ -7,12 +7,6 @@ include_once 'vue_generique.php';
 include_once 'connexion/Connexion.php';
 Connexion::initConnexion();
 
-if (isset($_GET['action']) && $_GET['action'] === 'deconnexion') {
-    session_unset();
-    session_destroy();
-    header('Location: connexion.php');
-    exit();
-}
 
 if (!isset($_SESSION['id'])) {
     header('Location: templates/connexion.php');

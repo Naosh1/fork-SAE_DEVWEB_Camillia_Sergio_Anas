@@ -766,7 +766,7 @@ class VueGestionnaire extends VueStaff
                     <i class="fa-solid fa-paper-plane text-lg"></i>
                     <span class="font-bold text-sm tracking-tight">Messages</span>
                 </div>' .
-                ($nb > 0 ? '<span class="bg-blue-600 text-[10px] font-black text-white px-2 py-0.5 rounded-lg shadow-lg shadow-blue-600/20">' . $nb . '</span>' : '') . '
+            ($nb > 0 ? '<span class="bg-blue-600 text-[10px] font-black text-white px-2 py-0.5 rounded-lg shadow-lg shadow-blue-600/20">' . $nb . '</span>' : '') . '
             </a>
 
             <a href="index.php?action=monPlanning" class="flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all duration-300 ' . ($actionActuelle == 'monPlanning' ? $activeClass : $inactiveClass) . '">
@@ -808,8 +808,8 @@ class VueGestionnaire extends VueStaff
                 <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-blue-400 p-0.5 shadow-lg shadow-blue-600/20">
                     <div class="w-full h-full rounded-[10px] bg-[#020617] overflow-hidden flex items-center justify-center">
                         ' . (($cheminPhoto && file_exists($cheminPhoto))
-                        ? '<img src="' . $cheminPhoto . '" class="w-full h-full object-cover">'
-                        : '<span class="text-xs font-black text-white">' . strtoupper(substr($prenom, 0, 1)) . '</span>') . '
+                ? '<img src="' . $cheminPhoto . '" class="w-full h-full object-cover">'
+                : '<span class="text-xs font-black text-white">' . strtoupper(substr($prenom, 0, 1)) . '</span>') . '
                     </div>
                 </div>
                 <div class="flex-1 min-w-0">
