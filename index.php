@@ -15,7 +15,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'deconnexion') {
 }
 
 if (!isset($_SESSION['id'])) {
-    header('Location: connexion.php');
+    header('Location: templates/connexion.php');
     exit();
 }
 

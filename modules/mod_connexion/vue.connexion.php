@@ -34,11 +34,11 @@ class VueConnexion extends VueGenerique
         if (isset($_GET['action']) && $_GET['action'] === 'deconnexion') {
             session_unset();
             session_destroy();
-            header('Location: ../../templates/index.php?module=connexion&action=connexion');
+            header('Location: index.php?module=connexion&action=connexion');
             exit();
         }
         if (!isset($_SESSION['login'])) {
-            header('Location: ../../templates/index.php?module=connexion&action=connexion');
+            header('Location: index.php?module=connexion&action=connexion');
             exit();
         }
 
@@ -96,9 +96,5 @@ class VueConnexion extends VueGenerique
         }
     }
 
-//    public function afficherVue()
-//    {
-//        echo $this->getVueGenerique();
-//    }
 }
 
