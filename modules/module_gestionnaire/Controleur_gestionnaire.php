@@ -124,7 +124,9 @@ class ControleurGestionnaire
             case 'fournisseurs':
                 $this->afficherFournisseurs();
                 break;
-
+            case 'contacterFournisseur':
+                $this->afficherInfoDuFournisseur();
+                break;
             case 'voirFournisseur':
                 $this->commanderFournisseur();
                 break;
@@ -137,7 +139,7 @@ class ControleurGestionnaire
                 $this->rechercherPrixProduit();
                 break;
 
-            case 'validerCommandeFournisseur':
+            case 'validerReappro':
                 $this->validerCommandeFournisseur();
                 break;
             case 'distribuer':
@@ -426,13 +428,10 @@ class ControleurGestionnaire
     private function afficherAssociations()
     {
         $id_gestionnaire = $_SESSION['id'] ?? '';
-
-        // On utilise la fonction qui fait le fetchAll() pour éviter que la vue soit vide
         $associations = $this->modele->getAssociationsGerees($id_gestionnaire);
-
-        // On passe le résultat à la vue
         $this->vue->afficherAssociationsValidees($associations);
     }
+
     private function accepterAssociation()
     {
         if (isset($_GET['id'])) {
@@ -576,6 +575,7 @@ class ControleurGestionnaire
             exit();
         }
     }
+
     public function getBarmansParAssociation($id_gestionnaire)
     {
         try {
@@ -661,7 +661,6 @@ class ControleurGestionnaire
             if ($id_client && $id_assos) {
                 $success = $this->modele->ajouterClient($id_client, $id_assos);
                 if ($success) {
-                    // Redirige vers l'accueil ou la liste des clients
                     header("Location: index.php?action=accueil&success=client_ajoute");
                     exit();
                 } else {
@@ -678,12 +677,12 @@ class ControleurGestionnaire
     private function preparerVueAjout($erreur = null)
     {
         $id_gest = $_SESSION['id'];
-        // On utilise getAssociationsGerees car elle fait un fetchAll()
         $associations = $this->modele->getAssociationsGerees($id_gest);
         $clients = $this->modele->getClientSansAssos();
 
         $this->vue->afficherFormulaireAjoutClient($associations, $clients, $erreur);
     }
+
     private function afficherClientsAssociation()
     {
         $idAsso = $_GET['id'] ?? $_SESSION['id_association'] ?? null;
@@ -698,8 +697,18 @@ class ControleurGestionnaire
             exit;
         }
     }
+    private function afficherInfoDuFournisseur()
+    {
+        $idFournisseur = isset($_GET['id']) ? intval($_GET['id']) : null;
 
+        if (!$idFournisseur) {
+            header("Location: index.php?module=gestionnaire&action=afficherFournisseurs");
+            exit();
+        }
+        $fournisseur = $this->modele->getFournisseurParId($idFournisseur);
 
+        $this->vue->afficherProfilFournisseur($fournisseur);
+    }
     private function afficherFournisseurs()
     {
         $fournisseurs = $this->modele->getTousLesFournisseurs();
@@ -711,7 +720,7 @@ class ControleurGestionnaire
         $this->vue->afficherFournisseurs($fournisseurs, $associations);
     }
 
-    private function afficherDetailsFournisseur()
+    private function afficherProduitsDuFournisseur()
     {
         $id = $_GET['id'];
         $tri = $_GET['tri'] ?? 'nom';
@@ -861,11 +870,15 @@ class ControleurGestionnaire
     public function commanderFournisseur()
     {
         $id = $_GET['id'] ?? null;
+        $idAsso = $_GET['id_asso'] ?? $_SESSION['id_asso_courante'] ?? null;
+
         if ($id) {
             $fournisseur = $this->modele->getFournisseurParId($id);
             $produits = $this->modele->getProduitsFournisseur($id);
-
-            $this->vue->afficherDetailsFournisseur($fournisseur, $produits);
+            $assos = $this->modele->getAssociationParId($idAsso);
+            $this->vue->afficherDetailsFournisseur($fournisseur, $produits, $assos);
+        } else {
+            header("Location: index.php?module=gestionnaire&action=fournisseurs");
         }
     }
 

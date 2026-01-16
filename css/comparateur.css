@@ -1,0 +1,98 @@
+/* Structure & Scroll */
+body, html { overflow: hidden; height: 100%; }
+
+.page-container {
+    background: radial-gradient(circle at top right, #0f172a, #020617);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    color: white;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+.scroll-section {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding-bottom: 5rem;
+    scrollbar-width: thin;
+    scrollbar-color: #f59e0b transparent;
+}
+
+/* Cards & Animations */
+.result-card {
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    animation: slideUp 0.5s ease-out forwards;
+    opacity: 0;
+}
+
+.result-card:hover {
+    transform: translateY(-5px) scale(1.01);
+    background: rgba(30, 41, 59, 0.9);
+    border-color: #f59e0b;
+    box-shadow: 0 20px 40px -15px rgba(245, 158, 11, 0.2);
+}
+
+.price-tag {
+    background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Select Styling */
+.sort-select {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #94a3b8;
+    font-size: 0.75rem;
+    font-weight: 800;
+    padding: 0.4rem 1.2rem;
+    border-radius: 9999px;
+    outline: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    appearance: none;
+}
+/* Barre de progression */
+.search-progress-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: rgba(245, 158, 11, 0.1);
+    z-index: 2000;
+    display: none; /* Caché par défaut */
+}
+
+.search-progress-bar {
+    width: 0%;
+    height: 100%;
+    background: linear-gradient(90deg, #f59e0b, #fbbf24);
+    box-shadow: 0 0 15px rgba(245, 158, 11, 0.5);
+    transition: width 0.3s ease;
+}
+
+/* Instructions */
+.instruction-step {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 10px 15px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.8rem;
+    color: #94a3b8;
+}
+
+.instruction-step i { color: #f59e0b; font-size: 1rem; }
+
+.sort-select:hover { border-color: #f59e0b; color: white; }
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}

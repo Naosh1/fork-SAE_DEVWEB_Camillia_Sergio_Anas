@@ -2,52 +2,61 @@ document.addEventListener('DOMContentLoaded', function() {
     const mainInput = document.getElementById('mainAssoInput');
     const resultsBox = document.getElementById('mainAssoResults');
     const catalogBtns = document.querySelectorAll('.catalog-btn');
+    const selectorContainer = document.getElementById('selectorContainer');
 
     if (!mainInput || !resultsBox) return;
 
-    // 1. Filtrage ultra-rapide
+    // 1. Recherche
     mainInput.addEventListener('input', function() {
         const filter = this.value.trim().toUpperCase();
         const items = resultsBox.querySelectorAll('.result-item');
-
-        if (filter.length > 0) {
-            resultsBox.style.display = 'block';
-            items.forEach(item => {
-                const text = item.textContent || item.innerText;
-                item.style.display = text.toUpperCase().includes(filter) ? 'block' : 'none';
-            });
-        } else {
-            resultsBox.style.display = 'none';
-        }
-    });
-
-    // 2. Sélection par délégation d'événement
-    resultsBox.addEventListener('click', function(e) {
-        // On récupère l'élément .result-item le plus proche du clic
-        const item = e.target.closest('.result-item');
-        if (!item) return;
-
-        const assoId = item.getAttribute('data-id');
-        // On nettoie le nom pour enlever le texte du solde entre parenthèses
-        const assoName = item.innerText.split('(')[0].trim();
-
-        // Mise à jour de l'interface
-        mainInput.value = "ACTIF : " + assoName;
-        mainInput.style.borderColor = "#f59e0b";
-        resultsBox.style.display = 'none';
-
-        // Activation des boutons catalogue
-        catalogBtns.forEach(btn => {
-            const baseUrl = btn.getAttribute('data-base-url');
-            if (baseUrl && baseUrl !== "#") {
-                btn.href = `${baseUrl}&id_asso=${assoId}`;
-                btn.classList.add('active');
-            }
+        resultsBox.style.display = filter.length > 0 ? 'block' : 'none';
+        items.forEach(item => {
+            item.style.display = item.innerText.toUpperCase().includes(filter) ? 'block' : 'none';
         });
     });
 
-    // 3. Fermeture si clic à l'extérieur
+    // 2. Sélection
+    resultsBox.addEventListener('click', function(e) {
+        const item = e.target.closest('.result-item');
+        if (!item) return;
+
+        const id = item.getAttribute('data-id');
+        const name = item.querySelector('strong').innerText;
+
+        mainInput.value = "ASSOCIATION : " + name;
+        resultsBox.style.display = 'none';
+
+        // Activer les boutons
+        catalogBtns.forEach(btn => {
+            const baseUrl = btn.getAttribute('data-base-url');
+            btn.href = `${baseUrl}&id_asso=${id}`;
+            btn.classList.add('active');
+            btn.classList.remove('disabled-link');
+
+            const badge = btn.closest('.supplier-card').querySelector('.status-badge');
+            badge.innerHTML = '<i class="fa-solid fa-check-circle text-orange-500"></i> Prêt pour commande';
+            badge.style.color = "var(--electric-orange)";
+        });
+    });
+
+    // 3. Gestion du clic sur bouton verrouillé
     document.addEventListener('click', function(e) {
+        const btn = e.target.closest('.catalog-btn');
+        if (btn && !btn.classList.contains('active')) {
+            e.preventDefault();
+
+            // Animation d'erreur sur le sélecteur d'asso
+            selectorContainer.classList.add('shake');
+            mainInput.placeholder = "CHOISISSEZ D'ABORD UNE ASSO !";
+
+            setTimeout(() => {
+                selectorContainer.classList.remove('shake');
+                mainInput.placeholder = "Rechercher une association cliente...";
+            }, 800);
+        }
+
+        // Fermer la liste si clic ailleurs
         if (!e.target.closest('.search-box')) {
             resultsBox.style.display = 'none';
         }

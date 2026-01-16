@@ -141,11 +141,6 @@ private function afficherHeader($titre = "Gestionnaire de buvette")
 
     private function afficherMenu()
     {
-        // On récupère le nombre de messages non lus via le modèle commun
-        $modeleCom = new ModeleCommun();
-        $nbMessages = $modeleCom->getNbMessagesNonLus($_SESSION['id']);
-        $badge = ($nbMessages > 0) ? " ($nbMessages)" : "";
-
         ?>
         <nav class="menu">
             <div class="nav-section">
@@ -158,7 +153,7 @@ private function afficherHeader($titre = "Gestionnaire de buvette")
 
             <div class="nav-section" style="margin-top: 10px; border-top: 1px solid #ccc; padding-top: 10px;">
                 <strong>Compte :</strong>
-                <a href="index.php?module=barman&action=messagerie">Messagerie<?= $badge ?></a>
+                <a href="index.php?module=barman&action=messagerie">Messagerie</a>
                 <a href="index.php?module=barman&action=monProfil">Mon Profil</a>
                 <a href="index.php?action=deconnexion" style="color: red;">Déconnexion</a>
             </div>

@@ -55,7 +55,7 @@ class Controleur_barman
                 break;
             case 'messagerie':
                 $messages = $this->modeleCommun->getMesMessages($_SESSION['id']);
-                $this->vueCommun->afficherMesMessages($messages, $_SESSION['id']);
+                $this->vueStaff->afficherMesMessages($messages, $_SESSION['id']);
                 break;
             case 'modifierProfil':
                 break;

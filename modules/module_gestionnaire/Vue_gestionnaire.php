@@ -7,225 +7,171 @@ class VueGestionnaire extends VueStaff
 {
     private $nbMessages = 0;
 
-    public function afficherDetailsFournisseur($fournisseur, $produits)
+    public function afficherProfilFournisseur($f)
     {
         $this->afficherNav();
-        $id_asso_selectionnee = $_GET['id_asso'] ?? $_SESSION['id_asso_courante'] ?? null;
         ?>
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+        <link rel="stylesheet" href="css/profil-fournisseur.css">
+        <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&display=swap"
+              rel="stylesheet">
 
-        <style>
-            html, body {
-                height: auto;
-                overflow-y: visible;
-                background-color: #020617;
-                margin: 0;
-                font-family: 'Plus Jakarta Sans', sans-serif;
-                color: white;
-            }
+        <div class="profile-wrapper">
+            <div class="contact-card">
+                <div style="position: absolute; top: -50px; right: -50px; width: 150px; height: 150px; background: rgba(245, 158, 11, 0.03); border-radius: 50%; filter: blur(40px);"></div>
 
-            .header-section {
-                background: rgba(2, 6, 23, 0.98);
-                backdrop-filter: blur(20px);
-                border-bottom: 1px solid rgba(139, 92, 246, 0.2);
-                padding: 3rem 0;
-            }
-
-            .content-limit {
-                max-width: 1000px;
-                margin: 0 auto;
-                padding: 0 20px;
-            }
-
-            .products-container {
-                padding: 40px 0 150px 0;
-            }
-
-            .product-card {
-                background: rgba(255, 255, 255, 0.02);
-                border: 1px solid rgba(139, 92, 246, 0.1);
-                border-radius: 2rem;
-                padding: 1.5rem 2rem;
-                transition: all 0.3s ease;
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                margin-bottom: 1rem;
-            }
-
-            .product-card:hover {
-                background: rgba(255, 255, 255, 0.05);
-                border-color: rgba(139, 92, 246, 0.4);
-                transform: scale(1.01);
-            }
-
-            .qty-btn {
-                width: 45px;
-                height: 45px;
-                background: rgba(139, 92, 246, 0.1);
-                border: 1px solid rgba(139, 92, 246, 0.2);
-                border-radius: 12px;
-                color: #a78bfa;
-                cursor: pointer;
-                font-size: 1.2rem;
-                transition: all 0.2s;
-            }
-
-            .qty-btn:hover {
-                background: #8b5cf6;
-                color: white;
-            }
-
-            .qty-input {
-                background: transparent;
-                border: none;
-                width: 50px;
-                text-align: center;
-                color: white;
-                font-weight: 900;
-                font-size: 1.3rem;
-                outline: none;
-            }
-
-            .cart-summary {
-                position: fixed;
-                bottom: 30px;
-                left: 50%;
-                transform: translateX(-50%);
-                width: 90%;
-                max-width: 600px;
-                background: rgba(139, 92, 246, 0.95);
-                backdrop-filter: blur(15px);
-                border-radius: 2rem;
-                padding: 1.2rem 2.5rem;
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
-                z-index: 1000;
-                border: 1px solid rgba(255, 255, 255, 0.2);
-            }
-
-            .confirm-btn {
-                background: white;
-                color: #7c3aed;
-                padding: 1rem 2rem;
-                border-radius: 1.2rem;
-                font-weight: 900;
-                text-transform: uppercase;
-                border: none;
-                cursor: pointer;
-            }
-        </style>
-
-        <div class="header-section">
-            <div class="content-limit flex justify-between items-center">
-                <div class="flex items-center gap-6">
-                    <div class="w-16 h-16 bg-gradient-to-br from-amber-400 to-orange-600 rounded-2xl flex items-center justify-center shadow-lg">
-                        <i class="fa-solid fa-truck-ramp-box text-3xl text-white"></i>
-                    </div>
-                    <div>
-                        <span class="text-amber-500 font-black uppercase text-[10px] tracking-widest">Commande Fournisseur</span>
-                        <h1 class="text-5xl font-black uppercase italic tracking-tighter leading-none">
-                            <?= htmlspecialchars($fournisseur['nom']) ?>
-                        </h1>
-                    </div>
+                <div class="profile-icon">
+                    <?= strtoupper(substr($f['nom'] ?? 'F', 0, 1)) ?>
                 </div>
-                <a href="index.php?module=gestionnaire&action=voirFournisseurs"
-                   class="opacity-50 hover:opacity-100 transition-opacity">
-                    <i class="fa-solid fa-circle-xmark text-3xl"></i>
+
+                <h1 class="text-3xl font-black text-white uppercase italic tracking-tighter mb-8">
+                    <?= htmlspecialchars($f['nom']) ?>
+                </h1>
+
+                <div class="info-list">
+                    <a href="mailto:<?= $f['email'] ?>" class="info-group">
+                        <span class="info-label">Canal Email</span>
+                        <span class="info-value"><?= htmlspecialchars($f['email']) ?></span>
+                    </a>
+
+                    <a href="tel:<?= $f['telephone'] ?>" class="info-group">
+                        <span class="info-label">Ligne Directe</span>
+                        <span class="info-value"><?= htmlspecialchars($f['telephone'] ?: 'Non répertorié') ?></span>
+                    </a>
+                </div>
+
+                <a href="index.php?module=gestionnaire&action=fournisseurs" class="btn-back">
+                    <i class="fa-solid fa-arrow-left-long"></i> Retour
                 </a>
             </div>
         </div>
+        <?php
+    }
 
-        <div class="products-container">
-            <form id="orderForm" action="index.php?module=gestionnaire&action=validerCommandeFournisseur" method="POST">
-                <input type="hidden" name="id_fournisseur" value="<?= htmlspecialchars($fournisseur['id']) ?>">
-                <input type="hidden" name="id_association" value="<?= htmlspecialchars($id_asso_selectionnee) ?>">
+    public function afficherDetailsFournisseur($fournisseur, $produits, $assos)
+    {
+        $this->afficherNav();
+        ?>
+        <link rel="stylesheet" href="css/reappro-detail.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
-                <div class="content-limit">
-                    <?php if (empty($produits)): ?>
-                        <div class="py-20 text-center opacity-30">
-                            <i class="fa-solid fa-box-open text-6xl mb-4"></i>
-                            <p class="text-xl font-bold uppercase">Aucun produit</p>
-                        </div>
-                    <?php else: ?>
-                        <div class="grid gap-3">
-                            <?php foreach ($produits as $p):
-                                $id_p = $p['id'] ?? $p['id_produit'];
-                                ?>
-                                <div class="product-card">
+        <div class="reappro-wrapper" style="padding: 20px 0;">
+
+            <div style="max-width: 1400px; margin: 0 auto 20px auto; padding: 0 20px;">
+                <a href="index.php?module=gestionnaire&action=fournisseurs"
+                   style="text-decoration: none; color: var(--text-dim); font-size: 0.8rem; font-weight: 700; text-transform: uppercase; display: flex; align-items: center; gap: 8px; transition: 0.3s;"
+                   onmouseover="this.style.color='#f59e0b'" onmouseout="this.style.color='var(--text-dim)'">
+                    <i class="fa-solid fa-arrow-left"></i> Retour aux fournisseurs
+                </a>
+            </div>
+
+            <div class="reappro-grid">
+                <div class="catalog-side">
+                    <div style="margin-bottom: 30px;">
+                        <p style="color: var(--text-dim); font-weight: 700; letter-spacing: 2px; font-size: 0.8rem; margin: 0;">
+                            RÉAPPROVISIONNEMENT POUR
+                        </p>
+                        <h1 style="font-family: 'Montserrat', sans-serif; font-weight: 900; font-style: italic; text-transform: uppercase; font-size: 3.2rem; color: #f59e0b; line-height: 1; margin: 5px 0;">
+                            <?= htmlspecialchars($assos['nom']) ?>
+                        </h1>
+                        <p style="color: var(--text-dim); font-size: 0.9rem;">FOURNISSEUR : <strong><?= htmlspecialchars($fournisseur['nom']) ?></strong></p>
+                    </div>
+
+                    <input type="text" id="searchBar" onkeyup="filterCatalogue()"
+                           placeholder="Chercher un produit (ex: Coca, Chips...)" class="search-input">
+
+                    <form id="mainOrderForm" action="index.php?module=gestionnaire&action=validerReappro" method="POST">
+                        <input type="hidden" name="id_fournisseur" value="<?= $fournisseur['id'] ?>">
+                        <input type="hidden" name="id_association" value="<?= $assos['id'] ?>">
+
+                        <div id="catalogList">
+                            <?php foreach ($produits as $p): ?>
+                                <div class="product-card" data-price="<?= $p['prix_achat'] ?>">
                                     <div>
-                                        <h3 class="text-xl font-black uppercase italic leading-tight"><?= htmlspecialchars($p['nom']) ?></h3>
-                                        <p class="text-violet-400 font-black">
-                                            <span class="price-val"><?= number_format($p['prix_achat'], 2) ?></span>€
-                                        </p>
+                                        <h3 style="font-weight: 700; text-transform: uppercase; margin: 0;"><?= htmlspecialchars($p['nom']) ?></h3>
+                                        <span style="font-weight: 400; color: var(--text-dim); font-size: 0.9rem;">
+                                    Prix unitaire : <?= number_format($p['prix_achat'], 2) ?>€
+                                </span>
                                     </div>
 
-                                    <div class="flex items-center gap-4">
+                                    <div class="qty-controls">
                                         <button type="button" class="qty-btn" onclick="updateQty(this, -1)">-</button>
                                         <input type="number"
-                                               name="produits[<?= (int)$id_p ?>][quantite]"
-                                               class="qty-input"
-                                               value="0" min="0" readonly>
+                                               name="produits[<?= $p['id'] ?>][quantite]"
+                                               class="qty-input" value="0" readonly>
                                         <button type="button" class="qty-btn" onclick="updateQty(this, 1)">+</button>
                                     </div>
                                 </div>
                             <?php endforeach; ?>
                         </div>
-                    <?php endif; ?>
+                    </form>
                 </div>
-            </form>
-        </div>
 
-        <div class="cart-summary" id="cartSummary">
-            <div class="flex gap-10">
-                <div>
-                    <p class="text-[9px] font-black uppercase text-white/60">Articles</p>
-                    <p class="text-2xl font-black" id="totalItems">0</p>
-                </div>
-                <div>
-                    <p class="text-[9px] font-black uppercase text-white/60">Total HT</p>
-                    <p class="text-2xl font-black"><span id="totalPrice">0.00</span>€</p>
+                <div class="cart-side">
+                    <div class="cart-title">
+                        <i class="fa-solid fa-cart-shopping" style="color: #f59e0b; margin-right: 10px;"></i>
+                        RÉSUMÉ COMMANDE
+                    </div>
+
+                    <div id="error-message" style="display: none; background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; color: #ef4444; padding: 12px; border-radius: 8px; font-size: 0.8rem; font-weight: 600; margin-bottom: 15px; text-align: center;">
+                        <i class="fa-solid fa-circle-exclamation"></i> Votre panier est vide !
+                    </div>
+
+                    <div id="cartSummaryList" style="min-height: 100px; margin-bottom: 25px; border-bottom: 1px solid #1e293b; padding-bottom: 15px;">
+                        <p style="text-align:center; color:#475569; font-size:0.8rem;">Panier vide</p>
+                    </div>
+
+                    <div style="background: rgba(0,0,0,0.2); padding: 20px; border-radius: 12px;">
+                        <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                            <span style="font-size: 0.7rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase;">Articles</span>
+                            <span id="totalQtyCount" style="font-weight: 700;">0</span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; align-items: center;">
+                            <span style="font-size: 0.7rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase;">Total HT</span>
+                            <span style="font-size: 1.6rem; font-weight: 900; color: #f59e0b;">
+                        <span id="totalPriceSum">0.00</span>€
+                    </span>
+                        </div>
+                    </div>
+
+                    <button type="button" class="btn-validate" onclick="validerPanier()">
+                        CONFIRMER L'ACHAT
+                    </button>
                 </div>
             </div>
-            <button type="button" onclick="document.getElementById('orderForm').submit()" class="confirm-btn">
-                Commander <i class="fa-solid fa-chevron-right ml-2"></i>
-            </button>
         </div>
 
         <script>
-            function updateQty(btn, delta) {
-                const input = delta > 0 ? btn.previousElementSibling : btn.nextElementSibling;
-                let val = parseInt(input.value) + delta;
-                if (val < 0) val = 0;
-                input.value = val;
-                calculateTotals();
+            function validerPanier() {
+                const totalArticles = parseInt(document.getElementById('totalQtyCount').innerText);
+                const errorDiv = document.getElementById('error-message');
+
+                if (totalArticles <= 0) {
+                    // Affichage du message avec un petit effet
+                    errorDiv.style.display = 'block';
+                    errorDiv.style.animation = 'shake 0.4s ease-in-out';
+
+                    // On le cache automatiquement après 3 secondes
+                    setTimeout(() => {
+                        errorDiv.style.display = 'none';
+                    }, 3000);
+                } else {
+                    document.getElementById('mainOrderForm').submit();
+                }
             }
-
-            function calculateTotals() {
-                let totalItems = 0;
-                let totalPrice = 0;
-
-                document.querySelectorAll('.product-card').forEach(card => {
-                    const qty = parseInt(card.querySelector('.qty-input').value);
-                    const price = parseFloat(card.querySelector('.price-val').innerText.replace(',', '.'));
-                    if (qty > 0) {
-                        totalItems += qty;
-                        totalPrice += (qty * price);
-                    }
-                });
-
-                document.getElementById('totalItems').innerText = totalItems;
-                document.getElementById('totalPrice').innerText = totalPrice.toFixed(2);
-                document.getElementById('cartSummary').style.opacity = totalItems > 0 ? "1" : "0.7";
-            }
-
-            window.addEventListener('DOMContentLoaded', calculateTotals);
         </script>
+
+        <style>
+            /* Petite animation de secousse pour l'erreur */
+            @keyframes shake {
+                0%, 100% { transform: translateX(0); }
+                25% { transform: translateX(-5px); }
+                75% { transform: translateX(5px); }
+            }
+        </style>
+
+        <script src="js/reappro.js"></script>
         <?php
     }
-
     public function afficherSuccesCommande()
     {
         $this->afficherNav();
@@ -237,7 +183,7 @@ class VueGestionnaire extends VueStaff
             </div>
 
             <h1 style="font-size: 2.5rem; font-weight: 900; text-transform: uppercase; font-style: italic; margin-bottom: 1rem;">
-                Commande bien passée !
+                Réapprovisionnement bien passée !
             </h1>
 
             <p style="color: #94a3b8; font-size: 1.1rem; margin-bottom: 2rem;">
@@ -263,88 +209,6 @@ class VueGestionnaire extends VueStaff
                 window.location.href = "index.php?module=gestionnaire&action=mesCommandes";
             }, 3000);
         </script>
-        <?php
-    }
-
-    public function afficherMesCommandes($commandes)
-    {
-        $this->afficherNav();
-        ?>
-        <style>
-            .status-badge {
-                padding: 0.4rem 0.8rem;
-                border-radius: 8px;
-
-                font-[
-
-                900 ] uppercase text- [10px] tracking-widest;
-            }
-
-            .status-pending {
-                background: rgba(245, 158, 11, 0.1);
-                color: #f59e0b;
-                border: 1px solid #f59e0b;
-            }
-
-            .order-row {
-                background: rgba(255, 255, 255, 0.03);
-                border: 1px solid rgba(255, 255, 255, 0.05);
-                transition: 0.3s;
-            }
-
-            .order-row:hover {
-                background: rgba(255, 255, 255, 0.07);
-                border-color: #f59e0b;
-            }
-        </style>
-
-        <div class="max-w-[1000px] mx-auto p-8">
-            <div class="mb-12">
-                <h1 class="text-4xl font-black italic uppercase tracking-tighter">Historique Commandes</h1>
-                <p class="text-slate-500 font-bold text-xs uppercase tracking-[0.3em] mt-2">Suivi des
-                    approvisionnements</p>
-            </div>
-
-            <div class="space-y-4">
-                <?php if (empty($commandes)): ?>
-                    <div class="text-center py-20 opacity-30">
-                        <i class="fa-solid fa-receipt text-6xl mb-4"></i>
-                        <p class="font-black uppercase tracking-widest">Aucune commande enregistrée</p>
-                    </div>
-                <?php else: ?>
-                    <?php foreach ($commandes as $c): ?>
-                        <div class="order-row p-6 rounded-3xl flex justify-between items-center">
-                            <div class="flex gap-8 items-center">
-                                <div class="text-center">
-                                    <p class="text-[10px] font-black text-slate-500 uppercase">Date</p>
-                                    <p class="font-bold italic"><?= date('d/m/Y', strtotime($c['date_commande'])) ?></p>
-                                </div>
-                                <div>
-                                    <p class="text-[10px] font-black text-slate-600 uppercase">Fournisseur</p>
-                                    <p class="font-black text-lg uppercase italic"><?= htmlspecialchars($c['nom_fournisseur']) ?></p>
-                                </div>
-                            </div>
-
-                            <div class="text-center">
-                                <p class="text-[10px] font-black text-slate-600 uppercase mb-1">Statut</p>
-                                <span class="status-badge status-pending">En cours</span>
-                            </div>
-
-                            <div class="text-right">
-                                <p class="text-[10px] font-black text-slate-600 uppercase">Total HT</p>
-                                <p class="text-2xl font-black text-amber-500"><?= number_format($c['montant_total'], 2) ?>
-                                    €</p>
-                            </div>
-
-                            <a href="index.php?action=detailCommande&id=<?= $c['id'] ?>"
-                               class="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center hover:bg-white hover:text-black transition-all">
-                                <i class="fa-solid fa-chevron-right"></i>
-                            </a>
-                        </div>
-                    <?php endforeach; ?>
-                <?php endif; ?>
-            </div>
-        </div>
         <?php
     }
 
@@ -442,56 +306,6 @@ class VueGestionnaire extends VueStaff
 
         <?php
     }
-
-    public function afficherFormulaireCommande($fournisseur, $produits, $id_asso_choisie)
-    {
-        ?>
-        <div class="container">
-            <h2>Passer une commande chez <?= htmlspecialchars($fournisseur['nom']) ?></h2>
-
-            <form action="index.php?module=gestionnaire&action=validerCommandeFournisseur" method="POST">
-
-                <input type="hidden" name="id_fournisseur" value="<?= $fournisseur['id'] ?>">
-                <input type="hidden" name="id_association" value="<?= $id_asso_choisie ?>">
-
-                <table class="table">
-                    <thead>
-                    <tr>
-                        <th>Produit</th>
-                        <th>Prix Unitaire</th>
-                        <th>Quantité à commander</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <?php foreach ($produits as $p): ?>
-                        <tr>
-                            <td><?= htmlspecialchars($p['nom']) ?></td>
-                            <td><?= number_format($p['prix_achat'], 2) ?> €</td>
-                            <td>
-                                <input type="number"
-                                       name="produits[<?= $p['id_produit'] ?>][quantite]"
-                                       value="0"
-                                       min="0"
-                                       class="form-control">
-
-                                <input type="hidden"
-                                       name="produits[<?= $p['id_produit'] ?>][prix]"
-                                       value="<?= $p['prix_achat'] ?>">
-                            </td>
-                        </tr>
-                    <?php endforeach; ?>
-                    </tbody>
-                </table>
-
-                <div class="mt-4">
-                    <button type="submit" class="btn btn-success">Confirmer et Débiter le solde</button>
-                    <a href="index.php?action=fournisseurs" class="btn btn-secondary">Annuler</a>
-                </div>
-            </form>
-        </div>
-        <?php
-    }
-
     public function afficherFormulaireSolde($personne)
     {
         echo '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">';
@@ -793,7 +607,7 @@ class VueGestionnaire extends VueStaff
 
             <a href="index.php?action=fournisseurs" class="flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all duration-300 ' . ($actionActuelle == 'fournisseurs' ? $activeClass : $inactiveClass) . '">
                 <i class="fa-solid fa-truck-fast text-lg"></i>
-                <span class="font-bold text-sm tracking-tight">Fournisseurs</span>
+                <span class="font-bold text-sm tracking-tight">Réapprovisionnement</span>
             </a>
 
             <a href="index.php?action=distribuer" class="flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all duration-300 ' . ($actionActuelle == 'distribuer' ? $activeClass : $inactiveClass) . '">
@@ -1752,77 +1566,7 @@ class VueGestionnaire extends VueStaff
         <?php
     }
 
-    public function formulaireAjoutStock($produit)
-    {
-        $this->afficherNav();
-        ?>
-        <div class="p-6 md:p-12 bg-[#020617] min-h-screen font-montserrat text-white flex justify-center items-start">
 
-            <div class="w-full max-w-xl animate-fade-in">
-                <a href="index.php?action=voirProduits"
-                   class="text-slate-500 hover:text-white text-[10px] font-black uppercase tracking-[0.3em] mb-6 inline-flex items-center gap-2 transition-colors">
-                    <i class="fa-solid fa-chevron-left"></i> Retour aux produits
-                </a>
-
-                <div class="glass-card bg-white/5 border border-white/10 rounded-[3rem] p-10 shadow-2xl relative overflow-hidden">
-
-                    <div class="relative z-10">
-                        <div class="mb-10 text-center">
-                            <div class="w-16 h-16 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl flex items-center justify-center text-emerald-500 mx-auto mb-4">
-                                <i class="fa-solid fa-plus-plus text-2xl"></i>
-                            </div>
-                            <h1 class="text-2xl font-black tracking-tighter text-white uppercase italic">
-                                Réapprovisionnement
-                            </h1>
-                        </div>
-
-                        <div class="bg-white/5 rounded-2xl p-6 mb-8 border border-white/5 flex justify-between items-center">
-                            <div>
-                                <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Produit
-                                    sélectionné</p>
-                                <h2 class="text-xl font-black text-white uppercase"><?= htmlspecialchars($produit['nom']) ?></h2>
-                            </div>
-                            <div class="text-right">
-                                <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">État
-                                    actuel</p>
-                                <p class="text-xl font-black text-blue-400"><?= $produit['quantiteActuelle'] ?> <span
-                                            class="text-[10px]">PCS</span></p>
-                            </div>
-                        </div>
-
-                        <form action="index.php?action=ajouterStock" method="post" class="space-y-8">
-                            <input type="hidden" name="id" value="<?= $produit['id'] ?>">
-
-                            <div class="space-y-3">
-                                <label class="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-center">Quantité
-                                    à réceptionner</label>
-                                <div class="relative group max-w-[200px] mx-auto">
-                                    <input type="number" name="quantite" min="1" placeholder="0" required autofocus
-                                           class="w-full bg-[#0f172a] border-2 border-white/5 text-white py-6 rounded-[2rem] focus:border-emerald-500 outline-none transition-all font-black text-4xl text-center placeholder:text-slate-800 shadow-inner">
-                                </div>
-                                <p class="text-[9px] text-slate-500 text-center italic mt-2 uppercase font-bold tracking-widest">
-                                    Entrez le nombre d'unités reçues</p>
-                            </div>
-
-                            <div class="pt-4">
-                                <button type="submit"
-                                        class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black uppercase tracking-[0.3em] py-5 rounded-[2rem] transition-all shadow-lg shadow-emerald-900/30 flex items-center justify-center gap-4 group">
-                                    Confirmer l'entrée en stock
-                                    <i class="fa-solid fa-arrow-up-right-dots text-lg group-hover:translate-y--1 group-hover:translate-x-1 transition-transform"></i>
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-
-                    <div class="absolute -left-10 -bottom-10 opacity-5 pointer-events-none">
-                        <i class="fa-solid fa-truck-ramp-box text-[10rem]"></i>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-        <?php
-    }
 
     public function afficherFormulaireAjoutClient($associations, $clients, $erreur = null)
     {
@@ -2588,347 +2332,212 @@ class VueGestionnaire extends VueStaff
         $this->afficherNav();
         ?>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+        <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,800;1,800&display=swap"
+              rel="stylesheet">
+        <link rel="stylesheet" href="css/reappro.css">
 
-        <style>
-            :root {
-                --chrome-bg: #020617;
-                --chrome-card: #0f172a;
-                --electric-orange: #f59e0b;
-                --silver: #94a3b8;
-            }
+        <div class="fixed-top-section" style="background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(245, 158, 11, 0.1); padding: 15px 0; position: sticky; top: 0; z-index: 1000;">
+            <div class="max-w-[1600px] mx-auto px-10 flex justify-between items-center gap-6">
 
-            body {
-                background-color: var(--chrome-bg);
-                font-family: 'Plus Jakarta Sans', sans-serif;
-                color: var(--silver);
-                margin: 0;
-            }
+                <div class="flex items-center gap-4">
+                    <div style="background: linear-gradient(135deg, #f59e0b, #fbbf24); width: 45px; height: 45px; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #000; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);">
+                        <i class="fa-solid fa-truck-fast text-xl"></i>
+                    </div>
+                    <div>
+                        <h1 style="font-family: 'Montserrat', sans-serif; font-weight: 900; font-style: italic;" class="text-2xl text-white uppercase m-0 leading-none tracking-tighter">
+                            RÉAPPRO<span style="color: #f59e0b;">.</span>
+                        </h1>
+                        <span class="text-[10px] text-amber-500/80 font-black tracking-[0.2em] uppercase">Logistique & Stocks</span>
+                    </div>
+                </div>
 
-            .fixed-top-section {
-                position: sticky;
-                top: 0;
-                width: 100%;
-                background: rgba(2, 6, 23, 0.95);
-                backdrop-filter: blur(20px);
-                border-bottom: 1px solid rgba(245, 158, 11, 0.2);
-                z-index: 1000;
-                padding: 1.2rem 0;
-            }
+                <div class="global-selector-bar" id="selectorContainer" style="flex: 0 1 500px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.05); border-radius: 14px; padding: 6px 15px; display: flex; align-items: center; gap: 12px; transition: all 0.3s ease;">
+                    <i class="fa-solid fa-store text-amber-500"></i>
+                    <div class="search-box" style="flex:1; position:relative;">
+                        <input type="text" id="mainAssoInput"
+                               style="background: transparent; border: none; color: white; width: 100%; outline: none; font-weight: 600; font-size: 0.95rem;"
+                               placeholder="Saisir le nom d'une association..."
+                               autocomplete="off">
 
-            .global-selector-bar {
-                background: rgba(15, 23, 42, 0.8);
-                border: 1px solid rgba(245, 158, 11, 0.3);
-                padding: 0.6rem 1.2rem;
-                border-radius: 1rem;
-                display: flex;
-                align-items: center;
-                gap: 15px;
-                width: 100%;
-                max-width: 550px;
-            }
-
-            .search-box {
-                position: relative;
-                flex-grow: 1;
-            }
-
-            .search-box input {
-                width: 100%;
-                background: rgba(2, 6, 23, 0.6);
-                border: 1px solid rgba(255, 255, 255, 0.1);
-                padding: 10px 12px;
-                border-radius: 8px;
-                color: white;
-                outline: none;
-            }
-
-            .search-results {
-                position: absolute;
-                top: 115%;
-                left: 0;
-                right: 0;
-                background: #1e293b;
-                border: 1px solid var(--electric-orange);
-                max-height: 250px;
-                overflow-y: auto;
-                display: none;
-                z-index: 2000;
-                border-radius: 8px;
-            }
-
-            .result-item {
-                padding: 12px;
-                cursor: pointer;
-                border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-                color: #fff;
-                font-size: 13px;
-            }
-
-            .result-item:hover {
-                background: var(--electric-orange);
-                color: black;
-            }
-
-            .supplier-grid {
-                display: grid;
-                grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
-                gap: 2.5rem;
-                padding: 3rem 40px;
-                max-width: 1600px;
-                margin: 0 auto;
-            }
-
-            .supplier-card {
-                background: var(--chrome-card);
-                border-radius: 2rem;
-                padding: 2.2rem;
-                border: 1px solid rgba(255, 255, 255, 0.05);
-            }
-
-            .catalog-btn {
-                background: #1e293b;
-                color: #475569;
-                pointer-events: none;
-                font-size: 0.75rem;
-                font-weight: 800;
-                text-transform: uppercase;
-                padding: 1rem;
-                border-radius: 0.8rem;
-                text-decoration: none;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                gap: 8px;
-                transition: 0.3s;
-            }
-
-            .catalog-btn.active {
-                background: var(--electric-orange);
-                color: #000;
-                pointer-events: auto;
-            }
-
-            .action-grid {
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-                gap: 10px;
-                margin-top: 1.5rem;
-                padding-top: 1.5rem;
-                border-top: 1px solid rgba(255, 255, 255, 0.05);
-            }
-        </style>
-
-        <div class="fixed-top-section">
-            <div class="max-w-[1600px] mx-auto px-10 flex justify-between items-center">
-                <h1 class="font-black italic text-2xl text-white uppercase">LOGISTIQUE <span
-                            style="color:var(--electric-orange)">RÉSEAU</span></h1>
-
-                <div class="global-selector-bar">
-                    <span class="text-[9px] font-black uppercase text-amber-500">ASSOCIATION :</span>
-                    <div class="search-box">
-                        <input type="text" id="mainAssoInput" placeholder="Rechercher...">
-                        <div id="mainAssoResults" class="search-results">
+                        <div id="mainAssoResults" class="search-results shadow-2xl" style="position: absolute; top: 120%; left: -15px; right: -15px; background: #1e293b; border-radius: 12px; border: 1px solid rgba(245, 158, 11, 0.2); overflow: hidden; display: none; z-index: 1001;">
                             <?php foreach ($associations as $asso): ?>
-                                <div class="result-item" data-id="<?= $asso['id'] ?>">
-                                    <?= htmlspecialchars($asso['nom']) ?>
-                                    <span style="opacity:0.5; font-size:11px;">(<?= number_format($asso['solde'], 2) ?>€)</span>
+                                <div class="result-item" data-id="<?= $asso['id'] ?>" style="padding: 12px 18px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center; transition: background 0.2s;">
+                                    <div class="flex flex-col">
+                                        <strong class="text-white text-sm uppercase"><?= htmlspecialchars($asso['nom']) ?></strong>
+                                        <span class="text-[10px] text-slate-400 font-bold uppercase">ID: #<?= $asso['id'] ?></span>
+                                    </div>
+                                    <span style="background: rgba(34, 197, 94, 0.1); color: #22c55e; padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: 800;">
+                                <?= number_format($asso['solde'], 2) ?>€
+                            </span>
                                 </div>
                             <?php endforeach; ?>
                         </div>
                     </div>
+                    <i class="fa-solid fa-chevron-down text-[10px] text-slate-500"></i>
                 </div>
 
-                <a href="index.php?module=gestionnaire&action=rechercherPrix"
-                   class="text-amber-500 font-bold uppercase text-[10px] border border-amber-500 px-4 py-2 rounded-lg">Comparer</a>
+                <div class="flex items-center gap-3">
+                    <a href="index.php?module=gestionnaire&action=rechercherPrix" class="flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-xs uppercase transition-all"
+                       style="background: #f59e0b; color: black; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);">
+                        <i class="fa-solid fa-magnifying-glass-chart"></i> Comparateur
+                    </a>
+                    <a href="index.php?module=gestionnaire&action=mesCommandes" class="flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-xs uppercase transition-all"
+                       style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1); color: white;">
+                        <i class="fa-solid fa-clock-rotate-left text-amber-500"></i> Historique
+                    </a>
+                </div>
             </div>
         </div>
+
+        <style>
+            .result-item:hover {
+                background: rgba(245, 158, 11, 0.1) !important;
+            }
+            #selectorContainer:focus-within {
+                border-color: #f59e0b !important;
+                background: rgba(0,0,0,0.5) !important;
+                box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+            }
+        </style>
 
         <div class="supplier-grid">
             <?php foreach ($fournisseurs as $f): ?>
                 <div class="supplier-card">
-                    <h2 class="text-2xl font-black text-white italic uppercase mb-6"><?= htmlspecialchars($f['nom']) ?></h2>
+                <span class="status-badge" id="badge-<?= $f['id'] ?>">
+                    <i class="fa-solid fa-lock text-slate-500"></i> Sélectionner asso
+                </span>
+                    <h2 class="text-2xl font-black text-white uppercase mb-4"><?= htmlspecialchars($f['nom']) ?></h2>
 
-                    <a href="#"
+                    <a href="javascript:void(0)"
+                       id="btn-cat-<?= $f['id'] ?>"
                        data-base-url="index.php?module=gestionnaire&action=voirFournisseur&id=<?= $f['id'] ?>"
                        class="catalog-btn">
-                        Ouvrir Catalogue
+                        <i class="fa-solid fa-cart-flatbed"></i> Ouvrir Catalogue
                     </a>
 
-                    <div class="action-grid">
-                        <a href="mailto:<?= $f['email'] ?>" class="catalog-btn active"
-                           style="background: #0f172a; color: #fff; border: 1px solid rgba(255,255,255,0.1);">Contacter</a>
-                        <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'SuperAdmin'): ?>
-                            <a href="index.php?module=gestionnaire&action=supprimerFournisseur&id=<?= $f['id'] ?>"
-                               class="catalog-btn active" style="background: transparent; color: #64748b;"
-                               onclick="return confirm('Supprimer ?')">Retirer</a>
-                        <?php endif; ?>
+                    <div class="action-grid"
+                         style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px;">
+                        <a href="index.php?module=gestionnaire&action=contacterFournisseur&id=<?= $f['id'] ?>"
+                           class="btn-sub btn-contact-full">
+                            <i class="fa-solid fa-address-card"></i> Contacter
+                        </a>
                     </div>
                 </div>
             <?php endforeach; ?>
         </div>
 
-        <script src="js/recherche_assos.js"></script>        <?php
+        <script src="js/recherche_assos.js"></script>
+        <?php
     }
 
     public function afficherRechercheGlobale($resultats, $recherche)
     {
         $this->afficherNav();
         ?>
-        <style>
-            body, html {
-                overflow: hidden;
-                height: 100%;
-            }
+        <link rel="stylesheet" href="css/comparateur.css">
 
-            .page-container {
-                background: radial-gradient(circle at top right, #0f172a, #020617);
-                height: 100vh;
-                display: flex;
-                flex-direction: column;
-                color: white;
-                font-family: 'Plus Jakarta Sans', sans-serif;
-            }
-
-            .scroll-section {
-                flex-grow: 1;
-                overflow-y: auto;
-                padding-bottom: 5rem;
-                scrollbar-width: thin;
-                scrollbar-color: #f59e0b transparent;
-            }
-
-            .scroll-section::-webkit-scrollbar {
-                width: 6px;
-            }
-
-            .scroll-section::-webkit-scrollbar-thumb {
-                background-color: #f59e0b;
-                border-radius: 20px;
-            }
-
-            .result-card {
-                background: rgba(15, 23, 42, 0.6);
-                backdrop-filter: blur(12px);
-                border: 1px solid rgba(255, 255, 255, 0.05);
-                transition: all 0.3s ease;
-            }
-
-            .result-card:hover {
-                transform: translateY(-2px);
-                background: rgba(30, 41, 59, 0.8);
-                border-color: rgba(245, 158, 11, 0.4);
-                box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
-            }
-
-            .price-tag {
-                background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-                -webkit-background-clip: text;
-                -webkit-text-fill-color: transparent;
-            }
-
-            .sort-select {
-                background: rgba(255, 255, 255, 0.05);
-                border: 1px solid rgba(255, 255, 255, 0.1);
-                color: #94a3b8;
-                font-size: 0.75rem;
-                font-weight: 800;
-                padding: 0.25rem 0.75rem;
-                border-radius: 9999px;
-                outline: none;
-                cursor: pointer;
-                transition: all 0.2s;
-            }
-
-            .sort-select:focus,
-            .sort-select:active {
-                background: rgba(15, 23, 42, 0.95);
-                color: white;
-                border-color: #f59e0b;
-            }
-
-            .sort-select option {
-                background-color: #020617;
-                color: white;
-            }
-
-            .sort-select {
-                -webkit-appearance: none;
-                -moz-appearance: none;
-                appearance: none;
-            }
-
-            .sort-select:hover {
-                border-color: #f59e0b;
-                color: white;
-            }
-
-        </style>
+        <div id="searchProgress" class="search-progress-container">
+            <div id="searchProgressBar" class="search-progress-bar"></div>
+        </div>
 
         <div class="page-container">
-            <div class="w-full max-w-4xl mx-auto px-6 pt-10 pb-6">
+
+            <div class="w-full max-w-5xl mx-auto px-6 pt-6">
+                <div class="flex justify-between items-start mb-6">
+                    <a href="index.php?module=gestionnaire&action=fournisseurs"
+                       class="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all"
+                       style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white;"
+                       onmouseover="this.style.background='rgba(245,158,11,0.1)'; this.style.borderColor='#f59e0b';"
+                       onmouseout="this.style.background='rgba(255,255,255,0.05)'; this.style.borderColor='rgba(255,255,255,0.1)';">
+                        <i class="fa-solid fa-arrow-left text-amber-500"></i> Fournisseurs
+                    </a>
+
+                    <div class="hidden md:flex gap-4">
+                        <div class="instruction-step">
+                            <i class="fa-solid fa-1"></i>
+                            <span>Saisissez un produit</span>
+                        </div>
+                        <div class="instruction-step">
+                            <i class="fa-solid fa-2"></i>
+                            <span>Comparez les offres</span>
+                        </div>
+                    </div>
+                </div>
+
                 <header class="mb-8 text-center">
-                    <h1 class="text-4xl md:text-5xl font-black italic uppercase leading-tight">
-                        Comparer les <span class="text-amber-500">Prix</span>
+                    <h1 class="text-4xl md:text-6xl font-black italic uppercase tracking-tighter">
+                        COMPARATEUR
                     </h1>
+                    <p class="text-slate-500 font-bold text-xs uppercase tracking-[0.3em] mt-2">Analysez les tarifs en temps réel</p>
                 </header>
 
-                <form action="index.php" method="GET" class="mb-4">
+                <form id="searchForm" action="index.php" method="GET" class="mb-4">
+                    <input type="hidden" name="module" value="gestionnaire">
                     <input type="hidden" name="action" value="rechercherPrix">
                     <div class="relative flex flex-col md:flex-row gap-4">
                         <div class="relative flex-grow">
                             <i class="fa-solid fa-magnifying-glass absolute left-5 top-1/2 -translate-y-1/2 text-slate-500"></i>
-                            <input type="text" name="q" value="<?= htmlspecialchars($recherche ?? '') ?>"
-                                   placeholder="Ex: Coca, Bière Blonde..."
-                                   class="w-full bg-slate-900/80 border border-white/10 rounded-2xl py-5 pl-14 pr-4 focus:border-amber-500 outline-none transition-all text-lg shadow-2xl">
+                            <input type="text" name="q" value="<?= htmlspecialchars($recherche ?? '') ?>" required
+                                   placeholder="Ex: Coca, Chips, Bière..."
+                                   class="w-full bg-slate-900/80 border border-white/10 rounded-2xl py-5 pl-14 pr-4 focus:border-amber-500 outline-none transition-all text-lg shadow-2xl text-white">
                         </div>
                         <button type="submit"
-                                class="bg-amber-500 text-black font-black px-10 py-5 rounded-2xl hover:bg-amber-400 hover:scale-105 active:scale-95 transition-all shadow-lg shadow-amber-500/20">
-                            RECHERCHER
+                                class="bg-amber-500 text-black font-black px-10 py-5 rounded-2xl hover:bg-amber-400 hover:scale-[1.02] transition-all shadow-lg shadow-amber-500/20 uppercase tracking-widest">
+                            Comparer
                         </button>
                     </div>
                 </form>
 
-                <?php if ($recherche && !empty($resultats)): ?>
-                    <div class="flex items-center justify-between py-4 border-b border-white/5">
+                <?php if (!empty($recherche) && !empty($resultats)): ?>
+                    <div class="flex items-center justify-between py-4 border-b border-white/5 bg-slate-900/20 px-4 rounded-t-2xl">
                         <div class="flex items-center gap-4">
-                        <span class="bg-amber-500 text-black px-3 py-1 rounded-full text-[10px] font-black uppercase">
-                            <?= count($resultats) ?> trouvé(s)
-                        </span>
                             <select id="sortResults" class="sort-select">
-                                <option value="default">TRIER PAR</option>
-                                <option value="price-asc">Prix : Croissant</option>
-                                <option value="price-desc">Prix : Décroissant</option>
-                                <option value="delivery-asc">Livraison : Rapide</option>
+                                <option value="default">TRIER PAR DÉFAUT</option>
+                                <option value="price-asc">PRIX : MOINS CHER</option>
+                                <option value="price-desc">PRIX : PLUS CHER</option>
+                                <option value="delivery-asc">LIVRAISON : RAPIDE</option>
                             </select>
                         </div>
-                        <h2 class="hidden md:block text-slate-500 font-bold uppercase tracking-widest text-[10px]">
-                            Recherche : <span class="text-white">"<?= htmlspecialchars($recherche) ?>"</span>
-                        </h2>
+                        <span class="text-[10px] font-black uppercase text-amber-500 bg-amber-500/10 px-3 py-1 rounded-lg">
+                        <?= count($resultats) ?> offres trouvées
+                    </span>
                     </div>
                 <?php endif; ?>
             </div>
 
             <div class="scroll-section px-6">
-                <div id="resultsContainer" class="max-w-4xl mx-auto">
-                    <?php if ($recherche && empty($resultats)): ?>
-                        <div class="text-center p-20 bg-slate-900/30 rounded-3xl border border-dashed border-white/10 mt-10">
-                            <i class="fa-solid fa-box-open text-5xl text-slate-800 mb-6"></i>
-                            <p class="text-slate-500 text-lg">Aucun produit correspondant.</p>
+                <div id="resultsContainer" class="max-w-5xl mx-auto">
+
+                    <?php if (empty($recherche)): ?>
+                        <div class="text-center p-20 mt-10" style="background: rgba(255,255,255,0.02); border: 2px dashed rgba(255,255,255,0.05); border-radius: 40px;">
+                            <i class="fa-solid fa-keyboard text-5xl text-slate-800 mb-6"></i>
+                            <h3 class="text-xl font-bold text-slate-400 uppercase tracking-widest">En attente de recherche</h3>
+                            <p class="text-slate-600 mt-2">Utilisez la barre ci-dessus pour comparer les prix de vos fournisseurs.</p>
                         </div>
-                    <?php elseif ($recherche): ?>
-                        <div class="grid gap-4 mt-4" id="resultsGrid">
-                            <?php foreach ($resultats as $res): ?>
+
+                    <?php elseif (empty($resultats)): ?>
+                        <div class="text-center p-20 bg-slate-900/30 rounded-3xl border border-dashed border-white/10 mt-10">
+                            <i class="fa-solid fa-triangle-exclamation text-5xl text-amber-500/20 mb-6"></i>
+                            <p class="text-slate-400 font-bold uppercase tracking-widest">Aucune offre trouvée pour "<?= htmlspecialchars($recherche) ?>"</p>
+                        </div>
+
+                    <?php else: ?>
+                        <div class="grid gap-3 mt-4" id="resultsGrid">
+                            <?php foreach ($resultats as $index => $res): ?>
                                 <div class="result-card flex items-center justify-between p-6 rounded-2xl"
+                                     style="animation-delay: <?= $index * 0.05 ?>s"
                                      data-price="<?= $res['prix_achat'] ?>"
                                      data-delivery="<?= $res['delai_livraison'] ?>">
+
                                     <div class="flex flex-col gap-1">
                                     <span class="w-fit px-2 py-0.5 bg-amber-500/10 text-amber-500 text-[10px] font-black uppercase rounded-md">
-                                        <?= htmlspecialchars($res['type']) ?>
+                                        <?= htmlspecialchars($res['type'] ?? 'Produit') ?>
                                     </span>
-                                        <h4 class="text-xl font-extrabold tracking-tight"><?= htmlspecialchars($res['produit_nom']) ?></h4>
+                                        <h4 class="text-xl font-extrabold tracking-tight text-white">
+                                            <?= htmlspecialchars($res['produit_nom']) ?>
+                                        </h4>
                                         <p class="text-slate-400 text-sm">
-                                            Vendu par : <span
-                                                    class="text-slate-200 font-semibold italic"><?= htmlspecialchars($res['fournisseur_nom']) ?></span>
+                                            Vendu par : <span class="text-slate-200 font-semibold italic"><?= htmlspecialchars($res['fournisseur_nom']) ?></span>
                                         </p>
                                     </div>
 
@@ -2937,46 +2546,22 @@ class VueGestionnaire extends VueStaff
                                             <?= number_format($res['prix_achat'], 2) ?> €
                                         </div>
                                         <div class="flex items-center gap-2 text-slate-500 text-[11px] font-bold uppercase">
-                                            <i class="fa-solid fa-truck-fast"></i>
-                                            <span><?= $res['delai_livraison'] ?> j</span>
+                                            <i class="fa-solid fa-truck-fast text-amber-500/50"></i>
+                                            <span><?= $res['delai_livraison'] ?> jours</span>
                                         </div>
                                     </div>
                                 </div>
                             <?php endforeach; ?>
                         </div>
                     <?php endif; ?>
+
                 </div>
             </div>
         </div>
 
-        <script>
-            document.getElementById('sortResults')?.addEventListener('change', function () {
-                const grid = document.getElementById('resultsGrid');
-                const cards = Array.from(grid.children);
-                const sortBy = this.value;
-
-                cards.sort((a, b) => {
-                    const priceA = parseFloat(a.dataset.price);
-                    const priceB = parseFloat(b.dataset.price);
-                    const deliveryA = parseInt(a.dataset.delivery);
-                    const deliveryB = parseInt(b.dataset.delivery);
-
-                    if (sortBy === 'price-asc') return priceA - priceB;
-                    if (sortBy === 'price-desc') return priceB - priceA;
-                    if (sortBy === 'delivery-asc') return deliveryA - deliveryB;
-                    return 0;
-                });
-
-                // Ré-injecter les éléments triés avec une petite animation
-                grid.innerHTML = '';
-                cards.forEach(card => {
-                    grid.appendChild(card);
-                });
-            });
-        </script>
+        <script src="js/comparateur.js"></script>
         <?php
     }
-
     public function afficherListeCommandes($commandes)
     {
         $this->afficherNav();
@@ -2985,11 +2570,42 @@ class VueGestionnaire extends VueStaff
             @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap');
 
             .history-container {
-                background: #020617; /* Slate 950 */
+                background: #020617;
+                background-image: radial-gradient(circle at 0% 0%, #0f172a 0%, #020617 50%);
                 min-height: 100vh;
                 font-family: 'Montserrat', sans-serif;
                 color: white;
-                padding: 3rem 2rem;
+                padding: 2rem 2rem 5rem;
+            }
+
+            .back-nav {
+                display: flex;
+                align-items: center;
+                margin-bottom: 2rem;
+            }
+
+            .back-btn {
+                display: inline-flex;
+                align-items: center;
+                gap: 10px;
+                padding: 10px 20px;
+                background: rgba(255, 255, 255, 0.03);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                border-radius: 12px;
+                color: #94a3b8;
+                text-decoration: none;
+                font-size: 11px;
+                font-weight: 800;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                transition: all 0.3s ease;
+            }
+
+            .back-btn:hover {
+                background: rgba(245, 158, 11, 0.1);
+                border-color: #f59e0b;
+                color: #f59e0b;
+                transform: translateX(-5px);
             }
 
             .order-card {
@@ -3071,6 +2687,13 @@ class VueGestionnaire extends VueStaff
 
         <div class="history-container">
             <div class="max-w-6xl mx-auto">
+
+                <div class="back-nav">
+                    <a href="index.php?module=gestionnaire&action=fournisseurs" class="back-btn">
+                        <i class="fa-solid fa-arrow-left"></i> Retour aux Fournisseurs
+                    </a>
+                </div>
+
                 <div class="flex justify-between items-end mb-12">
                     <div>
                         <h1 class="text-5xl font-black italic uppercase tracking-tighter">Historique</h1>
@@ -3533,119 +3156,4 @@ class VueGestionnaire extends VueStaff
         </div>
         <?php
     }
-
-    public function afficherInfoBarman($barman)
-    {
-        $this->afficherNav();
-        if (!$barman) {
-            echo "<div class='text-white p-10'>Données du personnel introuvables.</div>";
-            return;
-        }
-
-        $isGest = ($barman['role'] === 'gestionnaire');
-        ?>
-        <style>
-            .font-cyber {
-                font-family: 'Montserrat', sans-serif;
-            }
-
-            .glass-panel {
-                background: rgba(15, 23, 42, 0.6);
-                backdrop-filter: blur(12px);
-                border: 1px solid rgba(255, 255, 255, 0.05);
-            }
-
-            .stat-card {
-                background: rgba(255, 255, 255, 0.02);
-                border: 1px solid rgba(255, 255, 255, 0.05);
-                transition: all 0.3s ease;
-            }
-
-            .stat-card:hover {
-                border-color: #3b82f6;
-                background: rgba(59, 130, 246, 0.05);
-            }
-        </style>
-
-        <div class="min-h-screen bg-[#020617] font-cyber p-6 md:p-12">
-            <div class="max-w-4xl mx-auto">
-
-                <a href="index.php?action=afficherStaff"
-                   class="inline-flex items-center gap-2 text-slate-500 hover:text-white text-[10px] font-black uppercase tracking-widest mb-8 transition-colors">
-                    <i class="fa-solid fa-arrow-left"></i> Retour à l'équipe
-                </a>
-
-                <div class="glass-panel rounded-[3rem] p-8 md:p-12 relative overflow-hidden mb-8">
-                    <div class="absolute -top-24 -right-24 w-64 h-64 bg-blue-600/10 rounded-full blur-3xl"></div>
-
-                    <div class="flex flex-col md:flex-row items-center gap-10 relative z-10">
-                        <div class="w-32 h-32 rounded-[2.5rem] flex items-center justify-center text-white font-black text-5xl shadow-2xl <?= $isGest ? 'bg-blue-600 shadow-blue-900/40' : 'bg-emerald-600 shadow-emerald-900/40' ?>">
-                            <?= strtoupper(substr($barman['prenom'], 0, 1)) ?>
-                        </div>
-
-                        <div class="text-center md:text-left flex-1">
-                            <div class="flex flex-wrap justify-center md:justify-start items-center gap-3 mb-2">
-                                <h1 class="text-4xl font-black text-white uppercase italic tracking-tighter">
-                                    <?= htmlspecialchars($barman['prenom'] . ' ' . $barman['nom']) ?>
-                                </h1>
-                                <span class="px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest <?= $isGest ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' ?>">
-                                <?= $barman['role'] ?>
-                            </span>
-                            </div>
-                            <p class="text-slate-400 font-bold text-sm mb-6 opacity-60 italic"><?= htmlspecialchars($barman['email']) ?></p>
-
-                            <div class="flex flex-wrap justify-center md:justify-start gap-4">
-                                <a href="index.php?action=ecrireMessage&id_dest=<?= $barman['id'] ?>"
-                                   class="bg-white text-black font-black uppercase text-[10px] px-8 py-4 rounded-2xl hover:bg-blue-600 hover:text-white transition-all shadow-xl">
-                                    <i class="fa-solid fa-paper-plane mr-2"></i> Envoyer un message
-                                </a>
-                                <?php if ($_SESSION['role'] === 'gestionnaire' && $barman['id'] != $_SESSION['id']): ?>
-                                    <button class="bg-red-500/10 text-red-500 border border-red-500/20 font-black uppercase text-[10px] px-8 py-4 rounded-2xl hover:bg-red-500 hover:text-white transition-all">
-                                        <i class="fa-solid fa-user-gear mr-2"></i> Gérer les droits
-                                    </button>
-                                <?php endif; ?>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="stat-card rounded-[2.5rem] p-8">
-                        <p class="text-[9px] font-black text-slate-500 uppercase tracking-[0.3em] mb-4">
-                            Crédit_Buvette</p>
-                        <div class="flex items-end gap-2">
-                            <span class="text-4xl font-black text-white"><?= number_format($barman['solde'], 2) ?></span>
-                            <span class="text-xl font-black text-emerald-500 mb-1">€</span>
-                        </div>
-                    </div>
-
-                    <div class="stat-card rounded-[2.5rem] p-8">
-                        <p class="text-[9px] font-black text-slate-500 uppercase tracking-[0.3em] mb-4">
-                            Affectation_Actuelle</p>
-                        <div class="flex items-center gap-4">
-                            <div class="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center border border-white/10">
-                                <i class="fa-solid fa-hotel text-blue-500 text-sm"></i>
-                            </div>
-                            <span class="text-xl font-black text-white uppercase italic tracking-tight">
-                            <?= isset($barman['nom_association']) ? htmlspecialchars($barman['nom_association']) : 'Multi-Asso' ?>
-                        </span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="mt-8 glass-panel rounded-[2.5rem] p-8 opacity-50">
-                    <h3 class="text-white font-black uppercase italic text-xs mb-6 tracking-widest">
-                        <i class="fa-solid fa-clock-rotate-left mr-2 text-blue-500"></i> Activité récente
-                    </h3>
-                    <div class="text-[10px] text-slate-500 font-bold uppercase tracking-widest text-center py-10 border-2 border-dashed border-white/5 rounded-3xl">
-                        Aucun log de connexion récent disponible
-                    </div>
-                </div>
-
-            </div>
-        </div>
-        <?php
-    }
-
-
 }
