@@ -146,11 +146,8 @@ class VueGestionnaire extends VueStaff
                 const errorDiv = document.getElementById('error-message');
 
                 if (totalArticles <= 0) {
-                    // Affichage du message avec un petit effet
                     errorDiv.style.display = 'block';
                     errorDiv.style.animation = 'shake 0.4s ease-in-out';
-
-                    // On le cache automatiquement après 3 secondes
                     setTimeout(() => {
                         errorDiv.style.display = 'none';
                     }, 3000);
@@ -161,7 +158,6 @@ class VueGestionnaire extends VueStaff
         </script>
 
         <style>
-            /* Petite animation de secousse pour l'erreur */
             @keyframes shake {
                 0%, 100% { transform: translateX(0); }
                 25% { transform: translateX(-5px); }
@@ -213,99 +209,179 @@ class VueGestionnaire extends VueStaff
     }
 
     public function afficherProfilBarman($barmans)
-    {
-        $this->afficherNav();
-        if (!$barmans) {
-            echo '<div class="text-white p-10">Aucune donnée trouvée pour ce profil ou cette association.</div>';
-            return;
-        }
+{
+    $this->afficherNav();
+    if (!$barmans) {
+        echo '<div class="text-white p-10 text-center font-black uppercase italic opacity-50">Aucune donnée trouvée pour ce profil.</div>';
+        return;
+    }
 
-        $prenom = htmlspecialchars($barmans['prenom']);
-        $nom = htmlspecialchars($barmans['nom']);
-        $email_dest = htmlspecialchars($barmans['email']);
-        $id_barman = $barmans['id'];
+    $prenom = htmlspecialchars($barmans['prenom']);
+    $nom = htmlspecialchars($barmans['nom']);
+    $email_dest = htmlspecialchars($barmans['email']);
+    $id_barman = $barmans['id'];
 
-        $photoBarman = !empty($barmans['photo']) ? $barmans['photo'] : null;
-        $cheminPhoto = !empty($photoBarman) ? "uploads/profiles/" . $photoBarman : null;
-        ?>
+    $estActif = isset($barmans['actif']) && ($barmans['actif'] == 1 || $barmans['actif'] === true);
 
-        <div class="w-full h-full px-6 md:px-12 py-10">
+    $photoBarman = !empty($barmans['photo']) ? $barmans['photo'] : null;
+    $cheminPhoto = !empty($photoBarman) ? "uploads/profiles/" . $photoBarman : null;
+    ?>
 
-            <div class="mb-8 flex justify-between items-center">
-                <a href="index.php?action=barmans"
-                   class="text-slate-500 hover:text-white transition-colors text-[10px] font-black uppercase tracking-widest">
-                    <i class="fa-solid fa-chevron-left"></i> Retour
-                </a>
-            </div>
+    <div class="w-full h-full px-6 md:px-12 py-10">
 
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div class="mb-8 flex justify-between items-center">
+            <a href="index.php?action=barmans"
+               class="group text-slate-500 hover:text-emerald-500 transition-all text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
+                <i class="fa-solid fa-chevron-left transition-transform group-hover:-translate-x-1"></i> Retour à la liste
+            </a>
 
-                <div class="lg:col-span-4 space-y-6">
-                    <div class="bg-white/5 border border-white/5 rounded-[3rem] p-8 text-center shadow-2xl">
-                        <div class="w-32 h-32 mx-auto rounded-[2rem] bg-gradient-to-tr from-blue-600 to-blue-400 p-1 mb-6">
-                            <div class="w-full h-full rounded-[1.8rem] bg-[#020617] flex items-center justify-center overflow-hidden">
-                                <?php if ($cheminPhoto && file_exists($cheminPhoto)): ?>
-                                    <img src="<?= $cheminPhoto ?>" class="w-full h-full object-cover">
-                                <?php else: ?>
-                                    <span class="text-4xl font-black text-white"><?= strtoupper(substr($prenom, 0, 1)) ?></span>
-                                <?php endif; ?>
-                            </div>
-                        </div>
-                        <h2 class="text-2xl font-black text-white uppercase italic italic"><?= $prenom ?> <span
-                                    class="text-blue-500"><?= $nom ?></span></h2>
-                        <p class="text-slate-500 font-bold text-[9px] tracking-widest uppercase mt-1">Matricule
-                            #<?= $id_barman ?></p>
-                    </div>
-
-                    <div class="bg-white/5 border border-white/5 rounded-[2.5rem] p-6">
-                        <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-4">Coordonnées</p>
-                        <div class="space-y-3 text-xs text-slate-300 italic">
-                            <p><i class="fa-solid fa-envelope text-blue-500 mr-2"></i> <?= $email_dest ?></p>
-                            <p>
-                                <i class="fa-solid fa-phone text-blue-500 mr-2"></i> <?= htmlspecialchars($barmans['tel'] ?? 'N/A') ?>
-                            </p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="lg:col-span-8">
-                    <div class="bg-white/5 border border-white/5 rounded-[3rem] p-10 shadow-2xl">
-                        <h3 class="text-lg font-black text-white uppercase italic tracking-tighter mb-8 border-b border-white/5 pb-4">
-                            Envoyer un <span class="text-blue-500">Message Direct</span>
-                        </h3>
-
-                        <form action="index.php?action=envoyerEmailBarman" method="POST" class="space-y-6">
-                            <input type="hidden" name="email_destinataire" value="<?= $email_dest ?>">
-                            <input type="hidden" name="id_barman" value="<?= $id_barman ?>">
-
-                            <div>
-                                <label class="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-4 mb-2 block">Objet
-                                    du message</label>
-                                <input type="text" name="objet" required
-                                       placeholder="Ex: Planning de la semaine prochaine"
-                                       class="w-full bg-[#020617] border border-white/10 rounded-2xl px-6 py-4 text-white font-bold focus:ring-2 focus:ring-blue-600/50 outline-none transition-all">
-                            </div>
-
-                            <div>
-                                <label class="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-4 mb-2 block">Votre
-                                    message</label>
-                                <textarea name="message" required rows="6" placeholder="Écrivez votre message ici..."
-                                          class="w-full bg-[#020617] border border-white/10 rounded-2xl px-6 py-4 text-white font-bold focus:ring-2 focus:ring-blue-600/50 outline-none transition-all resize-none"></textarea>
-                            </div>
-
-                            <button type="submit"
-                                    class="w-full bg-blue-600 hover:bg-blue-500 text-white font-black uppercase text-xs tracking-[0.2em] py-5 rounded-2xl transition-all shadow-xl shadow-blue-900/40">
-                                <i class="fa-solid fa-paper-plane mr-2"></i> Envoyer maintenant
-                            </button>
-                        </form>
-                    </div>
-                </div>
-
+            <div class="flex items-center gap-2 px-4 py-2 bg-white/5 rounded-full border border-white/5">
+                <span class="relative flex h-2 w-2">
+                    <?php if ($estActif): ?>
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                    <?php else: ?>
+                        <span class="relative inline-flex rounded-full h-2 w-2 bg-slate-500"></span>
+                    <?php endif; ?>
+                </span>
+                <span class="text-[9px] font-black uppercase tracking-widest <?= $estActif ? 'text-emerald-500' : 'text-slate-500' ?>">
+                    <?= $estActif ? 'Opérationnel' : 'Accès Suspendu' ?>
+                </span>
             </div>
         </div>
 
-        <?php
-    }
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+
+            <div class="lg:col-span-4 space-y-6">
+
+                <div class="bg-white/5 border border-white/5 rounded-[3rem] p-8 text-center shadow-2xl relative overflow-hidden group">
+                    <div class="w-32 h-32 mx-auto rounded-[2rem] bg-gradient-to-tr from-emerald-600 to-emerald-400 p-1 mb-6 shadow-xl shadow-emerald-900/20">
+                        <div class="w-full h-full rounded-[1.8rem] bg-[#020617] flex items-center justify-center overflow-hidden">
+                            <?php if ($cheminPhoto && file_exists($cheminPhoto)): ?>
+                                <img src="<?= $cheminPhoto ?>" class="w-full h-full object-cover">
+                            <?php else: ?>
+                                <span class="text-4xl font-black text-white"><?= strtoupper(substr($prenom, 0, 1)) ?></span>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                    <h2 class="text-2xl font-black text-white uppercase italic"><?= $prenom ?> <span class="text-emerald-500"><?= $nom ?></span></h2>
+                    <p class="text-slate-500 font-bold text-[9px] tracking-widest uppercase mt-1">Matricule #<?= str_pad($id_barman, 3, '0', STR_PAD_LEFT) ?></p>
+                </div>
+
+                <div class="bg-white/5 border border-white/5 rounded-[2.5rem] p-6">
+                    <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-address-book text-emerald-500"></i> Coordonnées
+                    </p>
+                    <div class="space-y-3 text-xs text-slate-300 italic">
+                        <p class="flex items-center gap-3"><i class="fa-solid fa-envelope text-emerald-500 w-4"></i> <?= $email_dest ?></p>
+                        <p class="flex items-center gap-3"><i class="fa-solid fa-phone text-emerald-500 w-4"></i> <?= htmlspecialchars($barmans['tel'] ?? 'N/A') ?></p>
+                    </div>
+                </div>
+
+                <div class="bg-white/5 border border-white/5 rounded-[2.5rem] p-6 space-y-3">
+                    <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-shield-halved text-emerald-500"></i> Administration
+                    </p>
+
+                    <?php if ($estActif): ?>
+                        <a href="index.php?action=toggleBarman&id=<?= $id_barman ?>"
+                           class="flex items-center justify-center w-full py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border border-amber-500/20 bg-amber-500/5 text-amber-500 hover:bg-amber-500 hover:text-white">
+                            <i class="fa-solid fa-user-slash mr-2"></i> Désactiver l'accès
+                        </a>
+                    <?php else: ?>
+                        <a href="index.php?action=toggleBarman&id=<?= $id_barman ?>"
+                           class="flex items-center justify-center w-full py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border border-emerald-500/20 bg-emerald-500/5 text-emerald-500 hover:bg-emerald-500 hover:text-white">
+                            <i class="fa-solid fa-user-check mr-2"></i> Réactiver l'accès
+                        </a>
+                    <?php endif; ?>
+
+                    <button onclick="openModal('index.php?action=retrograderBarman&id=<?= $id_barman ?>')"
+                       class="w-full py-4 bg-red-500/5 border border-red-500/20 hover:bg-red-500 text-red-500 hover:text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all">
+                        <i class="fa-solid fa-user-minus mr-2"></i> Révoquer du Staff
+                    </button>
+                </div>
+            </div>
+
+            <div class="lg:col-span-8">
+                <div class="bg-white/5 border border-white/5 rounded-[3rem] p-10 shadow-2xl">
+                    <h3 class="text-lg font-black text-white uppercase italic tracking-tighter mb-8 border-b border-white/5 pb-4">
+                        Envoyer un <span class="text-emerald-500">Message Direct</span>
+                    </h3>
+
+                    <form action="index.php?action=envoyerEmailBarman" method="POST" class="space-y-6">
+                        <input type="hidden" name="email_destinataire" value="<?= $email_dest ?>">
+                        <input type="hidden" name="id_barman" value="<?= $id_barman ?>">
+
+                        <div>
+                            <label class="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-4 mb-2 block">Objet</label>
+                            <input type="text" name="objet" required placeholder="Ex: Briefing de service"
+                                   class="w-full bg-[#020617] border border-white/10 rounded-2xl px-6 py-4 text-white font-bold focus:ring-2 focus:ring-emerald-600/50 outline-none transition-all">
+                        </div>
+
+                        <div>
+                            <label class="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-4 mb-2 block">Message</label>
+                            <textarea name="message" required rows="6" placeholder="Écrivez vos instructions..."
+                                      class="w-full bg-[#020617] border border-white/10 rounded-2xl px-6 py-4 text-white font-bold focus:ring-2 focus:ring-emerald-600/50 outline-none transition-all resize-none"></textarea>
+                        </div>
+
+                        <button type="submit"
+                                class="w-full bg-emerald-500 hover:bg-emerald-400 text-[#020617] font-black uppercase text-xs tracking-[0.2em] py-5 rounded-2xl transition-all shadow-xl shadow-emerald-900/40">
+                            <i class="fa-solid fa-paper-plane mr-2"></i> Transmettre le message
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="customAlertModal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm transition-all">
+        <div class="bg-[#020617] border border-white/10 w-full max-w-md rounded-[2.5rem] p-8 shadow-2xl transform scale-95 transition-transform duration-300">
+            <div class="w-16 h-16 bg-red-500/10 text-red-500 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-red-500/20">
+                <i class="fa-solid fa-triangle-exclamation text-2xl"></i>
+            </div>
+
+            <h3 class="text-xl font-black text-white text-center uppercase italic mb-2">Attention</h3>
+            <p class="text-slate-400 text-center text-sm font-medium leading-relaxed mb-8">
+                Voulez-vous vraiment révoquer les droits de barman ? L'utilisateur redeviendra simple client et perdra ses accès au staff.
+            </p>
+
+            <div class="flex gap-3">
+                <button onclick="closeModal()" class="flex-1 py-4 bg-white/5 hover:bg-white/10 text-slate-400 text-[10px] font-black uppercase tracking-widest rounded-2xl transition-all border border-white/5">
+                    Annuler
+                </button>
+                <a id="confirmActionBtn" href="#" class="flex-1 py-4 bg-red-500 hover:bg-red-600 text-white text-[10px] font-black uppercase tracking-widest rounded-2xl text-center shadow-lg shadow-red-500/20 transition-all">
+                    Confirmer
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openModal(url) {
+            const modal = document.getElementById('customAlertModal');
+            const confirmBtn = document.getElementById('confirmActionBtn');
+            confirmBtn.href = url;
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            setTimeout(() => {
+                modal.querySelector('div').classList.remove('scale-95');
+                modal.querySelector('div').classList.add('scale-100');
+            }, 10);
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('customAlertModal');
+            modal.querySelector('div').classList.remove('scale-100');
+            modal.querySelector('div').classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }, 200);
+        }
+    </script>
+    <?php
+}
     public function afficherFormulaireSolde($personne)
     {
         echo '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">';
@@ -1062,7 +1138,6 @@ class VueGestionnaire extends VueStaff
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
         <style>
-            /* On empêche le scroll sur le body pour tout bloquer */
             body {
                 background: #020617 radial-gradient(circle at 50% -20%, #064e3b 0%, #020617 80%) no-repeat fixed;
                 margin: 0;
@@ -1074,7 +1149,23 @@ class VueGestionnaire extends VueStaff
                 color: #f8fafc;
             }
 
-            /* Container principal : il prend toute la hauteur de l'écran */
+            /* État désactivé */
+            .member-card.is-inactive {
+                opacity: 0.5;
+                filter: grayscale(0.8);
+                border-color: rgba(239, 68, 68, 0.2);
+            }
+
+            .member-card.is-inactive:hover {
+                opacity: 0.8;
+                border-color: #ef4444;
+            }
+
+            .dot-offline {
+                background: #ef4444;
+                box-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
+            }
+
             .page-container {
                 max-width: 1300px;
                 margin: 0 auto;
@@ -1086,7 +1177,6 @@ class VueGestionnaire extends VueStaff
                 box-sizing: border-box;
             }
 
-            /* Le header et la recherche ne bougent pas */
             .fixed-top-section {
                 flex-shrink: 0;
                 margin-bottom: 1rem;
@@ -1111,16 +1201,38 @@ class VueGestionnaire extends VueStaff
                 box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
             }
 
-            /* LA ZONE SCROLLABLE : Elle prend le reste de la hauteur */
+            .tabs-container {
+                display: flex;
+                gap: 2rem;
+                margin: 1.5rem 0 0.5rem 1rem;
+            }
+
+            .tab-btn {
+                background: transparent;
+                border: none;
+                color: #475569;
+                font-size: 10px;
+                font-weight: 900;
+                text-transform: uppercase;
+                cursor: pointer;
+                padding-bottom: 0.5rem;
+                border-bottom: 2px solid transparent;
+                transition: all 0.3s ease;
+            }
+
+            .tab-btn.active {
+                color: #10b981;
+                border-bottom: 2px solid #10b981;
+            }
+
             #barmanList {
                 flex-grow: 1;
                 overflow-y: auto;
-                padding-right: 15px; /* Espace pour la scrollbar */
+                padding-right: 15px;
                 padding-bottom: 3rem;
                 margin-top: 1rem;
             }
 
-            /* Style des cartes */
             .member-card {
                 background: rgba(255, 255, 255, 0.02);
                 border: 1px solid rgba(255, 255, 255, 0.05);
@@ -1144,7 +1256,9 @@ class VueGestionnaire extends VueStaff
             .id-pill {
                 font-size: 10px;
                 padding: 4px 10px;
-                width: fit-content;
+                color: #475569;
+                background: rgba(255,255,255,0.05);
+                border-radius: 8px;
             }
 
             .avatar-box {
@@ -1170,50 +1284,27 @@ class VueGestionnaire extends VueStaff
 
             .dot {
                 width: 8px;
+                height: 8px;
+                border-radius: 50%;
+            }
 
-                .dot-online {
-                    background: #10b981;
-                    box-shadow: 0 0 12px #10b981;
-                }
+            .dot-online { background: #10b981; box-shadow: 0 0 12px #10b981; }
+            .dot-offline { background: #475569; }
 
-                .dot-offline {
-                    background: #475569;
-                }
+            .btn-view {
+                background: #10b981;
+                color: #020617;
+                padding: 10px 20px;
+                border-radius: 12px;
+                font-size: 10px;
+                font-weight: 900;
+                text-transform: uppercase;
+                transition: 0.4s;
+            }
 
-                .btn-view {
-                    background: #10b981;
-                    color: #020617;
-                    padding: 10px 20px;
-                    border-radius: 12px;
-                    font-size: 10px;
-                    font-weight: 900;
-                    text-transform: uppercase;
-                    opacity: 0;
-                    transition: 0.4s;
-                }
-
-                .member-card:hover .btn-view {
-                    opacity: 1;
-                }
-
-                /* Custom Scrollbar */
-
-                #barmanList::-webkit-scrollbar {
-                    width: 6px;
-                }
-
-                #barmanList::-webkit-scrollbar-thumb {
-                    background: rgba(16, 185, 129, 0.2);
-                    border-radius: 10px;
-                }
-
-                #barmanList::-webkit-scrollbar-thumb:hover {
-                    background: rgba(16, 185, 129, 0.5);
-                }
-
-                #filterAsso option {
-                    background: #020617;
-                }
+            #barmanList::-webkit-scrollbar { width: 6px; }
+            #barmanList::-webkit-scrollbar-thumb { background: rgba(16, 185, 129, 0.2); border-radius: 10px; }
+            #filterAsso option { background: #020617; }
         </style>
 
         <div class="page-container">
@@ -1251,50 +1342,68 @@ class VueGestionnaire extends VueStaff
                         <?php endforeach; ?>
                     </select>
                 </div>
+
+                <div class="tabs-container">
+                    <button class="tab-btn active" data-status="all">Tous les membres</button>
+                    <button class="tab-btn" data-status="active">En service</button>
+                    <button class="tab-btn" data-status="inactive">Inactifs</button>
+                </div>
             </div>
 
             <div id="barmanList">
                 <?php foreach ($barmans as $barman):
-                    $isActif = $barman['actif'] ?? true;
+                    // FIX : Cast explicite en entier pour éviter les bugs de type String/Int
+                    $actifStatus = isset($barman['actif']) ? (int)$barman['actif'] : 0;
+                    $isActif = ($actifStatus === 1);
+
                     $nomAsso = !empty($barman['nom_association']) ? $barman['nom_association'] : 'Non assigné';
                     ?>
+
                     <a href="index.php?action=voirProfilBarman&id=<?= $barman['id'] ?>"
-                       class="member-card barman-row"
+                       class="member-card barman-row <?= !$isActif ? 'is-inactive' : '' ?>"
                        data-asso="<?= htmlspecialchars($nomAsso) ?>"
-                       style="display: grid; text-decoration: none; color: inherit;">
+                       data-active="<?= $isActif ? 'true' : 'false' ?>">
 
                         <div style="display: flex; align-items: center;">
-                            <span class="id-pill">ID-<?= str_pad($barman['id'], 3, '0', STR_PAD_LEFT) ?></span>
+                        <span class="id-pill <?= !$isActif ? 'bg-red-500/10 text-red-500' : '' ?>">
+                            ID-<?= str_pad($barman['id'], 3, '0', STR_PAD_LEFT) ?>
+                        </span>
                         </div>
 
                         <div class="flex items-center gap-5">
-                            <div class="avatar-box">
-                                <?= strtoupper(substr($barman['prenom'], 0, 1)) ?>
+                            <div class="avatar-box <?= !$isActif ? 'from-red-900 to-red-600' : '' ?>">
+                                <?= strtoupper(substr($barman['prenom'] ?? 'U', 0, 1)) ?>
                             </div>
                             <div>
                                 <h3 class="text-sm font-black text-white uppercase leading-none mb-1">
-                                    <?= htmlspecialchars($barman['prenom'] . ' ' . $barman['nom']) ?>
+                                    <?= htmlspecialchars(($barman['prenom'] ?? '') . ' ' . ($barman['nom'] ?? '')) ?>
                                 </h3>
                                 <p class="text-[10px] text-emerald-500/40 font-bold lowercase">
-                                    <?= htmlspecialchars($barman['email']) ?>
+                                    <?= htmlspecialchars($barman['email'] ?? 'pas d\'email') ?>
                                 </p>
                             </div>
                         </div>
 
-                        <div class="status-tag <?= $isActif ? 'text-emerald-400' : 'text-slate-500' ?>">
+                        <div class="status-tag <?= $isActif ? 'text-emerald-400' : 'text-red-500' ?>">
                             <span class="dot <?= $isActif ? 'dot-online' : 'dot-offline' ?>"></span>
-                            <?= $isActif ? 'En service' : 'Inactif' ?>
+                            <?php if ($isActif): ?>
+                                <i class="fa-solid fa-check-circle mr-1"></i> En service
+                            <?php else: ?>
+                                <i class="fa-solid fa-circle-xmark mr-1"></i> Accès Révoqué
+                            <?php endif; ?>
                         </div>
 
                         <div class="flex flex-col">
-                            <span class="text-[9px] font-black text-emerald-500/50 uppercase mb-1">Rattachement</span>
+                            <span class="text-[9px] font-black <?= $isActif ? 'text-emerald-500/50' : 'text-red-500/50' ?> uppercase mb-1">Rattachement</span>
                             <span class="text-[11px] font-extrabold text-white uppercase tracking-tighter">
-            <?= htmlspecialchars($nomAsso) ?>
-        </span>
+                            <?= htmlspecialchars($nomAsso) ?>
+                        </span>
                         </div>
 
                         <div class="text-right">
-                            <span class="btn-view" style="opacity: 1; visibility: visible;">Consulter</span>
+                        <span class="btn-view <?= !$isActif ? 'bg-red-500 text-white' : '' ?>">
+                            <?= $isActif ? 'Consulter' : 'Gérer' ?>
+                        </span>
                         </div>
                     </a>
                 <?php endforeach; ?>
@@ -1305,22 +1414,37 @@ class VueGestionnaire extends VueStaff
             document.addEventListener('DOMContentLoaded', function () {
                 const searchInput = document.getElementById('filterSearch');
                 const assoSelect = document.getElementById('filterAsso');
+                const tabBtns = document.querySelectorAll('.tab-btn');
                 const rows = document.querySelectorAll('.barman-row');
 
                 function filterTable() {
                     const searchValue = searchInput.value.toLowerCase();
                     const assoValue = assoSelect.value;
+                    const currentStatusFilter = document.querySelector('.tab-btn.active').getAttribute('data-status');
 
                     rows.forEach(row => {
                         const content = row.innerText.toLowerCase();
                         const rowAsso = row.getAttribute('data-asso');
+                        const isActive = row.getAttribute('data-active') === 'true';
 
                         const matchesSearch = content.includes(searchValue);
                         const matchesAsso = (assoValue === 'all' || rowAsso === assoValue);
 
-                        row.style.display = (matchesSearch && matchesAsso) ? 'grid' : 'none';
+                        let matchesStatus = true;
+                        if (currentStatusFilter === 'active') matchesStatus = isActive;
+                        else if (currentStatusFilter === 'inactive') matchesStatus = !isActive;
+
+                        row.style.display = (matchesSearch && matchesAsso && matchesStatus) ? 'grid' : 'none';
                     });
                 }
+
+                tabBtns.forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        tabBtns.forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        filterTable();
+                    });
+                });
 
                 searchInput.addEventListener('input', filterTable);
                 assoSelect.addEventListener('change', filterTable);
@@ -1328,7 +1452,6 @@ class VueGestionnaire extends VueStaff
         </script>
         <?php
     }
-
     public function afficherSuccesPromotion()
     {
         $this->afficherNav();
@@ -2745,8 +2868,7 @@ class VueGestionnaire extends VueStaff
                                 </div>
 
                                 <div class="flex justify-end">
-                                    <a href="index.php?action=detailCommande&id=<?= $c['id'] ?>" class="view-btn"
-                                       title="Voir les détails">
+                                    <a href="index.php?module=gestionnaire&action=detailsCommande&id=<?= $c['id'] ?>" class="view-btn" title="Voir les détails">
                                         <i class="fa-solid fa-plus text-lg"></i>
                                     </a>
                                 </div>
@@ -2759,228 +2881,206 @@ class VueGestionnaire extends VueStaff
         <?php
     }
 
-    public function afficherAffectationStock($associations, $reserve, $commandesFournisseurs, $historiqueAchats)
-    {
-        $this->afficherNav();
-        ?>
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+ public function afficherAffectationStock($associations, $reserve, $commandesFournisseurs, $historiqueAchats, $historiqueInventaires = [])
+{
+    $this->afficherNav();
+    ?>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
-        <style>
-            @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
 
-            body {
-                background: #020617;
-                font-family: 'Plus Jakarta Sans', sans-serif;
-                color: #f8fafc;
-            }
+        body {
+            background: #020617 radial-gradient(circle at 50% -20%, #1e1b4b 0%, #020617 80%) no-repeat fixed;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            color: #f8fafc;
+        }
 
-            .glass-card {
-                background: rgba(30, 41, 59, 0.4);
-                border: 1px solid rgba(255, 255, 255, 0.08);
-                backdrop-filter: blur(16px);
-                border-radius: 1.5rem;
-            }
+        .main-container { max-width: 1100px; margin: 0 auto; padding: 40px 20px; }
 
-            .filter-group {
-                display: flex;
-                gap: 8px;
-                margin-bottom: 20px;
-            }
+        /* Navigation par onglets */
+        .tabs-nav {
+            display: flex; justify-content: center; gap: 12px; margin-bottom: 40px;
+            background: rgba(255, 255, 255, 0.03); padding: 8px; border-radius: 20px;
+            width: fit-content; margin-left: auto; margin-right: auto;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
 
-            .filter-input {
-                background: rgba(15, 23, 42, 0.8);
-                border: 1px solid rgba(255, 255, 255, 0.1);
-                color: white;
-                padding: 8px 12px;
-                border-radius: 10px;
-                font-size: 11px;
-                outline: none;
-                width: 100%;
-            }
+        .tab-btn {
+            padding: 12px 28px; border-radius: 14px; font-size: 11px; font-weight: 800;
+            text-transform: uppercase; letter-spacing: 1px; cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); color: #64748b;
+        }
 
-            .filter-input:focus {
-                border-color: #3b82f6;
-            }
+        .tab-btn.active { background: #f8fafc; color: #020617; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3); }
 
-            .hidden-item {
-                display: none !important;
-            }
+        .tab-content { display: none; animation: slideUp 0.4s ease-out; }
+        .tab-content.active { display: block; }
 
-            .view-more-btn {
-                width: 100%;
-                padding: 12px;
-                margin-top: 15px;
-                background: rgba(255, 255, 255, 0.03);
-                border: 1px dashed rgba(255, 255, 255, 0.1);
-                border-radius: 12px;
-                font-size: 10px;
-                font-weight: 800;
-                color: #64748b;
-                cursor: pointer;
-            }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
 
-            .status-livré {
-                color: #10b981;
-                background: rgba(16, 185, 129, 0.1);
-                padding: 2px 8px;
-                border-radius: 4px;
-            }
+        .glass-card {
+            background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(20px); border-radius: 32px; padding: 40px;
+        }
 
-            .status-en_attente {
-                color: #f59e0b;
-                background: rgba(245, 158, 11, 0.1);
-                padding: 2px 8px;
-                border-radius: 4px;
-            }
-        </style>
+        .item-card {
+            background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 18px; padding: 20px; transition: all 0.2s;
+        }
 
-        <div class="max-w-[1500px] mx-auto p-6">
+        .filter-input {
+            background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white; padding: 12px 20px; border-radius: 14px; width: 100%; max-width: 400px; outline: none;
+        }
 
-            <div class="mb-8 text-center lg:text-left">
-                <h1 class="text-3xl font-black italic uppercase tracking-tighter">Flux <span class="text-blue-500">Logistique</span>
-                </h1>
-            </div>
+        .status-badge { font-size: 9px; font-weight: 900; padding: 5px 12px; border-radius: 10px; text-transform: uppercase; }
+        .status-livré { background: rgba(16, 185, 129, 0.15); color: #10b981; }
+        .status-en_attente { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
+    </style>
 
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <div class="main-container">
+        <div class="text-center mb-12">
+            <h1 class="text-6xl font-black italic uppercase tracking-tighter leading-none mb-4">
+                Flux <span class="text-blue-500">Logistique</span>
+            </h1>
+            <p class="text-slate-500 font-bold uppercase tracking-[0.4em] text-[10px] mb-8">Contrôle des stocks & flux entrants</p>
 
-                <div class="glass-card p-6 border-t-4 border-amber-500">
-                    <h2 class="text-xs font-black uppercase text-amber-500 mb-6 flex items-center gap-2">
-                        <i class="fa-solid fa-receipt"></i> Commandes Fournisseurs
-                    </h2>
-
-                    <div class="filter-group">
-                        <input type="text" id="searchCmd" onkeyup="filterCommandes()" placeholder="Fournisseur..."
-                               class="filter-input">
-                        <select id="statusCmd" onchange="filterCommandes()" class="filter-input">
-                            <option value="all">Statuts</option>
-                            <option value="livré">Livré</option>
-                            <option value="en attente">En attente</option>
-                        </select>
-                    </div>
-
-                    <div id="container-commandes" class="space-y-3">
-                        <?php
-                        $limitC = ceil(count($commandesFournisseurs) / 2);
-                        foreach ($commandesFournisseurs as $idx => $cmd):
-                            $hide = ($idx >= $limitC) ? 'hidden-item' : '';
-                            ?>
-                            <div class="cmd-item bg-slate-900/60 p-4 rounded-xl border border-white/5 <?= $hide ?>"
-                                 data-vendor="<?= strtolower($cmd['nom_fournisseur']) ?>"
-                                 data-status="<?= strtolower($cmd['statut']) ?>">
-                                <div class="flex justify-between items-start mb-2">
-                                    <span class="text-[9px] font-bold text-slate-500">ID #<?= $cmd['id'] ?></span>
-                                    <span class="status-<?= str_replace(' ', '_', $cmd['statut']) ?> text-[8px] font-black uppercase"><?= $cmd['statut'] ?></span>
-                                </div>
-                                <p class="text-xs font-bold uppercase"><?= htmlspecialchars($cmd['nom_fournisseur']) ?></p>
-                                <div class="mt-3 flex justify-between items-center text-[10px]">
-                                    <span class="text-slate-500"><?= date('d/m/Y', strtotime($cmd['date_commande'])) ?></span>
-                                    <span class="font-black"><?= number_format($cmd['montant_total'], 2) ?> €</span>
-                                </div>
-                            </div>
-                        <?php endforeach; ?>
-                    </div>
-                    <button onclick="showAll('container-commandes', this)" class="view-more-btn">VOIR PLUS</button>
+            <?php if (!empty($associations)): ?>
+                <a href="index.php?action=faireInventaire&id=<?= htmlspecialchars($associations['id']) ?>"
+                   class="inline-flex items-center gap-3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 px-10 py-5 rounded-2xl font-black text-xs uppercase transition-all shadow-xl shadow-emerald-500/20">
+                    <i class="fa-solid fa-clipboard-check text-lg"></i>
+                    Lancer un inventaire
+                </a>
+            <?php else: ?>
+                <div class="inline-block bg-red-500/10 border border-red-500/20 text-red-400 px-6 py-3 rounded-xl text-xs font-bold uppercase">
+                    <i class="fa-solid fa-triangle-exclamation mr-2"></i>
+                    Aucune association liée à votre compte
                 </div>
-
-                <div class="glass-card p-6 border-t-4 border-blue-500">
-                    <h2 class="text-xs font-black uppercase text-blue-400 mb-6 flex items-center gap-2">
-                        <i class="fa-solid fa-box"></i> Entrées de Stock
-                    </h2>
-
-                    <div class="filter-group">
-                        <input type="text" id="searchHist" onkeyup="filterEntrees()" placeholder="Produit ou Source..."
-                               class="filter-input">
-                    </div>
-
-                    <div id="container-historique" class="space-y-2">
-                        <?php
-                        $limitH = ceil(count($historiqueAchats) / 2);
-                        foreach ($historiqueAchats as $idx => $h):
-                            $hide = ($idx >= $limitH) ? 'hidden-item' : '';
-                            ?>
-                            <div class="hist-item flex justify-between items-center p-3 bg-white/[0.02] border border-white/5 rounded-xl <?= $hide ?>"
-                                 data-info="<?= strtolower($h['produit'] . ' ' . $h['fournisseur']) ?>">
-                                <div>
-                                    <p class="text-[10px] font-black uppercase"><?= htmlspecialchars($h['produit']) ?></p>
-                                    <p class="text-[8px] text-slate-500 font-bold italic"><?= htmlspecialchars($h['fournisseur']) ?></p>
-                                </div>
-                                <div class="text-right">
-                                    <p class="text-xs font-black text-green-500">+ <?= $h['quantite'] ?></p>
-                                    <p class="text-[8px] text-slate-600 font-bold"><?= date('d/m H:i', strtotime($h['date'])) ?></p>
-                                </div>
-                            </div>
-                        <?php endforeach; ?>
-                    </div>
-                    <button onclick="showAll('container-historique', this)" class="view-more-btn">VOIR PLUS</button>
-                </div>
-
-            </div>
+            <?php endif; ?>
         </div>
 
-        <script>
-            // Filtrage spécifique aux Commandes
-            function filterCommandes() {
-                const val = document.getElementById('searchCmd').value.toLowerCase();
-                const status = document.getElementById('statusCmd').value.toLowerCase();
+        <div class="tabs-nav">
+            <div class="tab-btn active" onclick="switchTab(event, 'tab-commandes')">Commandes</div>
+            <div class="tab-btn" onclick="switchTab(event, 'tab-entrees')">Entrées</div>
+            <div class="tab-btn" onclick="switchTab(event, 'tab-inventaires')">Inventaires</div>
+        </div>
 
-                document.querySelectorAll('.cmd-item').forEach(item => {
-                    const matchVal = item.getAttribute('data-vendor').includes(val);
-                    const matchStatus = (status === 'all' || item.getAttribute('data-status') === status);
-                    item.style.display = (matchVal && matchStatus) ? 'block' : 'none';
-                });
-            }
+        <div class="glass-card">
+            <div id="tab-commandes" class="tab-content active">
+                <div class="flex flex-col items-center mb-10">
+                    <h2 class="text-sm font-black uppercase tracking-widest text-amber-500 mb-6 italic">Suivi des achats fournisseurs</h2>
+                    <input type="text" id="searchCmd" onkeyup="filterLocal('searchCmd', 'card-cmd', 'data-info')"
+                           placeholder="Rechercher un fournisseur..." class="filter-input text-center">
+                </div>
 
-            // Filtrage spécifique aux Entrées
-            function filterEntrees() {
-                const val = document.getElementById('searchHist').value.toLowerCase();
-                document.querySelectorAll('.hist-item').forEach(item => {
-                    item.style.display = item.getAttribute('data-info').includes(val) ? 'flex' : 'none';
-                });
-            }
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <?php foreach ($commandesFournisseurs as $cmd): ?>
+                        <div class="card-cmd item-card" data-info="<?= strtolower($cmd['nom_fournisseur']) ?>">
+                            <div class="flex justify-between items-start mb-4">
+                                <span class="text-[9px] font-black text-slate-500 tracking-widest uppercase">Réf #<?= $cmd['id'] ?></span>
+                                <span class="status-badge status-<?= str_replace(' ', '_', strtolower($cmd['statut'])) ?>"><?= $cmd['statut'] ?></span>
+                            </div>
+                            <p class="text-lg font-black uppercase text-white"><?= htmlspecialchars($cmd['nom_fournisseur']) ?></p>
+                            <div class="flex justify-between items-end mt-6 border-t border-white/5 pt-4">
+                                <span class="text-[11px] text-slate-500 font-bold"><?= date('d/m/Y', strtotime($cmd['date_commande'])) ?></span>
+                                <span class="text-xl font-black text-white"><?= number_format($cmd['montant_total'], 2) ?> €</span>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
 
-            // Fonction Voir Plus
-            function showAll(containerId, btn) {
-                const container = document.getElementById(containerId);
-                const hiddenItems = container.querySelectorAll('.hidden-item');
+            <div id="tab-entrees" class="tab-content">
+                <div class="flex flex-col items-center mb-10">
+                    <h2 class="text-sm font-black uppercase tracking-widest text-blue-400 mb-6 italic">Historique des arrivages</h2>
+                    <input type="text" id="searchHist" onkeyup="filterLocal('searchHist', 'card-hist', 'data-info')"
+                           placeholder="Filtrer par produit..." class="filter-input text-center">
+                </div>
+                <div class="max-w-2xl mx-auto space-y-3">
+                    <?php foreach ($historiqueAchats as $h): ?>
+                        <div class="card-hist item-card flex justify-between items-center" data-info="<?= strtolower($h['produit']) ?>">
+                            <div class="flex items-center gap-4">
+                                <div class="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-500">
+                                    <i class="fa-solid fa-plus-circle"></i>
+                                </div>
+                                <div>
+                                    <p class="font-black uppercase text-sm text-white"><?= htmlspecialchars($h['produit']) ?></p>
+                                    <p class="text-[9px] text-slate-500 font-bold uppercase"><?= htmlspecialchars($h['fournisseur']) ?></p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-lg font-black text-emerald-500">+<?= $h['quantite'] ?></p>
+                                <p class="text-[9px] text-slate-600 font-bold uppercase italic"><?= date('d/m H:i', strtotime($h['date'])) ?></p>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
 
-                if (btn.innerText === "VOIR PLUS") {
-                    hiddenItems.forEach(item => {
-                        item.classList.remove('hidden-item');
-                        item.setAttribute('data-was-hidden', 'true');
-                    });
-                    btn.innerText = "RÉDUIRE";
-                } else {
-                    container.querySelectorAll('[data-was-hidden="true"]').forEach(item => {
-                        item.classList.add('hidden-item');
-                    });
-                    btn.innerText = "VOIR PLUS";
-                }
-            }
-        </script>
-        <?php
-    }
+            <div id="tab-inventaires" class="tab-content">
+                <div class="text-center mb-10">
+                    <h2 class="text-sm font-black uppercase tracking-widest text-emerald-400 italic">Rapports d'inventaire</h2>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <?php if(empty($historiqueInventaires)): ?>
+                        <div class="col-span-full text-center py-20 opacity-30">
+                            <i class="fa-solid fa-folder-open text-4xl mb-4"></i>
+                            <p class="uppercase font-black text-xs tracking-widest">Aucune donnée enregistrée</p>
+                        </div>
+                    <?php else: ?>
+                        <?php foreach ($historiqueInventaires as $inv):
+                            $diff = $inv['quantite_trouvee'] - $inv['quantite_theorique'];
+                        ?>
+                            <div class="item-card border-l-4 <?= $diff < 0 ? 'border-red-500' : 'border-emerald-500' ?>">
+                                <div class="flex justify-between items-start mb-4">
+                                    <p class="font-black uppercase text-sm"><?= htmlspecialchars($inv['produit']) ?></p>
+                                    <span class="text-[9px] font-bold text-slate-600"><?= date('d/m/Y', strtotime($inv['date'])) ?></span>
+                                </div>
+                                <div class="grid grid-cols-3 gap-2 text-center bg-black/30 rounded-xl p-4">
+                                    <div><p class="text-[7px] font-black text-slate-500 mb-1">LOGICIEL</p><p class="text-sm font-bold"><?= $inv['quantite_theorique'] ?></p></div>
+                                    <div><p class="text-[7px] font-black text-slate-500 mb-1">RÉEL</p><p class="text-sm font-bold text-white"><?= $inv['quantite_trouvee'] ?></p></div>
+                                    <div><p class="text-[7px] font-black text-slate-500 mb-1">ÉCART</p><p class="text-sm font-black <?= $diff < 0 ? 'text-red-500' : 'text-emerald-400' ?>"><?= ($diff > 0 ? '+' : '') . $diff ?></p></div>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
+    </div>
 
+    <script>
+        function switchTab(evt, tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+            evt.currentTarget.classList.add('active');
+        }
+
+        function filterLocal(inputId, className, attr) {
+            const val = document.getElementById(inputId).value.toLowerCase();
+            document.querySelectorAll('.' + className).forEach(el => {
+                el.style.display = el.getAttribute(attr).includes(val) ? '' : 'none';
+            });
+        }
+    </script>
+    <?php
+}
     public function afficherDetailsAssos($assos)
     {
         $this->afficherNav();
         ?>
         <style>
             @keyframes fadeInScale {
-                from {
-                    opacity: 0;
-                    transform: scale(0.95);
-                    filter: blur(10px);
-                }
-                to {
-                    opacity: 1;
-                    transform: scale(1);
-                    filter: blur(0);
-                }
+                from { opacity: 0; transform: scale(0.95); filter: blur(10px); }
+                to { opacity: 1; transform: scale(1); filter: blur(0); }
             }
 
-            .anim-focus {
-                animation: fadeInScale 0.7s cubic-bezier(0.19, 1, 0.22, 1) forwards;
-            }
+            .anim-focus { animation: fadeInScale 0.7s cubic-bezier(0.19, 1, 0.22, 1) forwards; }
 
             .glass-panel {
                 background: rgba(255, 255, 255, 0.02);
@@ -2999,15 +3099,6 @@ class VueGestionnaire extends VueStaff
                 color: #fbbf24;
                 border: 1px solid rgba(245, 158, 11, 0.2);
             }
-
-            .custom-scrollbar::-webkit-scrollbar {
-                width: 4px;
-            }
-
-            .custom-scrollbar::-webkit-scrollbar-thumb {
-                background: rgba(245, 158, 11, 0.2);
-                border-radius: 10px;
-            }
         </style>
 
         <div class="p-6 md:p-12 bg-[#020617] min-h-screen font-montserrat text-white relative">
@@ -3017,26 +3108,25 @@ class VueGestionnaire extends VueStaff
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                     <div class="flex items-center gap-6">
                         <div class="w-20 h-20 bg-amber-500 rounded-3xl flex items-center justify-center text-3xl font-black text-[#020617] shadow-[0_0_30px_rgba(245,158,11,0.3)]">
-                            <?= strtoupper(substr($assos['nom'], 0, 1)) ?>
+                            <?= strtoupper(substr($assos['nom'] ?? 'A', 0, 1)) ?>
                         </div>
                         <div>
                             <div class="flex items-center gap-3 mb-2">
                                 <span class="px-3 py-1 rounded-full bg-amber-500/10 text-amber-500 text-[9px] font-black uppercase tracking-widest border border-amber-500/20">Certifiée</span>
                             </div>
                             <h1 class="text-4xl font-black text-white uppercase tracking-tighter leading-none mb-4">
-                                <?= htmlspecialchars($assos['nom']) ?>
+                                <?= htmlspecialchars($assos['nom'] ?? 'Sans Nom') ?>
                             </h1>
                             <div class="flex flex-wrap gap-6 text-slate-400 text-xs font-bold italic">
-                                <span><i class="fa-solid fa-location-dot mr-2 text-amber-500"></i><?= htmlspecialchars($assos['adresse']) ?></span>
-                                <span><i class="fa-solid fa-envelope mr-2 text-amber-500"></i><?= htmlspecialchars($assos['email']) ?></span>
+                                <span><i class="fa-solid fa-location-dot mr-2 text-amber-500"></i><?= htmlspecialchars($assos['adresse'] ?? 'N/C') ?></span>
+                                <span><i class="fa-solid fa-envelope mr-2 text-amber-500"></i><?= htmlspecialchars($assos['email'] ?? 'N/C') ?></span>
                             </div>
                         </div>
                     </div>
                     <div class="bg-black/40 border border-white/5 p-7 rounded-[2.2rem] text-right min-w-[240px] shadow-inner">
-                        <p class="text-slate-500 text-[10px] font-black uppercase tracking-[0.3em] mb-2">Trésorerie
-                            Actuelle</p>
-                        <p class="text-3xl font-black <?= $assos['solde'] >= 0 ? 'text-amber-400' : 'text-rose-500' ?> tracking-tighter">
-                            <?= number_format($assos['solde'], 2, ',', ' ') ?> <span class="text-sm">€</span>
+                        <p class="text-slate-500 text-[10px] font-black uppercase tracking-[0.3em] mb-2">Trésorerie Actuelle</p>
+                        <p class="text-3xl font-black <?= ($assos['solde'] ?? 0) >= 0 ? 'text-amber-400' : 'text-rose-500' ?> tracking-tighter">
+                            <?= number_format($assos['solde'] ?? 0, 2, ',', ' ') ?> <span class="text-sm">€</span>
                         </p>
                     </div>
                 </div>
@@ -3049,33 +3139,26 @@ class VueGestionnaire extends VueStaff
                         <h2 class="text-xl font-black text-white uppercase tracking-tighter flex items-center gap-3">
                             <i class="fa-solid fa-layer-group text-amber-500"></i> Stock Produits
                         </h2>
-                        <a href="index.php?action=voirProduits&id=<?= $assos['id'] ?>"
-                           class="amber-tag px-4 py-2 rounded-xl text-[10px] font-black uppercase hover:bg-amber-500 hover:text-black transition-all">Inventaire
-                            Complet</a>
+                        <a href="index.php?action=voirProduits&id=<?= $assos['id'] ?>" class="amber-tag px-4 py-2 rounded-xl text-[10px] font-black uppercase hover:bg-amber-500 hover:text-black transition-all">Inventaire Complet</a>
                     </div>
                     <div class="overflow-x-auto">
                         <table class="w-full text-left">
-                            <thead class="text-slate-500 text-[9px] uppercase font-black tracking-[0.2em] border-b border-white/5">
-                            <tr>
-                                <th class="pb-4">Désignation</th>
-                                <th class="pb-4">Prix Unit.</th>
-                                <th class="pb-4 text-right">Disponibilité</th>
-                            </tr>
-                            </thead>
                             <tbody class="divide-y divide-white/5">
-                            <?php foreach (array_slice($assos['produits'], 0, 5) as $p): ?>
-                                <tr class="group hover:bg-white/[0.02] transition-colors">
-                                    <td class="py-4 font-bold text-white text-sm"><?= htmlspecialchars($p['nom']) ?></td>
-                                    <td class="py-4 text-slate-400 text-xs font-bold"><?= number_format($p['prix'], 2) ?>
-                                        €
-                                    </td>
-                                    <td class="py-4 text-right">
-                                    <span class="px-3 py-1 rounded-lg text-[10px] font-black <?= $p['quantiteActuelle'] < 5 ? 'bg-rose-500/10 text-rose-500' : 'bg-amber-500/5 text-amber-500' ?>">
-                                        <?= $p['quantiteActuelle'] ?> UNITÉS
-                                    </span>
-                                    </td>
-                                </tr>
-                            <?php endforeach; ?>
+                            <?php if(!empty($assos['produits'])): ?>
+                                <?php foreach (array_slice($assos['produits'], 0, 5) as $p): ?>
+                                    <tr class="group hover:bg-white/[0.02] transition-colors">
+                                        <td class="py-4 font-bold text-white text-sm"><?= htmlspecialchars($p['nom']) ?></td>
+                                        <td class="py-4 text-slate-400 text-xs font-bold"><?= number_format($p['prix'] ?? 0, 2, ',', ' ') ?> €</td>
+                                        <td class="py-4 text-right">
+                                        <span class="px-3 py-1 rounded-lg text-[10px] font-black <?= ($p['quantiteActuelle'] ?? 0) < 5 ? 'bg-rose-500/10 text-rose-500' : 'bg-amber-500/5 text-amber-500' ?>">
+                                            <?= $p['quantiteActuelle'] ?? 0 ?> UNITÉS
+                                        </span>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <tr><td colspan="3" class="py-10 text-center text-slate-500 text-[10px] font-black uppercase">Aucun produit</td></tr>
+                            <?php endif; ?>
                             </tbody>
                         </table>
                     </div>
@@ -3086,22 +3169,30 @@ class VueGestionnaire extends VueStaff
                         <h2 class="text-xl font-black text-white uppercase tracking-tighter flex items-center gap-3">
                             <i class="fa-solid fa-bolt text-amber-500"></i> Équipe Staff
                         </h2>
-                        <a href="index.php?action=voirBarmans&id=<?= $assos['id'] ?>"
-                           class="amber-tag px-4 py-2 rounded-xl text-[10px] font-black uppercase hover:bg-amber-500 hover:text-black transition-all">Gérer</a>
+                        <a href="index.php?action=voirBarmans&id=<?= $assos['id'] ?>" class="amber-tag px-4 py-2 rounded-xl text-[10px] font-black uppercase hover:bg-amber-500 hover:text-black transition-all">Gérer</a>
                     </div>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <?php foreach (array_slice($assos['barmans'], 0, 4) as $b):
-                            $actif = isset($b['est_barman']) && $b['est_barman']; ?>
-                            <div class="flex items-center justify-between p-4 bg-white/[0.03] rounded-2xl border border-white/5 group hover:border-amber-500/40 transition-all">
-                                <span class="font-bold text-white text-xs truncate mr-2"><?= htmlspecialchars($b['prenom'] . ' ' . $b['nom']) ?></span>
-                                <div class="flex items-center gap-2">
-                                    <span class="w-1.5 h-1.5 rounded-full <?= $actif ? 'bg-amber-500 shadow-[0_0_8px_#f59e0b]' : 'bg-slate-700' ?>"></span>
-                                    <span class="text-[9px] font-black uppercase tracking-tighter <?= $actif ? 'text-amber-500' : 'text-slate-500' ?>">
-                                    <?= $actif ? 'Online' : 'Off' ?>
+                        <?php if(!empty($assos['barmans'])): ?>
+                            <?php foreach (array_slice($assos['barmans'], 0, 4) as $b):
+                                // CORRECTION : On utilise 'actif' comme dans l'autre vue et on force le type Int
+                                $actifVal = isset($b['actif']) ? (int)$b['actif'] : 0;
+                                $isActif = ($actifVal === 1);
+                                ?>
+                                <div class="flex items-center justify-between p-4 bg-white/[0.03] rounded-2xl border border-white/5 group hover:border-amber-500/40 transition-all">
+                                <span class="font-bold text-white text-xs truncate mr-2">
+                                    <?= htmlspecialchars(($b['prenom'] ?? '') . ' ' . ($b['nom'] ?? '')) ?>
                                 </span>
+                                    <div class="flex items-center gap-2">
+                                        <span class="w-1.5 h-1.5 rounded-full <?= $isActif ? 'bg-amber-500 shadow-[0_0_8px_#f59e0b]' : 'bg-slate-700' ?>"></span>
+                                        <span class="text-[9px] font-black uppercase tracking-tighter <?= $isActif ? 'text-amber-500' : 'text-slate-500' ?>">
+                                        <?= $isActif ? 'Actif' : 'Off' ?>
+                                    </span>
+                                    </div>
                                 </div>
-                            </div>
-                        <?php endforeach; ?>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <p class="col-span-2 text-center py-10 text-slate-500 text-[10px] font-black uppercase">Aucun staff membre</p>
+                        <?php endif; ?>
                     </div>
                 </div>
 
@@ -3110,44 +3201,18 @@ class VueGestionnaire extends VueStaff
                         <h2 class="text-xl font-black text-white uppercase tracking-tighter flex items-center gap-3">
                             <i class="fa-solid fa-address-book text-amber-500"></i> Base Clients
                         </h2>
-                        <a href="index.php?action=voirListeClients&id=<?= $assos['id'] ?>"
-                           class="amber-tag px-4 py-2 rounded-xl text-[10px] font-black uppercase hover:bg-amber-500 hover:text-black transition-all">Répertoire</a>
+                        <a href="index.php?action=voirListeClients&id=<?= $assos['id'] ?>" class="amber-tag px-4 py-2 rounded-xl text-[10px] font-black uppercase hover:bg-amber-500 hover:text-black transition-all">Répertoire</a>
                     </div>
                     <div class="space-y-2">
-                        <?php foreach (array_slice($assos['clients'], 0, 5) as $c): ?>
-                            <div class="flex items-center justify-between p-4 bg-black/20 hover:bg-amber-500/5 rounded-2xl transition-all border border-transparent hover:border-amber-500/20 group">
-                                <span class="font-bold text-white text-sm group-hover:text-amber-400"><?= htmlspecialchars($c['prenom'] . ' ' . $c['nom']) ?></span>
-                                <span class="font-black text-xs <?= $c['solde'] >= 0 ? 'text-amber-400' : 'text-rose-500' ?>">
-                                <?= number_format($c['solde'], 2) ?> €
-                            </span>
-                            </div>
-                        <?php endforeach; ?>
-                    </div>
-                </div>
-
-                <div class="glass-panel rounded-[2.5rem] p-8 anim-focus" style="animation-delay: 0.4s;">
-                    <h2 class="text-xl font-black text-white uppercase tracking-tighter mb-8 flex items-center gap-3">
-                        <i class="fa-solid fa-terminal text-amber-500"></i> Derniers Flux
-                    </h2>
-                    <div class="space-y-3">
-                        <?php if (!empty($assos['ventes'])): ?>
-                            <?php foreach (array_slice($assos['ventes'], 0, 4) as $v): ?>
-                                <div class="flex items-center justify-between p-4 bg-white/[0.02] border-l-2 border-amber-500 rounded-r-2xl hover:bg-white/[0.04] transition-all">
-                                    <div>
-                                        <p class="text-xs font-black text-white mb-1 uppercase tracking-tight"><?= htmlspecialchars($v['client_prenom'] . ' ' . $v['client_nom']) ?></p>
-                                        <p class="text-[9px] text-slate-500 font-bold uppercase tracking-widest"><?= $v['date_vente'] ?></p>
-                                    </div>
-                                    <div class="text-right">
-                                        <p class="text-lg font-black text-amber-400 tracking-tighter">
-                                            +<?= number_format($v['montant_total'], 2) ?> €</p>
-                                    </div>
+                        <?php if(!empty($assos['clients'])): ?>
+                            <?php foreach (array_slice($assos['clients'], 0, 5) as $c): ?>
+                                <div class="flex items-center justify-between p-4 bg-black/20 hover:bg-amber-500/5 rounded-2xl transition-all border border-transparent hover:border-amber-500/20 group">
+                                    <span class="font-bold text-white text-sm group-hover:text-amber-400"><?= htmlspecialchars(($c['prenom'] ?? '') . ' ' . ($c['nom'] ?? '')) ?></span>
+                                    <span class="font-black text-xs <?= ($c['solde'] ?? 0) >= 0 ? 'text-amber-400' : 'text-rose-500' ?>">
+                                    <?= number_format($c['solde'] ?? 0, 2, ',', ' ') ?> €
+                                </span>
                                 </div>
                             <?php endforeach; ?>
-                        <?php else: ?>
-                            <div class="text-center py-10 opacity-20">
-                                <i class="fa-solid fa-ghost text-3xl mb-3 block"></i>
-                                <p class="text-[10px] font-black uppercase tracking-[0.3em]">Aucun mouvement détecté</p>
-                            </div>
                         <?php endif; ?>
                     </div>
                 </div>
