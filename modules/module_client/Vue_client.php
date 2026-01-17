@@ -306,6 +306,12 @@ class Vue_client extends VueCommun {
                             <td><?= number_format($item['prix'], 2) ?> €</td>
                             <td>x <?= (int)$item['qte'] ?></td>
                             <td><strong><?= number_format($item['sous_total'], 2) ?> €</strong></td>
+                            <td>
+                                <form method="post" action="index.php?module=client&action=enlever_panier">
+                                    <input type="hidden" name="idProduit" value="<?= (int)$item['id'] ?>">
+                                    <input type="submit" value="Enlever">
+                                </form>
+                            </td>
                         </tr>
                     <?php endforeach; ?>
                     </tbody>
@@ -380,6 +386,12 @@ class Vue_client extends VueCommun {
                         <?php else: ?>
                             <span class="statut attente">En attente</span>
                         <?php endif; ?>
+                    </td>
+                    <td>
+                        <form method="post" action="index.php?module=client&action=enlever_commande" style="background:none; border:none; padding:0; box-shadow:none;">
+                            <input type="hidden" name="vente_id" value="<?= (int)$commande['vente_id'] ?>">
+                            <input type="submit" value="Enlever">
+                        </form>
                     </td>
                 </tr>
             <?php endforeach; ?>

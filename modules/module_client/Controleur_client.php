@@ -126,8 +126,14 @@
                 case "ajouter_panier" :
                     $this->ajouter_panier();
                     break;
+                case "enlever_panier" :
+                    $this->enlever_panier();
+                    break;
                 case "valider_commande" :
                     $this->valider_commande();
+                    break;
+                case "enlever_commande" :
+                    $this->enlever_commande();
                     break;
                 case "deconnexion" :
                     $this->deconnexion();
@@ -218,6 +224,16 @@
             exit();
         }
 
+        public function enlever_panier()
+        {
+            $id = isset($_POST['idProduit']) ? (int)$_POST['idProduit'] : null;
+
+            $this->modeleProduit->enlever_panier($id);
+
+            header("Location: index.php?module=client&action=form_panier_utilisateur");
+            exit();
+        }
+
         public function panier()
         {
             return $this->modeleProduit->panier();
@@ -225,6 +241,16 @@
 
         public function valider_commande() {
             $this->modeleProduitVenduAcces->valider_commande();
+
+            header("Location: index.php?module=client&action=form_commande_statut_panier_utilisateur");
+            exit();
+        }
+
+        public function enlever_commande()
+        {
+            $venteId = isset($_POST['vente_id']) ? (int)$_POST['vente_id'] : null;
+
+            $this->modeleProduitVenduAcces->enlever_commande($venteId);
 
             header("Location: index.php?module=client&action=form_commande_statut_panier_utilisateur");
             exit();

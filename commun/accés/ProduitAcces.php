@@ -44,6 +44,13 @@
             return $row;
         }
 
+        public function miseAJourDuStock($idProduit, $nouveauStock) {
+            $stmt = $this->bdd->prepare(
+                "UPDATE produit SET quantiteActuelle = ? WHERE id = ?"
+            );
+            $stmt->execute([$nouveauStock, $idProduit]);
+        }
+
         public function tousLesProduits() {
            $stmt = $this->bdd->prepare(
             "SELECT id, nom, type, prix, quantiteActuelle
@@ -54,13 +61,6 @@
 
            $stmt->execute();
            return $stmt->fetchAll();
-        }
-
-        public function miseAJourDuStock($idProduit, $nouveauStock) {
-            $stmt = $this->bdd->prepare(
-                "UPDATE produit SET quantiteActuelle = ? WHERE id = ?"
-            );
-            $stmt->execute([$nouveauStock, $idProduit]);
         }
 
         public function ajouter_panier($idProduit)
@@ -105,6 +105,40 @@
                 $_SESSION['panier'][$idProduit]++;
             } else {
                 $_SESSION['panier'][$idProduit] = 1;
+            }
+
+            $this->bdd->commit();
+        }
+
+        public function enlever_panier($idProduit)
+        {
+            if (!$idProduit) {
+                return;
+            }
+
+            if (session_status() === PHP_SESSION_NONE) {
+                session_start();
+            }
+
+            // Si le panier est vide ou le produit absent
+            if (empty($_SESSION['panier']) || !isset($_SESSION['panier'][$idProduit])) {
+                return;
+            }
+
+            // Début transaction
+            $this->bdd->beginTransaction();
+
+            $stmt = $this->bdd->prepare(
+                "UPDATE produit 
+                 SET quantiteActuelle = quantiteActuelle + 1 
+                 WHERE id = :id"
+            );
+            $stmt->execute([':id' => $idProduit]);
+
+            $_SESSION['panier'][$idProduit]--;
+
+            if ($_SESSION['panier'][$idProduit] <= 0) {
+                unset($_SESSION['panier'][$idProduit]);
             }
 
             $this->bdd->commit();

@@ -71,6 +71,62 @@
             unset($_SESSION['panier']);
         }
 
+        public function enlever_commande($venteId)
+        {
+            if (!$venteId) {
+                return;
+            }
+
+            if (session_status() === PHP_SESSION_NONE) {
+                session_start();
+            }
+
+            // Début transaction
+            $this->bdd->beginTransaction();
+
+            // Récupérer les lignes de la commande (uniquement en attente)
+            $stmt = $this->bdd->prepare(
+                "SELECT produit_id, quantite 
+                 FROM ligne_vente 
+                 WHERE vente_id = :vente_id 
+                 AND statut = 'en attente'"
+            );
+            $stmt->execute([':vente_id' => $venteId]);
+            $lignes = $stmt->fetchAll();
+
+            if (empty($lignes)) {
+                $this->bdd->rollBack();
+                return;
+            }
+
+            // Ré-incrémenter le stock
+            foreach ($lignes as $ligne) {
+                $stmt = $this->bdd->prepare(
+                    "UPDATE produit 
+                     SET quantiteActuelle = quantiteActuelle + :quantite
+                     WHERE id = :id"
+                );
+                $stmt->execute([
+                    ':quantite' => $ligne['quantite'],
+                    ':id'       => $ligne['produit_id']
+                ]);
+            }
+
+            // Supprimer les lignes de vente
+            $stmt = $this->bdd->prepare(
+                "DELETE FROM ligne_vente WHERE vente_id = :vente_id"
+            );
+            $stmt->execute([':vente_id' => $venteId]);
+
+            // Supprimer la vente
+            $stmt = $this->bdd->prepare(
+                "DELETE FROM vente WHERE id = :vente_id"
+            );
+            $stmt->execute([':vente_id' => $venteId]);
+
+            $this->bdd->commit();
+        }
+
 
         public function getStatutCommandesClient($idCompte)
         {
