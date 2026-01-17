@@ -55,4 +55,4 @@ switch ($role) {
         include_once 'templates/template_client.php';
         break;
 }
-?>
+

@@ -7,23 +7,23 @@
             $this->bdd = Connexion::getBdd();
         }
 
-        public function enregistrer(Comprend $comprend) {
+        public function enregistrer(Ligne_Achat $ligneAchat) {
             $stmt = $this->bdd->prepare(
-                "INSERT INTO comprend (produit_id, achat_id, quantite, prix_achat_unitaire)
+                "INSERT INTO ligne_achat (produit_id, achat_id, quantite, prix_achat_unitaire)
              VALUES (?, ?, ?, ?)"
             );
 
             $stmt->execute([
-                $comprend->getProduitId(),
-                $comprend->getAchatId(),
-                $comprend->getQuantite(),
-                $comprend->getPrixAchatUnitaire()
+                $ligneAchat->getProduitId(),
+                $ligneAchat->getAchatId(),
+                $ligneAchat->getQuantite(),
+                $ligneAchat->getPrixAchatUnitaire()
             ]);
         }
 
         public function rechercherParAchat($idAchat) {
             $stmt = $this->bdd->prepare(
-                "SELECT * FROM comprend WHERE achat_id = ?"
+                "SELECT * FROM ligne_achat WHERE achat_id = ?"
             );
 
             $stmt->execute([$idAchat]);
@@ -32,7 +32,7 @@
             $result = [];
 
             foreach ($rows as $row) {
-                $result[] = new Comprend(
+                $result[] = new Ligne_Achat(
                     $row["produit_id"],
                     $row["achat_id"],
                     $row["quantite"],
@@ -45,7 +45,7 @@
 
         public function supprimerParAchat($idAchat) {
             $stmt = $this->bdd->prepare(
-                "DELETE FROM comprend WHERE acaht_id = ?"
+                "DELETE FROM ligne_achat WHERE achat_id = ?"
             );
             $stmt->execute([$idAchat]);
         }

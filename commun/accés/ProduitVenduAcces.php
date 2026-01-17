@@ -7,23 +7,23 @@
             $this->bdd = Connexion::getBdd();
         }
 
-        public function enregistrer(Contient $contient) {
+        public function enregistrer(Ligne_Vente $ligneVente) {
             $stmt = $this->bdd->prepare(
-                "INSERT INTO contient (produit_id, vente_id, quantite, prix_unitaire)
+                "INSERT INTO ligne_vente (produit_id, vente_id, quantite, prix_unitaire)
              VALUES (?, ?, ?, ?)"
             );
 
             $stmt->execute([
-                $contient->getProduitId(),
-                $contient->getVenteId(),
-                $contient->getQuantite(),
-                $contient->getPrixUnitaire()
+                $ligneVente->getProduitId(),
+                $ligneVente->getVenteId(),
+                $ligneVente->getQuantite(),
+                $ligneVente->getPrixUnitaire()
             ]);
         }
 
         public function rechercheParVente($idVente) {
             $stmt = $this->bdd->prepare(
-                "SELECT * FROM contient WHERE vente_id = ?"
+                "SELECT * FROM ligne_vente WHERE vente_id = ?"
             );
 
             $stmt->execute([$idVente]);
@@ -31,7 +31,7 @@
             $lignes = [];
 
             foreach ($stmt->fetchAll() as $row) {
-                $lignes[] = new Contient(
+                $lignes[] = new Ligne_Vente(
                     $row["produit_id"],
                     $row["vente_id"],
                     $row["quantite"],
@@ -44,7 +44,7 @@
 
         public function supprimerParVente($idVente) {
             $stmt = $this->bdd->prepare(
-                "DELETE FROM contient WHERE vente_id = ?"
+                "DELETE FROM ligne_vente WHERE vente_id = ?"
             );
             $stmt->execute([$idVente]);
         }
