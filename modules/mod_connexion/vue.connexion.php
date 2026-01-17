@@ -102,4 +102,3 @@ class VueConnexion extends VueGenerique
 //    }
 }
 
-?>

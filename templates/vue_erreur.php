@@ -31,12 +31,12 @@ unset($_SESSION['error']);
     <div class="flex justify-center gap-4">
         <a href="javascript:history.back()"
            class="px-5 py-2 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300 transition">
-            ⬅ Retour
+            Retour
         </a>
 
         <a href="index.php?action=accueil"
            class="px-5 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition">
-            🏠 Accueil
+            Accueil
         </a>
     </div>
 

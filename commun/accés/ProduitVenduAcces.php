@@ -7,45 +7,86 @@
             $this->bdd = Connexion::getBdd();
         }
 
-        public function enregistrer(Contient $contient) {
+        public function valider_commande()
+        {
+            if (session_status() === PHP_SESSION_NONE) {
+                session_start();
+            }
+
+            // Sécurité : utilisateur connecté + panier non vide
+            if (!isset($_SESSION['id']) || empty($_SESSION['panier'])) {
+                return;
+            }
+
+            $montantTotal = 0;
+
+            foreach ($_SESSION['panier'] as $idProduit => $quantite) {
+                $stmt = $this->bdd->prepare(
+                    "SELECT prix FROM produit WHERE id = :id"
+                );
+                $stmt->execute([':id' => $idProduit]);
+                $produit = $stmt->fetch();
+
+                if ($produit) {
+                    $montantTotal += $produit['prix'] * $quantite;
+                }
+            }
+
             $stmt = $this->bdd->prepare(
-                "INSERT INTO contient (produit_id, vente_id, quantite, prix_unitaire)
-             VALUES (?, ?, ?, ?)"
+                "INSERT INTO vente (compte_id, date_vente, montant_total)
+                 VALUES (:compte_id, NOW(), :montant_total)"
             );
 
             $stmt->execute([
-                $contient->getProduitId(),
-                $contient->getVenteId(),
-                $contient->getQuantite(),
-                $contient->getPrixUnitaire()
+                ':compte_id'     => $_SESSION['id'],
+                ':montant_total' => $montantTotal
             ]);
-        }
 
-        public function rechercheParVente($idVente) {
-            $stmt = $this->bdd->prepare(
-                "SELECT * FROM contient WHERE vente_id = ?"
-            );
+            $venteId = $this->bdd->lastInsertId();
 
-            $stmt->execute([$idVente]);
+            foreach ($_SESSION['panier'] as $idProduit => $quantite) {
 
-            $lignes = [];
-
-            foreach ($stmt->fetchAll() as $row) {
-                $lignes[] = new Contient(
-                    $row["produit_id"],
-                    $row["vente_id"],
-                    $row["quantite"],
-                    $row["prix_unitaire"]
+                $stmt = $this->bdd->prepare(
+                    "SELECT prix FROM produit WHERE id = :id"
                 );
+                $stmt->execute([':id' => $idProduit]);
+                $produit = $stmt->fetch();
+
+                if ($produit) {
+                    $stmt = $this->bdd->prepare(
+                        "INSERT INTO ligne_vente
+                         (produit_id, vente_id, quantite, prix_unitaire, statut)
+                         VALUES (:produit_id, :vente_id, :quantite, :prix, 'en attente')"
+                    );
+
+                    $stmt->execute([
+                        ':produit_id' => $idProduit,
+                        ':vente_id'   => $venteId,
+                        ':quantite'   => $quantite,
+                        ':prix'       => $produit['prix']
+                    ]);
+                }
             }
 
-            return $lignes;
+            unset($_SESSION['panier']);
         }
 
-        public function supprimerParVente($idVente) {
+
+        public function getStatutCommandesClient($idCompte)
+        {
             $stmt = $this->bdd->prepare(
-                "DELETE FROM contient WHERE vente_id = ?"
+                "SELECT vente_id,
+                 CASE 
+                    WHEN SUM(statut = 'en attente') > 0 THEN 'en attente'
+                    ELSE 'validée'
+                 END AS statut
+                 FROM ligne_vente
+                 JOIN vente ON vente.id = ligne_vente.vente_id
+                 WHERE vente.compte_id = :id
+                 GROUP BY vente_id"
             );
-            $stmt->execute([$idVente]);
+
+            $stmt->execute([':id' => $idCompte]);
+            return $stmt->fetchAll();
         }
     }

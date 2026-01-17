@@ -1,5 +1,5 @@
 <?php
-    class Concerne {
+    class Ligne_Inventaire {
         private $produit_id;
         private $inventaire_id;
         private $stock_theorique;

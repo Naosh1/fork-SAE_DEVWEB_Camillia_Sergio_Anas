@@ -1,5 +1,5 @@
 <?php
-    class Contient {
+    class Ligne_Vente {
         private $produit_id;
         private $vente_id;
         private $quantite;

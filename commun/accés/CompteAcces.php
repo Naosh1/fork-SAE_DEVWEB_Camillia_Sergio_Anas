@@ -205,4 +205,5 @@ class CompteAcces {
 
         return $stmt->fetchAll();
     }
+
 }

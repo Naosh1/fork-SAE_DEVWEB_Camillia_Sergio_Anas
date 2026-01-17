@@ -1,7 +1,7 @@
 <?php
-include_once 'vue_generique.php';
-include "modules/module_commun/vue_commun.php";
-include "modules/module_staff/vue_staff.php";
+    include_once 'vue_generique.php';
+    include "modules/module_commun/vue_commun.php";
+    include "modules/module_staff/vue_staff.php";
 
 class Vue_barman extends VueStaff
 {

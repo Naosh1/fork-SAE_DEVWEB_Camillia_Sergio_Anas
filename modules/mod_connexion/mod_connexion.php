@@ -4,7 +4,6 @@
 include_once "cont_connexion.php";
 
 class ModConnexion{
-
     private $controller;
 
     function __construct(){
