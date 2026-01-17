@@ -181,7 +181,7 @@ class Vue_client extends VueCommun {
     }
 
     public function form_espace($solde, $historique) {
-        ob_start();
+        $this->afficherNav();
         ?>
         <div class="bfor-card">
             <div class="bfor-top">
@@ -237,6 +237,7 @@ class Vue_client extends VueCommun {
 
     public function form_liste_produits($produits) {
         ob_start();
+        $this->afficherNav();
         ?>
 
         <h2>Produits disponibles</h2>
@@ -263,7 +264,7 @@ class Vue_client extends VueCommun {
                         <td>
                             <form method="post" action="index.php?module=client&action=ajouter_panier">
                                 <input type="hidden" name="idProduit" value="<?= (int)$p['id'] ?>">
-                                <button type="submit"> Ajouter </button>
+                                <input type="submit" value="Ajouter">
                             </form>
                         </td>
                     </tr>
@@ -278,6 +279,7 @@ class Vue_client extends VueCommun {
 
     public function form_panier_utilisateur($panier_details, $total_general) {
         ob_start();
+        $this->afficherNav();
         ?>
         <main>
             <h2> Votre Panier</h2>
@@ -328,131 +330,65 @@ class Vue_client extends VueCommun {
     public function afficherNav() {
         ob_start();
         ?>
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-
-        <style>
-            .cyber-nav {
-                background: rgba(2, 6, 23, 0.9);
-                backdrop-filter: blur(15px);
-                border-bottom: 1px solid rgba(245, 158, 11, 0.2);
-                padding: 1rem 2rem;
-                position: sticky;
-                top: 0;
-                z-index: 9999;
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-            }
-
-            .nav-brand {
-                font-size: 1.5rem;
-                font-weight: 900;
-                text-transform: uppercase;
-                font-style: italic;
-                color: #fff;
-                text-decoration: none;
-                letter-spacing: -1px;
-            }
-
-            .nav-brand span {
-                color: #f59e0b; /* Electric Orange / Amber */
-            }
-
-            .nav-links {
-                display: flex;
-                gap: 1.5rem;
-                align-items: center;
-            }
-
-            .nav-item {
-                color: #94a3b8;
-                text-decoration: none;
-                font-size: 0.75rem;
-                font-weight: 800;
-                text-transform: uppercase;
-                letter-spacing: 0.05em;
-                transition: all 0.3s ease;
-                display: flex;
-                align-items: center;
-                gap: 8px;
-            }
-
-            .nav-item i {
-                font-size: 1rem;
-                color: rgba(245, 158, 11, 0.5);
-                transition: 0.3s;
-            }
-
-            .nav-item:hover {
-                color: #fff;
-            }
-
-            .nav-item:hover i {
-                color: #f59e0b;
-                transform: translateY(-2px);
-            }
-
-            /* Bouton spécial déconnexion ou profil */
-            .nav-btn {
-                background: rgba(245, 158, 11, 0.1);
-                color: #f59e0b;
-                padding: 0.6rem 1.2rem;
-                border-radius: 0.8rem;
-                border: 1px solid rgba(245, 158, 11, 0.3);
-            }
-
-            .nav-btn:hover {
-                background: #f59e0b;
-                color: #000;
-            }
-        </style>
-
-        <div class="cyber-nav">
-            <a href="index.php" class="nav-brand">BUVETTE<span>OS</span></a>
-
-            <div class="nav-links">
-                <?php if (isset($_SESSION['id'])): ?>
-
-                    <?php if ($_SESSION['role'] === 'SuperAdmin'): ?>
-                        <a href="index.php?module=client&action=gestion" class="nav-item">
-                            <i class="fa-solid fa-gauge-high"></i> Gestion
-                        </a>
-                    <?php endif; ?>
-
-                    <?php if ($_SESSION['role'] === 'barman'): ?>
-                        <a href="index.php?module=barman&action=creerTransaction" class="nav-item">
-                            <i class="fa-solid fa-cash-register"></i> Vendre
-                        </a>
-                        <a href="index.php?module=barman&action=commandesEnCours" class="nav-item">
-                            <i class="fa-solid fa-clock-rotate-left"></i> Commandes
-                        </a>
-                    <?php endif; ?>
-
-                    <a href="index.php?module=client&action=espace" class="nav-item">
-                        <i class="fa-solid fa-user-astronaut"></i> Mon Espace
-                    </a>
-                    <a href="index.php?module=client&action=form_rechargement_utilisateur" class="nav-item">
-                        <i class="fa-solid fa-wallet"></i> Recharger
-                    </a>
-
-                    <a href="index.php?module=connexion&action=deconnexion" class="nav-item nav-btn">
-                        <i class="fa-solid fa-power-off"></i> Quitter
-                    </a>
-
-                <?php else: ?>
-                    <a href="index.php?module=client&action=accueil" class="nav-item">
-                        <i class="fa-solid fa-house"></i> Accueil
-                    </a>
-                    <a href="index.php?module=client&action=form_inscription_utilisateur" class="nav-item">
-                        <i class="fa-solid fa-user-plus"></i> S'inscrire
-                    </a>
-                    <a href="index.php?module=client&action=form_connexion_utilisateur" class="nav-item nav-btn">
-                        <i class="fa-solid fa-key"></i> Connexion
-                    </a>
-                <?php endif; ?>
-            </div>
-        </div>
+        <nav>
+            <?php if (isset($_SESSION['id']) && $_SESSION['role'] === 'SuperAdmin'): ?>
+                <a href='index.php?module=client&action=gestion'> Gestion </a>
+                <a href='index.php?module=client&action=espace'> Espace Personnel </a>
+                <a href='index.php?module=client&action=form_rechargement_utilisateur'> Rechargement </a>
+                <a href='index.php?module=client&action=form_plus_utilisateur'> Plus </a>
+            <?php elseif (isset($_SESSION['id'])): ?>
+                <a href='index.php?module=client&action=espace'> Espace Personnel </a>
+                <a href='index.php?module=client&action=form_rechargement_utilisateur'> Rechargement </a>
+                <a href='index.php?module=client&action=form_produits_utilisateur'> Produits </a>
+                <a href='index.php?module=client&action=form_plus_utilisateur'> Plus </a>
+                <a class="panier" href='index.php?module=client&action=form_panier_utilisateur'> Panier </a>
+                <a class="panier" href='index.php?module=client&action=form_commande_statut_panier_utilisateur'> Suivi Panier </a>
+            <?php else: ?>
+                <a href='index.php?module=client&action=accueil'> Accueil </a>
+                <a href='index.php?module=client&action=form_inscription_utilisateur'> S'inscrire </a>
+                <a href='index.php?module=client&action=form_connexion_utilisateur'> Connexion </a>
+            <?php endif; ?>
+        </nav>
         <?php
         return ob_get_clean();
     }
+
+    public function form_commande_statut_panier($commandes)
+    {
+        ob_start();
+        ?>
+
+        <h2>Statut de mes commandes</h2>
+
+        <?php if (empty($commandes)): ?>
+        <p>Aucune commande pour le moment.</p>
+        <?php else: ?>
+        <table class="table-commandes">
+            <thead>
+            <tr>
+                <th>Commande n°</th>
+                <th>Statut</th>
+            </tr>
+            </thead>
+            <tbody>
+            <?php foreach ($commandes as $commande): ?>
+                <tr>
+                    <td>#<?= (int)$commande['vente_id'] ?></td>
+                    <td>
+                        <?php if ($commande['statut'] === 'validée'): ?>
+                            <span class="statut validee">Validée</span>
+                        <?php else: ?>
+                            <span class="statut attente">En attente</span>
+                        <?php endif; ?>
+                    </td>
+                </tr>
+            <?php endforeach; ?>
+            </tbody>
+        </table>
+    <?php endif; ?>
+
+        <?php
+        return ob_get_clean();
+    }
+
 }
