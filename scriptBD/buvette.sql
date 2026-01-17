@@ -59,6 +59,7 @@ CREATE TABLE `compte` (
   `id` bigint(20) UNSIGNED NOT NULL,
   `nom` varchar(50) NOT NULL,
   `prenom` varchar(50) NOT NULL,
+  `date_naissance` varchar(50) NOT NULL,
   `email` varchar(50) NOT NULL,
   `mdp` varchar(100) NOT NULL,
   `solde` decimal(10,0) NOT NULL,
