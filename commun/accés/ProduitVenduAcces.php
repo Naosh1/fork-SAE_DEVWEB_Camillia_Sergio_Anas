@@ -13,17 +13,33 @@
                 session_start();
             }
 
-            // Sécurité : utilisateur connecté
+            // Sécurité : utilisateur connecté + panier non vide
             if (!isset($_SESSION['id']) || empty($_SESSION['panier'])) {
                 return;
             }
 
+            $montantTotal = 0;
+
+            foreach ($_SESSION['panier'] as $idProduit => $quantite) {
+                $stmt = $this->bdd->prepare(
+                    "SELECT prix FROM produit WHERE id = :id"
+                );
+                $stmt->execute([':id' => $idProduit]);
+                $produit = $stmt->fetch();
+
+                if ($produit) {
+                    $montantTotal += $produit['prix'] * $quantite;
+                }
+            }
+
             $stmt = $this->bdd->prepare(
-                "INSERT INTO vente (compte_id, date_vente)
-                 VALUES (:compte_id, NOW())"
+                "INSERT INTO vente (compte_id, date_vente, montant_total)
+                 VALUES (:compte_id, NOW(), :montant_total)"
             );
+
             $stmt->execute([
-                ':compte_id' => $_SESSION['id']
+                ':compte_id'     => $_SESSION['id'],
+                ':montant_total' => $montantTotal
             ]);
 
             $venteId = $this->bdd->lastInsertId();
@@ -55,18 +71,19 @@
             unset($_SESSION['panier']);
         }
 
+
         public function getStatutCommandesClient($idCompte)
         {
             $stmt = $this->bdd->prepare(
                 "SELECT vente_id,
-                CASE 
+                 CASE 
                     WHEN SUM(statut = 'en attente') > 0 THEN 'en attente'
                     ELSE 'validée'
-                END AS statut
-         FROM ligne_vente
-         JOIN vente ON vente.id = ligne_vente.vente_id
-         WHERE vente.compte_id = :id
-         GROUP BY vente_id"
+                 END AS statut
+                 FROM ligne_vente
+                 JOIN vente ON vente.id = ligne_vente.vente_id
+                 WHERE vente.compte_id = :id
+                 GROUP BY vente_id"
             );
 
             $stmt->execute([':id' => $idCompte]);
