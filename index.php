@@ -34,11 +34,11 @@
 
     $login = $_SESSION['login'];
 
-    $mod = isset($_GET['role']) ? $_GET['role'] : "client";
+    $mod = isset($_POST['role']) ? $_POST['role'] : "client";
 
     switch ($mod) {
-//        case 'gestionnaire':
-        case 'admin':
+//        case 'admin':
+        case 'gestionnaire':
             include_once 'modules/module_gestionnaire/Mod_gestionnaire.php';
             new Mod_gestionnaire();
             include_once 'templates/template_gestionnaire.php';
