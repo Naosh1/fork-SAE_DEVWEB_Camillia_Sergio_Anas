@@ -348,7 +348,7 @@ class Vue_client extends VueCommun {
                 <a href='index.php?module=client&action=form_produits_utilisateur'> Produits </a>
                 <a href='index.php?module=client&action=form_plus_utilisateur'> Plus </a>
                 <a class="panier" href='index.php?module=client&action=form_panier_utilisateur'> Panier </a>
-                <a class="panier" href='index.php?module=client&action=form_commande_statut_panier_utilisateur'> Suivi Panier </a>
+                <a class="panier" href='index.php?module=client&action=form_commande_statut_panier_utilisateur'> Suivi Commandes </a>
             <?php else: ?>
                 <a href='index.php?module=client&action=accueil'> Accueil </a>
                 <a href='index.php?module=client&action=form_inscription_utilisateur'> S'inscrire </a>

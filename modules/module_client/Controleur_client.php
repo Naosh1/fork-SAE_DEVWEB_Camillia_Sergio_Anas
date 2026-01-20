@@ -74,7 +74,7 @@
                 //    VueGenerique::setAffichage($contenu);
                 //    break;
                 case "form_deconnexionReussie_utilisateur" :
-                    $contenu = $this->controleur->getVue()->form_deconnexionReussie();
+                    $contenu = $this->getVue()->form_deconnexionReussie();
                     VueGenerique::setAffichage($contenu);
                     break;
                 case "form_rechargement_utilisateur" :
