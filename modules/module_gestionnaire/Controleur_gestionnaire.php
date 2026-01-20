@@ -92,6 +92,10 @@ class ControleurGestionnaire
                 $this->activerDesactiverBarman();
                 break;
 
+            case 'retrograderBarman':
+                $this->retrograderBarman();
+                break;
+
             case 'supprimerBarman':
                 $this->supprimerBarman();
                 break;
@@ -124,11 +128,17 @@ class ControleurGestionnaire
             case 'fournisseurs':
                 $this->afficherFournisseurs();
                 break;
+
             case 'contacterFournisseur':
                 $this->afficherInfoDuFournisseur();
                 break;
+
             case 'voirFournisseur':
                 $this->commanderFournisseur();
+                break;
+
+            case 'detailsCommande':
+                $this->afficherDetailsCommande();
                 break;
 
             case 'validerLiaisonFournisseur':
@@ -142,18 +152,17 @@ class ControleurGestionnaire
             case 'validerReappro':
                 $this->validerCommandeFournisseur();
                 break;
+
             case 'distribuer':
                 $this->afficherDistribution();
                 break;
+
             case 'validerDistribution':
                 $this->validerDistribution();
                 break;
+
             case 'mesCommandes':
                 $this->afficherMesCommandes();
-                break;
-
-            case 'detailCommande':
-                $this->afficherDetailCommande();
                 break;
 
             case 'annulerCommande':
@@ -523,19 +532,15 @@ class ControleurGestionnaire
         }
     }
 
-    private function activerDesactiverBarman()
-    {
-        if (isset($_GET['id'])) {
-            $estActif = $this->modele->estBarmanActif($_GET['id']);
-            $success = $this->modele->activerDesactiverBarman($_GET['id'], !$estActif);
+    private function activerDesactiverBarman() {
+        $id_barman = $_GET['id'] ?? null;
 
-            if ($success) {
-                $_SESSION['success'] = "Barman " . (!$estActif ? "activé" : "désactivé") . " avec succès";
-            } else {
-                $_SESSION['error'] = "Erreur lors de la modification du statut";
+        if ($id_barman) {
+            if ($this->modele->toggleStatutCompte($id_barman)) {
+                // On redirige vers le profil pour voir le changement
+                header("Location: index.php?action=voirProfilBarman&id=" . $id_barman);
+                exit();
             }
-            header('Location: index.php?action=barmans');
-            exit();
         }
     }
 
@@ -569,24 +574,6 @@ class ControleurGestionnaire
             $_SESSION['error'] = "Aucun ID spécifié pour la consultation.";
             header('Location: index.php?action=barmans');
             exit();
-        }
-    }
-
-    public function getBarmansParAssociation($id_gestionnaire)
-    {
-        try {
-            $sql = "SELECT c.*, asso.nom AS nom_association 
-                FROM compte c
-                JOIN appartient a ON c.id = a.compte_id
-                JOIN association asso ON a.association_id = asso.id
-                JOIN gestionne g ON asso.id = g.association_id
-                WHERE g.compte_id = ? AND a.role = 'barman'";
-
-            $stmt = self::getBdd()->prepare($sql);
-            $stmt->execute([$id_gestionnaire]);
-            return $stmt->fetchAll(PDO::FETCH_ASSOC);
-        } catch (PDOException $e) {
-            return [];
         }
     }
 
@@ -679,6 +666,14 @@ class ControleurGestionnaire
         $this->vue->afficherFormulaireAjoutClient($associations, $clients, $erreur);
     }
 
+    private function retrograderBarman() {
+        $id = $_GET['id'] ?? null;
+        if ($id) {
+            $this->modele->retrograderBarmanEnClient($id);
+        }
+        header("Location: index.php?action=barmans");
+        exit();
+    }
     private function afficherClientsAssociation()
     {
         $idAsso = $_GET['id'] ?? $_SESSION['id_association'] ?? null;
@@ -693,6 +688,7 @@ class ControleurGestionnaire
             exit;
         }
     }
+
     private function afficherInfoDuFournisseur()
     {
         $idFournisseur = isset($_GET['id']) ? intval($_GET['id']) : null;
@@ -705,6 +701,7 @@ class ControleurGestionnaire
 
         $this->vue->afficherProfilFournisseur($fournisseur);
     }
+
     private function afficherFournisseurs()
     {
         $fournisseurs = $this->modele->getTousLesFournisseurs();
@@ -714,19 +711,6 @@ class ControleurGestionnaire
         $associations = $this->modele->getAssociationsGerees($idGest);
 
         $this->vue->afficherFournisseurs($fournisseurs, $associations);
-    }
-
-    private function afficherProduitsDuFournisseur()
-    {
-        $id = $_GET['id'];
-        $tri = $_GET['tri'] ?? 'nom';
-        $search = $_GET['search'] ?? '';
-        $type = $_GET['type'] ?? '';
-
-        $fournisseur = $this->modele->getFournisseurParId($id);
-        $produits = $this->modele->getProduitsFournisseur($id, $tri, $search, $type);
-
-        $this->vue->afficherDetailsFournisseur($fournisseur, $produits);
     }
 
     private function rechercherPrixProduit()
@@ -796,12 +780,17 @@ class ControleurGestionnaire
 
         $associations = $this->modele->getAssociationsParGestionnaire($idGest);
         $reserve = $this->modele->getStockReserveGlobal();
-
         $commandesFournisseurs = $this->modele->getCommandesFournisseursRecentes($idGest);
-
         $historiqueAchats = $this->modele->getHistoriqueAchatsComplet($idGest);
+        $historiqueInventaires = $this->modele->getHistoriqueInventairesComplet($idGest);
 
-        $this->vue->afficherAffectationStock($associations, $reserve, $commandesFournisseurs, $historiqueAchats);
+        $this->vue->afficherAffectationStock(
+            $associations,
+            $reserve,
+            $commandesFournisseurs,
+            $historiqueAchats,
+            $historiqueInventaires
+        );
     }
 
 
@@ -863,6 +852,7 @@ class ControleurGestionnaire
         }
     }
 
+
     public function commanderFournisseur()
     {
         $id = $_GET['id'] ?? null;
@@ -878,26 +868,23 @@ class ControleurGestionnaire
         }
     }
 
-    private function afficherDetailCommande()
+    public function afficherDetailsCommande()
     {
-        if (!isset($_GET['id'])) {
-            $_SESSION['error'] = "Commande non spécifiée.";
-            header('Location: index.php?action=mesCommandes');
+
+        $idCommande = $_GET['id'] ?? null;
+
+        if (!$idCommande) {
+            $_SESSION['error'] = "ID de commande manquant.";
+            header('Location: index.php?module=gestionnaire&action=fournisseurs');
             exit();
         }
-
-        $idCommande = $_GET['id'];
-        $commande = $this->modele->getDetailCommande($idCommande);
+        $commande = $this->modeleStaff->getDetailsCommande($idCommande);
+        $produitsCommande = $this->modeleStaff->getProduitsCommande($idCommande);
 
         if (!$commande) {
-            $_SESSION['error'] = "Commande introuvable.";
-            header('Location: index.php?action=mesCommandes');
-            exit();
+            die("Erreur : La commande n°$idCommande n'a pas été trouvée dans la base de données.");
         }
-
-        $produitsCommande = $this->modele->getProduitsCommande($idCommande);
-
-        $this->vue->afficherDetailCommande($commande, $produitsCommande);
+        $this->vue->afficherDetailsCommande($commande, $produitsCommande);
     }
 
 
@@ -971,11 +958,18 @@ class ControleurGestionnaire
 
     private function afficherFormulaireInventaire()
     {
-        $id_assos = $_GET['id'] ?? $_SESSION['id_assos'];
+        // On récupère l'ID passé dans le lien (ex: &id=1)
+        $id_assos = $_GET['id'] ?? null;
+
+        if (!$id_assos) {
+            $_SESSION['error'] = "Aucune association sélectionnée pour l'inventaire.";
+            header("Location: index.php?action=distribuer");
+            exit();
+        }
+
         $produits = $this->modele->getProduitsParAssociation($id_assos);
         $this->vue->formulaireInventaire($produits, $id_assos);
     }
-
     private function enregistrerInventaire()
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {

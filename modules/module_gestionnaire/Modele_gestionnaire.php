@@ -359,6 +359,27 @@ class ModeleGestionnaire extends ModeleStaff
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    public function getHistoriqueInventairesComplet($idGest)
+    {
+        try {
+            $sql = "SELECT c.stock_theorique as quantite_theorique, 
+                       c.stock_reel as quantite_trouvee, 
+                       i.date_inventaire as date, 
+                       p.nom as produit 
+                FROM concerne c
+                JOIN inventaire i ON c.inventaire_id = i.id 
+                JOIN produit p ON c.produit_id = p.id 
+                JOIN association a ON i.association_id = a.id
+                WHERE a.id IN (SELECT association_id FROM gestionne WHERE compte_id = ?)
+                ORDER BY i.date_inventaire DESC 
+                LIMIT 30";
+            $req = self::getBdd()->prepare($sql);
+            $req->execute([$idGest]);
+            return $req->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            return [];
+        }
+    }
     public function distribuerStock($idAsso, $idProduit, $qte)
     {
         try {
@@ -400,7 +421,7 @@ class ModeleGestionnaire extends ModeleStaff
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function getDetailCommande($idCommande)
+    public function getDetailsCommande($idCommande)
     {
         try {
             $sql = "SELECT c.*, f.nom as nom_fournisseur, f.email as email_fournisseur,
@@ -418,7 +439,40 @@ JOIN compte g ON c.id_gestionnaire = g.id                WHERE c.id = :id_comman
             return false;
         }
     }
+    public function toggleStatutCompte($id_compte) {
+        try {
+            $stmt = self::getBdd()->prepare("SELECT actif FROM compte WHERE id = ?");
+            $stmt->execute([$id_compte]);
+            $etatActuel = $stmt->fetchColumn();
 
+            $nouvelEtat = ($etatActuel == 1) ? 0 : 1;
+
+            $update = self::getBdd()->prepare("UPDATE compte SET actif = ? WHERE id = ?");
+            return $update->execute([$nouvelEtat, $id_compte]);
+        } catch (PDOException $e) {
+            error_log("Erreur toggleStatutCompte: " . $e->getMessage());
+            return false;
+        }
+    }
+    public function retrograderBarmanEnClient($id_compte) {
+        try {
+            $bdd = self::getBdd();
+            $bdd->beginTransaction();
+
+            $req1 = $bdd->prepare("UPDATE compte SET role = 'client' WHERE id = ?");
+            $req1->execute([$id_compte]);
+
+            $req2 = $bdd->prepare("DELETE FROM appartient WHERE compte_id = ? AND role = 'barman'");
+            $req2->execute([$id_compte]);
+
+            $bdd->commit();
+            return true;
+        } catch (PDOException $e) {
+            if ($bdd->inTransaction()) $bdd->rollBack();
+            error_log("Erreur retrograderBarmanEnClient: " . $e->getMessage());
+            return false;
+        }
+    }
     public function getPrixAchatFournisseur($idFournisseur, $idProduit)
     {
         $sql = "SELECT prix_achat FROM fournisseur_produit 
@@ -785,15 +839,15 @@ JOIN compte g ON c.id_gestionnaire = g.id                WHERE c.id = :id_comman
 
     public function getListeBarmans($id_gestionnaire)
     {
-
-        $sql = "SELECT id, nom, prenom, role 
-            FROM compte 
-            WHERE (role = 'barman' OR role = 'gestionnaire')
-            AND id != ?
-            ORDER BY role DESC, nom ASC";
+        $sql = "SELECT c.id, c.nom, c.prenom, c.email, c.actif, a.nom as nom_association 
+            FROM compte c 
+            JOIN appartient ap ON c.id = ap.compte_id
+            JOIN association a ON ap.association_id = a.id
+            WHERE ap.role = 'barman' 
+            ORDER BY c.nom ASC";
 
         $req = self::getBdd()->prepare($sql);
-        $req->execute([$id_gestionnaire]);
+        $req->execute();
         return $req->fetchAll(PDO::FETCH_ASSOC);
     }
 }
