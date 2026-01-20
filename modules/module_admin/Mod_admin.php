@@ -1,8 +1,4 @@
 <?php
+    class Mod_admin {
 
-namespace modules\module_admin;
-
-class Mod_admin
-{
-
-}
+    }

@@ -11,19 +11,13 @@ class Vue_Menu {
         ?>
 
         <nav>
-            <?php if (isset($_SESSION['id']) && $_SESSION['role'] === 'SuperAdmin'): ?>
-                <a href='index.php?module=client&action=gestion'> Gestion </a>
+            <?php if (isset($_SESSION['id'])): ?>
                 <a href='index.php?module=client&action=espace'> Espace Personnel </a>
                 <a href='index.php?module=client&action=form_rechargement_utilisateur'> Rechargement </a>
+                <a href='index.php?module=client&action=form_produits_utilisateur'> Produits </a>
                 <a href='index.php?module=client&action=form_plus_utilisateur'> Plus </a>
-            <?php elseif (isset($_SESSION['id'])): ?>
-                <a href='index.php?module=client&action=espace'> Espace Personnel </a>
-                <a href='index.php?module=client&action=form_rechargement_utilisateur'> Rechargement </a>
-                <a href='index.php?module=client&action=form_plus_utilisateur'> Plus </a>
-            <?php else: ?>
-                <a href='index.php?module=client&action=accueil'> Accueil </a>
-                <a href='index.php?module=client&action=form_inscription_utilisateur'> S'inscrire </a>
-                <a href='index.php?module=client&action=form_connexion_utilisateur'> Connexion </a>
+                <a href='index.php?module=client&action=form_panier_utilisateur' class="panier"> Panier </a>
+                <a href='index.php?module=client&action=form_commande_statut_panier_utilisateur' class="panier"> Suivi Commandes </a>
             <?php endif; ?>
         </nav>
 

@@ -31,32 +31,6 @@
                     $contenu = $this->getVue()->form_espace($this->soldeEspace(), $this->historiqueRechargements());
                     VueGenerique::setAffichage($contenu);
                     break;
-                case "form_inscription_utilisateur" :
-                    if (isset($_SESSION) && count($_SESSION) == 0) {
-                        $contenu = $this->getVue()->form_inscription();
-                        VueGenerique::setAffichage($contenu);
-                    } else {
-                        $contenu = $this->getVue()->form_dejaConnecte();
-                        VueGenerique::setAffichage($contenu);
-                    }
-                    break;
-                case "form_connexion_utilisateur" :
-                    if (isset($_SESSION) && count($_SESSION) == 0) {
-                        $contenu = $this->getVue()->form_connexion();
-                        VueGenerique::setAffichage($contenu);
-                    } else {
-                        $contenu = $this->getVue()->form_dejaConnecte();
-                        VueGenerique::setAffichage($contenu);
-                    }
-                    break;
-                case "form_compteBonLogin_utilisateur" :
-                    $contenu = $this->getVue()->form_compteBon();
-                    VueGenerique::setAffichage($contenu);
-                    break;
-                case "form_connexionReussie_utilisateur" :
-                    $contenu = $this->getVue()->form_connexionReussie();
-                    VueGenerique::setAffichage($contenu);
-                    break;
                 case "form_modification_utilisateur" :
                     $contenu = $this->getVue()->form_modification();
                     VueGenerique::setAffichage($contenu);
@@ -69,31 +43,17 @@
                     $contenu = $this->getVue()->form_rechargementReussi();
                     VueGenerique::setAffichage($contenu);
                     break;
-                //case "form_deconnexion_utilisateur" :
-                //    $contenu = $this->controleur->getVue()->form_deconnexion();
-                //    VueGenerique::setAffichage($contenu);
-                //    break;
                 case "form_deconnexionReussie_utilisateur" :
                     $contenu = $this->getVue()->form_deconnexionReussie();
                     VueGenerique::setAffichage($contenu);
                     break;
                 case "form_rechargement_utilisateur" :
-                    if (isset($_SESSION) && count($_SESSION) == 0) {
-                        $contenu = $this->getVue()->form_demandeConnexion();
-                        VueGenerique::setAffichage($contenu);
-                    } else {
-                        $contenu = $this->getVue()->form_rechargement();
-                        VueGenerique::setAffichage($contenu);
-                    }
+                    $contenu = $this->getVue()->form_rechargement();
+                    VueGenerique::setAffichage($contenu);
                     break;
                 case "form_plus_utilisateur" :
-                    if (isset($_SESSION) && count($_SESSION) == 0) {
-                        $contenu = $this->getVue()->form_demandeConnexion();
-                        VueGenerique::setAffichage($contenu);
-                    } else {
-                        $contenu = $this->getVue()->form_plus();
-                        VueGenerique::setAffichage($contenu);
-                    }
+                    $contenu = $this->getVue()->form_plus();
+                    VueGenerique::setAffichage($contenu);
                     break;
                 case "form_produits_utilisateur" :
                     $contenu = $this->getVue()->form_liste_produits($this->lesProduits());
@@ -110,12 +70,6 @@
                 case "form_commande_statut_panier_utilisateur" :
                     $contenu = $this->getVue()->form_commande_statut_panier($this->modeleProduitVenduAcces->getStatutCommandesClient($_SESSION['id']));
                     VueGenerique::setAffichage($contenu);
-                    break;
-                case "ajout_utilisateur" :
-                    $this->ajout();
-                    break;
-                case "verif_connexion" :
-                    $this->connexion();
                     break;
                 case "verif_modification" :
                     $this->modification();
@@ -137,34 +91,6 @@
                     break;
                 case "deconnexion" :
                     $this->deconnexion();
-                    break;
-                case "erreur" :
-                    switch ($this) {
-                        case "loginPasBon_utilisateur" :
-                            $contenu = $this->getVue()->form_comptePasBonLogin();
-                            VueGenerique::setAffichage($contenu);
-                            break;
-                        case "mdpPasBon_utilisateur" :
-                            $contenu = $this->getVue()->form_mdpPasBon();
-                            VueGenerique::setAffichage($contenu);
-                            break;
-                        case "connexionPasBon_utilisateur" :
-                            $contenu = $this->getVue()->form_connexionPasBon();
-                            VueGenerique::setAffichage($contenu);
-                            break;
-                        case "personneEstConnectee_utilisateur" :
-                            $contenu = $this->getVue()->form_personneEstConnectee();
-                            VueGenerique::setAffichage($contenu);
-                            break;
-                        case "emailDejaUtilise_utilisateur" :
-                            $contenu = $this->getVue()->form_emailDejaUtilise();
-                            VueGenerique::setAffichage($contenu);
-                            break;
-                        //case "montantInvalide_utilisateur" :
-                        //    $contenu = $this->controleur->getVue()->form_montantInvalide();
-                        //    VueGenerique::setAffichage($contenu);
-                        //    break;
-                    }
                     break;
             }
         }

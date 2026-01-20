@@ -1,8 +1,4 @@
 <?php
+    class Controleur_admin {
 
-namespace modules\module_admin;
-
-class Controleur_admin
-{
-
-}
+    }

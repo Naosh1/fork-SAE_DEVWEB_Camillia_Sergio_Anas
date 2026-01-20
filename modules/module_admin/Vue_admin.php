@@ -1,8 +1,5 @@
 <?php
+    class Vue_admin {
 
-namespace modules\module_admin;
 
-class Vue_admin
-{
-
-}
+    }
