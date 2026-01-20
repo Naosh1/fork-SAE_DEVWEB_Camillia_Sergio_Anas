@@ -34,7 +34,9 @@ class Controleur_barman
             case 'rechercherClientAjax':
                 $this->rechercherClientAjax();
                 break;
-
+            case 'ajouterBarman':
+                $this->gererAjoutBarman();
+                break;
             case 'rechercherProduitAjax':
                 $this->rechercherProduitAjax();
                 break;
@@ -205,6 +207,32 @@ class Controleur_barman
         header('Content-Type: application/json');
         echo json_encode($produits);
         exit;
+    }
+
+    public function gererAjoutBarman() {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            if (!isset($_SESSION['asso_choisi'])) {
+                header("Location: index.php?reset=1");
+                exit();
+            }
+
+            $idAsso = $_SESSION['asso_choisi'];
+            $nom = $_POST['nom'] ?? '';
+            $prenom = $_POST['prenom'] ?? '';
+            $email = $_POST['email'] ?? '';
+            $mdp = $_POST['mdp'] ?? '123456';
+
+            $succes = $this->modeleStaff->ajouterBarmanALAssociation($nom, $prenom, $email, $mdp, $idAsso);
+
+            if ($succes) {
+                $_SESSION['success'] = "Le barman a été ajouté avec succès à votre association.";
+            } else {
+                $_SESSION['error'] = "Erreur lors de l'ajout du barman.";
+            }
+
+            header("Location: index.php?module=gestionnaire&action=voirBarmans");
+            exit();
+        }
     }
     private function traiterTransaction()
     {

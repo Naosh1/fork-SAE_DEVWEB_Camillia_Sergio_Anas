@@ -119,20 +119,6 @@ class ModeleGestionnaire extends ModeleStaff
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function getBarmansDeMonAssociation($id_gestionnaire)
-    {
-        $sql = "SELECT c.*, assos.nom AS nom_association 
-            FROM compte c
-            JOIN appartient a ON c.id = a.compte_id
-            JOIN association assos ON a.association_id = assos.id
-            JOIN gestionne g ON a.association_id = g.association_id
-            WHERE g.compte_id = ? AND a.role = 'barman'";
-
-        $stmt = self::getBdd()->prepare($sql);
-        $stmt->execute([$id_gestionnaire]);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
-
     public function rechercherProduitGlobal($nomProduit)
     {
         $sql = "SELECT p.nom as produit_nom, f.nom as fournisseur_nom, f.id as id_f,
@@ -529,7 +515,40 @@ JOIN compte g ON c.id_gestionnaire = g.id                WHERE c.id = :id_comman
             return [];
         }
     }
+    public function ajouterBarmanALAssociation($nom, $prenom, $email, $mdp, $idAsso) {
+        try {
+            $this->getBdd()->beginTransaction();
 
+            $stmt = $this->getBdd()->prepare("SELECT id FROM compte WHERE email = ?");
+            $stmt->execute([$email]);
+            $user = $stmt->fetch();
+
+            if (!$user) {
+                $hash = password_hash($mdp, PASSWORD_DEFAULT);
+                $stmt = $this->getBdd()->prepare("INSERT INTO compte (nom, prenom, email, mdp, role, actif) VALUES (?, ?, ?, ?, 'barman', 1)");
+                $stmt->execute([$nom, $prenom, $email, $hash]);
+                $userId = $this->getBdd()->lastInsertId();
+            } else {
+                $userId = $user['id'];
+                $stmt = $this->getBdd()->prepare("UPDATE compte SET role = 'barman' WHERE id = ?");
+                $stmt->execute([$userId]);
+            }
+
+            $stmt = $this->getBdd()->prepare("
+            INSERT INTO appartient (compte_id, association_id, role) 
+            VALUES (?, ?, 'barman') 
+            ON DUPLICATE KEY UPDATE role = 'barman'
+        ");
+            $stmt->execute([$userId, $idAsso]);
+
+            $this->getBdd()->commit();
+            return true;
+        } catch (Exception $e) {
+            if ($this->getBdd()->inTransaction()) $this->getBdd()->rollBack();
+            error_log("Erreur ajout barman : " . $e->getMessage());
+            return false;
+        }
+    }
     public function ajouterClient($id_client, $id_assos)
     {
         try {
@@ -694,6 +713,26 @@ JOIN compte g ON c.id_gestionnaire = g.id                WHERE c.id = :id_comman
         } catch (PDOException $e) {
             error_log('Erreur getAssociationsParGestionnaire : ' . $e->getMessage());
             return false;
+        }
+    }
+    public function getBarmansParAssociation($id_association)
+    {
+        try {
+            $sql = "SELECT c.id, c.nom, c.prenom, c.email, c.tel, c.photo, c.actif, a.role, asso.nom AS nom_association
+            FROM compte c
+            JOIN appartient a ON c.id = a.compte_id
+            JOIN association asso ON a.association_id = asso.id
+            WHERE a.association_id = :id_asso 
+            AND a.role = 'barman'";
+
+            $stmt = self::getBdd()->prepare($sql);
+            $stmt->execute([':id_asso' => $id_association]);
+
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        } catch (PDOException $e) {
+            error_log('Erreur getBarmansParAssociation : ' . $e->getMessage());
+            return [];
         }
     }
 

@@ -3,26 +3,6 @@
 class ModeleCommun extends Connexion
 {
 
-    public function getBarmansParAssociation($id_association)
-    {
-        try {
-            $sql = "SELECT c.id, c.nom, c.prenom, c.email, c.tel, c.photo, a.role, asso.nom AS nom_association
-                FROM compte c
-                JOIN appartient a ON c.id = a.compte_id
-                JOIN association asso ON a.association_id = asso.id
-                WHERE a.association_id = :id_asso 
-                AND a.role = 'barman'";
-
-            $stmt = self::getBdd()->prepare($sql);
-            $stmt->execute([':id_asso' => $id_association]);
-
-            return $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        } catch (PDOException $e) {
-            error_log('Erreur getBarmansParAssociation : ' . $e->getMessage());
-            return [];
-        }
-    }
 
 
     public function getUtilisateur($id)
