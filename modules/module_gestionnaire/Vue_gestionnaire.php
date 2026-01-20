@@ -595,11 +595,11 @@ class VueGestionnaire extends VueStaff
 
             <p class="text-[9px] font-black text-slate-600 uppercase tracking-[0.3em] px-4 mt-8 mb-3">Gestion Globale</p>
 
-            <a href="index.php?action=associations" class="flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all duration-300 ' . ($actionActuelle == 'associations' ? $activeClass : $inactiveClass) . '">
-                <i class="fa-solid fa-sitemap text-lg"></i>
-                <span class="font-bold text-sm tracking-tight">Associations</span>
-            </a>
-
+           
+           <a href="index.php?reset=1" class="flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all duration-300 ' . $inactiveClass . '">
+    <i class="fa-solid fa-right-left text-lg"></i>
+    <span class="font-bold text-sm tracking-tight">Changer Association</span>
+</a>
             <a href="index.php?action=barmans" class="flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all duration-300 ' . ($actionActuelle == 'barmans' ? $activeClass : $inactiveClass) . '">
                 <i class="fa-solid fa-user-group text-lg"></i>
                 <span class="font-bold text-sm tracking-tight">Équipe Barmans</span>

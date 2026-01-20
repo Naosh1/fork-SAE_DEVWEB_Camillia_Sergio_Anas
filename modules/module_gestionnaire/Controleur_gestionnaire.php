@@ -205,50 +205,41 @@ class ControleurGestionnaire
 
     private function afficherTableauDeBord()
     {
-        $idGest = $_SESSION['id'];
-
-        $assoUnique = $this->modele->getAssociationsParGestionnaire($idGest);
-        $associations = ($assoUnique) ? [$assoUnique] : [];
-
-        $alertes = $this->modele->getStockCritique($idGest);
-        $topProduits = $this->modele->getTopProduits($idGest);
-        $totalPertesGlobal = $this->modele->getTotalPertes($idGest);
-
-        $totalRecettesGlobal = 0;
-        $beneficeTotalNet = 0;
-        $tousLesBarmans = [];
-
-        foreach ($associations as $asso) {
-            $barmansAsso = $this->modele->getBarmansDeMonAssociation($idGest);
-
-            foreach ($barmansAsso as $b) {
-                $tousLesBarmans[$b['id']] = $b;
-            }
-
-            $statsAsso = $this->modele->getBenefices($asso['id']);
-            $totalRecettesGlobal += $statsAsso['recettes'];
-            $beneficeTotalNet += $statsAsso['benefice_net'];
+        if (!isset($_SESSION['asso_choisi'])) {
+            header("Location: index.php?reset=1");
+            exit();
         }
 
-        $statsQuotidiennes = $this->modele->getStatsEvolutionSeptJours($idGest);
+        $idAsso = $_SESSION['asso_choisi'];
+        $prenom = $_SESSION['prenom'];
 
+        $assoInfo = $this->modele->getAssociationParId($idAsso);
+        $nomAsso = $assoInfo['nom'] ?? 'Association';
+        $_SESSION['asso_nom'] = $nomAsso;
+
+        $alertes = $this->modele->getStockCritiqueParAsso($idAsso);
+        $topProduits = $this->modele->getTopProduitsParAsso($idAsso);
+        $totalPertes = $this->modele->getTotalPertesParAsso($idAsso);
+        $statsFinancieres = $this->modele->getBenefices($idAsso);
+        $barmansAsso = $this->modele->getBarmansParAssociation($idAsso);
+        $statsQuotidiennes = $this->modele->getStatsEvolutionSeptJoursParAsso($idAsso);
         $data = [
-            'associations' => $associations,
-            'alertes' => $alertes,
-            'topProduits' => $topProduits,
-            'totalPertes' => $totalPertesGlobal,
-            'totalRecettes' => $totalRecettesGlobal,
-            'beneficeNet' => $beneficeTotalNet,
-            'nbBarmans' => count($tousLesBarmans),
-            'courbes' => [
-                'labels' => $statsQuotidiennes['dates'] ?? [],
+            'nom_asso'      => $nomAsso,
+            'alertes'       => $alertes,
+            'topProduits'   => $topProduits,
+            'totalPertes'   => $totalPertes,
+            'totalRecettes' => $statsFinancieres['recettes'] ?? 0,
+            'beneficeNet'   => $statsFinancieres['benefice_net'] ?? 0,
+            'nbBarmans'     => count($barmansAsso),
+            'courbes'       => [
+                'labels'     => $statsQuotidiennes['dates'] ?? [],
                 'tresorerie' => $statsQuotidiennes['recettes'] ?? [],
-                'pertes' => $statsQuotidiennes['pertes'] ?? [],
-                'benefices' => $statsQuotidiennes['benefices'] ?? []
+                'pertes'     => $statsQuotidiennes['pertes'] ?? [],
+                'benefices'  => $statsQuotidiennes['benefices'] ?? []
             ]
         ];
 
-        $this->vue->afficherTableauDeBordAccueil($_SESSION['prenom'], $data);
+        $this->vue->afficherTableauDeBordAccueil($prenom, $data);
     }
 
     private function afficherProduits()
@@ -490,13 +481,18 @@ class ControleurGestionnaire
 
     private function afficherBarmans()
     {
-        $idGestionnaire = $_SESSION['id'];
+        $idAsso = $_SESSION['asso_choisi'] ?? null;
 
-        $assoUnique = $this->modele->getAssociationsParGestionnaire($idGestionnaire);
-        $associations = ($assoUnique && isset($assoUnique['id'])) ? [$assoUnique] : $assoUnique;
+        if (!$idAsso) {
+            header("Location: index.php?reset=1");
+            exit();
+        }
 
-        $barmans = $this->modele->getBarmansDeMonAssociation($idGestionnaire);
-        $this->vue->afficherBarmans($barmans, $associations);
+        $barmans = $this->modele->getBarmansParAssociation($idAsso);
+        $asso = $this->modele->getAssociationParId($idAsso);
+        $nomAsso = $asso['nom'] ?? 'Association';
+
+        $this->vue->afficherBarmans($barmans, $nomAsso);
     }
 
     private function gererAjoutBarman()

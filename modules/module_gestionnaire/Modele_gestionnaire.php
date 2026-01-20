@@ -726,18 +726,6 @@ JOIN compte g ON c.id_gestionnaire = g.id                WHERE c.id = :id_comman
     }
 
 
-    public function getNbProduits()
-    {
-        try {
-            $requete = self::getBdd()->query("SELECT COUNT(*) as nb FROM produit");
-            $result = $requete->fetch(PDO::FETCH_ASSOC);
-            return $result['nb'];
-        } catch (PDOException $e) {
-            error_log("Erreur getNbProduits: " . $e->getMessage());
-            return 0;
-        }
-    }
-
     public function getNbUtilisateurs()
     {
         try {
