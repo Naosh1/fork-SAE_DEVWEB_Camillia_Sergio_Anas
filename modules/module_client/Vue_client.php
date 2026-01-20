@@ -1,10 +1,28 @@
 <?php
-include_once 'vue_generique.php';
-include "modules/module_commun/vue_commun.php";
+    include_once 'vue_generique.php';
+    include "modules/module_commun/vue_commun.php";
 
 class Vue_client extends VueCommun {
     public function __construct() {
 
+    }
+
+    public function afficherNav() {
+        ob_start();
+        ?>
+        <nav>
+            <?php if (isset($_SESSION['id'])): ?>
+                <a href='index.php?module=client&action=espace'> Espace Personnel </a>
+                <a href='index.php?module=client&action=form_rechargement_utilisateur'> Rechargement </a>
+                <a href='index.php?module=client&action=form_produits_utilisateur'> Produits </a>
+                <a href='index.php?module=client&action=form_plus_utilisateur'> Plus </a>
+                <a href='index.php?module=client&action=form_historique_utilisateur'> Historique </a>
+                <a class="panier" href='index.php?module=client&action=form_panier_utilisateur'> Panier </a>
+                <a class="panier" href='index.php?module=client&action=form_commande_statut_panier_utilisateur'> Suivi Commandes </a>
+            <?php endif; ?>
+        </nav>
+        <?php
+        return ob_get_clean();
     }
 
     public function form_modification() {
@@ -225,23 +243,6 @@ class Vue_client extends VueCommun {
         return ob_get_clean();
     }
 
-    public function afficherNav() {
-        ob_start();
-        ?>
-        <nav>
-            <?php if (isset($_SESSION['id'])): ?>
-                <a href='index.php?module=client&action=espace'> Espace Personnel </a>
-                <a href='index.php?module=client&action=form_rechargement_utilisateur'> Rechargement </a>
-                <a href='index.php?module=client&action=form_produits_utilisateur'> Produits </a>
-                <a href='index.php?module=client&action=form_plus_utilisateur'> Plus </a>
-                <a class="panier" href='index.php?module=client&action=form_panier_utilisateur'> Panier </a>
-                <a class="panier" href='index.php?module=client&action=form_commande_statut_panier_utilisateur'> Suivi Commandes </a>
-            <?php endif; ?>
-        </nav>
-        <?php
-        return ob_get_clean();
-    }
-
     public function form_commande_statut_panier($commandes)
     {
         ob_start();
@@ -280,10 +281,55 @@ class Vue_client extends VueCommun {
             <?php endforeach; ?>
             </tbody>
         </table>
-    <?php endif; ?>
+        <?php endif; ?>
 
         <?php
         return ob_get_clean();
     }
+
+    public function form_historique($commandes)
+    {
+        ob_start();
+        ?>
+
+        <h2>Mon historique</h2>
+
+        <?php if (empty($commandes)): ?>
+            <p>Pas de commandes faites !</p>
+        <?php else: ?>
+            <table class="table-commandes">
+                <thead>
+                <tr>
+                    <th>Commande n°</th>
+                    <th>Date</th>
+                    <th>Montant</th>
+                    <th>Produits</th>
+                </tr>
+                </thead>
+                <tbody>
+                <?php foreach ($commandes as $commande): ?>
+                    <tr>
+                        <td>#<?= $commande['vente_id'] ?></td>
+                        <td><?= $commande['date'] ?></td>
+                        <td><?= number_format($commande['montant'], 2) ?> €</td>
+                        <td>
+                            <ul>
+                                <?php foreach ($commande['produits'] as $p): ?>
+                                    <li>
+                                        <?= $p['nom'] ?> × <?= $p['quantite'] ?>
+                                    </li>
+                                <?php endforeach; ?>
+                            </ul>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+                </tbody>
+            </table>
+        <?php endif; ?>
+
+        <?php
+        return ob_get_clean();
+    }
+
 
 }

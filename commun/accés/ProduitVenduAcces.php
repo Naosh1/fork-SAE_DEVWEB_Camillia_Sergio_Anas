@@ -145,4 +145,29 @@
             $stmt->execute([':id' => $idCompte]);
             return $stmt->fetchAll();
         }
+
+        public function getCommandesClient($idCompte)
+        {
+            $stmt = $this->bdd->prepare(
+                "SELECT 
+                    v.id AS vente_id,
+                    v.date_vente AS dateVente,
+                    v.montant_total AS montant,
+                    l.produit_id,
+                    p.nom AS nom_produit,
+                    l.quantite AS quantite
+                 FROM vente v
+                 JOIN ligne_vente l ON l.vente_id = v.id
+                 JOIN produit p ON p.id = l.produit_id
+                 WHERE v.compte_id = :idCompte
+                 ORDER BY v.date_vente DESC"
+            );
+
+            $stmt->execute([
+                ':idCompte' => $idCompte
+            ]);
+
+            return $stmt->fetchAll();
+        }
+
     }

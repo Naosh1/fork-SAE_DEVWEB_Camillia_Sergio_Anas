@@ -71,6 +71,10 @@
                     $contenu = $this->getVue()->form_commande_statut_panier($this->modeleProduitVenduAcces->getStatutCommandesClient($_SESSION['id']));
                     VueGenerique::setAffichage($contenu);
                     break;
+                case "form_historique_utilisateur" :
+                    $contenu = $this->getVue()->form_historique($this->getHistorique($this->modeleProduitVenduAcces->getCommandesClient($_SESSION['id'])));
+                    VueGenerique::setAffichage($contenu);
+                    break;
                 case "verif_modification" :
                     $this->modification();
                     break;
@@ -180,6 +184,30 @@
 
             header("Location: index.php?module=client&action=form_commande_statut_panier_utilisateur");
             exit();
+        }
+
+        public function getHistorique($donnees) {
+            $commandes = [];
+
+            foreach ($donnees as $ligne) {
+                $id = $ligne['vente_id'];
+
+                if (!isset($commandes[$id])) {
+                    $commandes[$id] = [
+                        'vente_id' => $id,
+                        'date' => $ligne['dateVente'],
+                        'montant' => $ligne['montant'],
+                        'produits' => []
+                    ];
+                }
+
+                $commandes[$id]['produits'][] = [
+                    'nom' => $ligne['nom_produit'],
+                    'quantite' => $ligne['quantite']
+                ];
+            }
+
+            return $commandes;
         }
 
 }
