@@ -435,6 +435,10 @@ class Vue_client extends VueCommun {
                         <i class="fa-solid fa-wallet"></i> Recharger
                     </a>
 
+                    <a href="?reset=1" class="nav-item nav-btn">
+                        <i class="fa-solid fa-key"></i> Changer d'association
+                    </a>
+
                     <a href="index.php?module=connexion&action=deconnexion" class="nav-item nav-btn">
                         <i class="fa-solid fa-power-off"></i> Quitter
                     </a>
@@ -449,6 +453,8 @@ class Vue_client extends VueCommun {
                     <a href="index.php?module=client&action=form_connexion_utilisateur" class="nav-item nav-btn">
                         <i class="fa-solid fa-key"></i> Connexion
                     </a>
+
+
                 <?php endif; ?>
             </div>
         </div>

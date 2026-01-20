@@ -12,7 +12,7 @@ if (!isset($_SESSION['id'])) {
     header('Location: templates/connexion.php');
     exit();
 }
-$role = $_SESSION['role'] ?? '';
+$role = $_SESSION['role_effectif'] ?? '';
 if ($role !== 'client') {
     header('Location: index.php');
     exit();
