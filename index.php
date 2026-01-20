@@ -37,28 +37,26 @@
     $mod = isset($_POST['role']) ? $_POST['role'] : "client";
 
     switch ($mod) {
-//        case 'admin':
+        case 'admin':
+            include_once 'modules/module_admin/Mod_admin.php';
+            new Mod_admin();
+            include_once 'templates/template_admin.php';
+            break;
         case 'gestionnaire':
             include_once 'modules/module_gestionnaire/Mod_gestionnaire.php';
             new Mod_gestionnaire();
             include_once 'templates/template_gestionnaire.php';
             break;
-
         case 'barman':
             include_once 'modules/module_barman/Mod_barman.php';
             new Mod_barman();
             include_once 'templates/template_barman.php';
             break;
-
         case 'client':
             include_once 'modules/module_client/Mod_client.php';
             new Mod_client();
             include_once 'templates/template_client.php';
             break;
-//        default:
-//            include_once 'modules/module_client/Mod_client.php';
-//            new Mod_client();
-//            include_once 'templates/template_client.php';
-//            break;
-}
+    }
+
 

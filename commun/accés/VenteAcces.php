@@ -6,19 +6,21 @@
             $this->bdd = Connexion::getBdd();
         }
 
-        public function enregistrerVente(Vente $vente) {
+        public function enregistrerProduit() {
+            $date = $_POST['dateVente'];
+            $montant = $_POST['montantTotal'];
+            $compteId = $_POST['compte_id'];
+
             $stmt = $this->bdd->prepare(
                 "INSERT INTO vente (date_vente, montant_total, compte_id)
-             VALUES (?, ?, ?)"
+             VALUES (:date, :montant, :compteId)"
             );
 
             $stmt->execute([
-                $vente->getDateVente(),
-                $vente->getMontantTotal(),
-                $vente->getCompte()
+                ":date"   => $date,
+                ":montant" => $montant,
+                ":compteId"  => $compteId
             ]);
-
-            return (int)$this->bdd->lastInsertId();
         }
 
         public function rechercheVenteParCompte($idCompte) {
