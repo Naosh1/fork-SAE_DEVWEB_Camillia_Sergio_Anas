@@ -100,15 +100,15 @@
             return $this->vue;
         }
 
-        public function ajout()
-        {
-            $this->modeleCompte->enregistrerCompte();
-        }
-
-        public function connexion()
-        {
-            $this->modeleCompte->connexion();
-        }
+//        public function ajout()
+//        {
+//            $this->modeleCompte->enregistrerCompte();
+//        }
+//
+//        public function connexion()
+//        {
+//            $this->modeleCompte->connexion();
+//        }
 
         public function modification()
         {
