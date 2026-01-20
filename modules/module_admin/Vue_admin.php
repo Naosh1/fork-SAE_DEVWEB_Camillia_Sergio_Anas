@@ -23,4 +23,19 @@
             <?php
             return ob_get_clean();
         }
+
+        public function form_plus() {
+            ob_start();
+            ?>
+            <nav class="nav-user">
+                <ul>
+                    <li> <a href='index.php?module=client&action=form_modification_utilisateur'> Modifier mes infos </a> </li>
+                    <li> <a href='index.php?module=client&action=deconnexion'> Déconnexion </a> </li>
+                </ul>
+            </nav>
+            <?php
+            return ob_get_clean();
+        }
+
+
     }

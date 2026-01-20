@@ -1,30 +1,6 @@
-<?php
-    if (isset($_GET['action']) && $_GET['action'] === 'deconnexion') {
-        session_unset();
-        session_destroy();
-        header('Location: templates/connexion.php');
-        exit();
-    }
-
-    if (!isset($_SESSION['id'])) {
-        header('Location: templates/connexion.php');
-        exit();
-    }
-
-    $role = $_SESSION['role'] ?? '';
-    if ($role !== 'gestionnaire') {
-        header('Location: index.php');
-        exit();
-    }
-
-    $prenom = $_SESSION['prenom'] ?? '';
-
-    ?>
-
-    <?php
-    ?>
-    <!DOCTYPE html>
-    <html lang="fr" style="background-color: #020617 !important;"> <head>
+<!DOCTYPE html>
+    <html lang="fr" style="background-color: #020617 !important;">
+    <head>
         <script>
             document.documentElement.style.display = 'none';
         </script>
@@ -50,4 +26,5 @@
             body { background-color: #020617 !important; margin: 0; }
         </style>
     </head>
-    <body class="bg-[#020617] text-white font-montserrat">
+        <body class="bg-[#020617] text-white font-montserrat">
+    </html>
