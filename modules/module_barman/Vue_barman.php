@@ -191,11 +191,8 @@ private function afficherHeader($titre = "Gestionnaire de buvette")
     {
         $prenom = $_SESSION['prenom'] ?? 'Barman';
         $photo = $_SESSION['photo'] ?? null;
-        // On récupère le module et l'action pour gérer les états actifs
         $actionActuelle = $_GET['action'] ?? 'accueil';
-        $moduleActuel = $_GET['module'] ?? '';
 
-        // Ton style de classes "Active" identiques au gestionnaire
         $activeClass = "bg-blue-600/15 text-blue-400 border-r-4 border-blue-600 shadow-[0_0_20px_rgba(37,99,235,0.1)]";
         $inactiveClass = "text-slate-500 hover:bg-white/[0.03] hover:text-white border-r-4 border-transparent";
 
@@ -268,6 +265,13 @@ private function afficherHeader($titre = "Gestionnaire de buvette")
                 ($nbMessages > 0 ? '<span class="bg-blue-600 text-[10px] font-black text-white px-2 py-0.5 rounded-lg shadow-lg shadow-blue-600/20">' . $nbMessages . '</span>' : '') . '
             </a>
 
+            <div class="pt-4 mt-4 border-t border-white/5">
+                <a href="index.php?reset=1" class="flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all duration-300 text-amber-500/70 hover:bg-amber-500/10 hover:text-amber-500 border-r-4 border-transparent">
+                    <i class="fa-solid fa-right-left text-lg"></i>
+                    <span class="font-bold text-sm tracking-tight">Changer Association</span>
+                </a>
+            </div>
+
         </nav>
 
         <div class="p-4 border-t border-white/5 space-y-3 bg-white/[0.01]">
@@ -285,16 +289,15 @@ private function afficherHeader($titre = "Gestionnaire de buvette")
                 </div>
             </a>
 
-<a href="index.php?module=connexion&action=deconnexion" class="flex items-center justify-center gap-3 px-4 py-3.5 rounded-xl text-red-500 bg-red-500/5 hover:bg-red-500 hover:text-white transition-all duration-300 group shadow-lg shadow-red-900/5 border border-red-500/10">
-    <i class="fa-solid fa-power-off text-sm group-hover:rotate-90 transition-transform duration-500"></i>
-    <span class="font-black text-[11px] uppercase tracking-widest">Quitter</span>
-</a>
+            <a href="index.php?module=connexion&action=deconnexion" class="flex items-center justify-center gap-3 px-4 py-3.5 rounded-xl text-red-500 bg-red-500/5 hover:bg-red-500 hover:text-white transition-all duration-300 group shadow-lg shadow-red-900/5 border border-red-500/10">
+                <i class="fa-solid fa-power-off text-sm group-hover:rotate-90 transition-transform duration-500"></i>
+                <span class="font-black text-[11px] uppercase tracking-widest">Quitter</span>
+            </a>
         </div>
     </aside>
 
     <main class="flex-1 max-h-screen overflow-y-auto custom-scrollbar bg-[#020617] p-8">';
     }
-
     public function afficherCommandes($commandes)
     {
         $this->afficherHeader("Commandes du jour");
