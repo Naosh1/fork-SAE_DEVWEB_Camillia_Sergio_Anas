@@ -92,6 +92,10 @@ class ControleurGestionnaire
                 $this->activerDesactiverBarman();
                 break;
 
+            case 'retrograderBarman':
+                $this->retrograderBarman();
+                break;
+
             case 'supprimerBarman':
                 $this->supprimerBarman();
                 break;
@@ -125,8 +129,16 @@ class ControleurGestionnaire
                 $this->afficherFournisseurs();
                 break;
 
+            case 'contacterFournisseur':
+                $this->afficherInfoDuFournisseur();
+                break;
+
             case 'voirFournisseur':
                 $this->commanderFournisseur();
+                break;
+
+            case 'detailsCommande':
+                $this->afficherDetailsCommande();
                 break;
 
             case 'validerLiaisonFournisseur':
@@ -137,21 +149,42 @@ class ControleurGestionnaire
                 $this->rechercherPrixProduit();
                 break;
 
-            case 'validerCommandeFournisseur':
+            case 'validerReappro':
                 $this->validerCommandeFournisseur();
+                break;
+
+            case 'detailsClientsStats':
+                $idAsso = $_SESSION['asso_choisi'] ?? null;
+                if ($idAsso) {
+                    $clients = $this->modele->getTopClients($idAsso);
+                    $asso = $this->modele->getAssociationParId($idAsso);
+                    $this->vue->afficherListeCompleteClients($clients, $asso['nom']);
+                } else {
+                    header("Location: index.php?action=accueil");
+                }
+                break;
+            case 'detailsProduitsStats':
+                $this->afficherDetailsProduits();
                 break;
             case 'distribuer':
                 $this->afficherDistribution();
                 break;
+            case 'retirerClient':
+                $idClient = $_GET['id'] ?? null;
+                $idAsso = $_SESSION['asso_choisi'] ?? null;
+
+                if ($idClient && $idAsso) {
+                    $this->modele->retirerClientDeLasso($idClient, $idAsso);
+
+                    header("Location: index.php?action=voirListeClients");
+                }
+                break;
             case 'validerDistribution':
                 $this->validerDistribution();
                 break;
+
             case 'mesCommandes':
                 $this->afficherMesCommandes();
-                break;
-
-            case 'detailCommande':
-                $this->afficherDetailCommande();
                 break;
 
             case 'annulerCommande':
@@ -200,44 +233,57 @@ class ControleurGestionnaire
         }
     }
 
+    private function afficherDetailsProduits() {
+        $idAsso = $_SESSION['asso_choisi'] ?? null;
+        if ($idAsso) {
+            $produits = $this->modele->getTopProduitsParAsso($idAsso);
+            $asso = $this->modele->getAssociationParId($idAsso);
+            $this->vue->afficherListeCompleteProduits($produits, $asso['nom']);
+        } else {
+            header("Location: index.php?action=accueil");
+        }
+    }
 
-    private function afficherTableauDeBord()
+    private function enregistrerInventaire()
     {
-        $idGest = $_SESSION['id'];
+        $idAsso = $_POST['association_id'] ?? $_SESSION['asso_choisi'];
+        $stocks = $_POST['stock_reel'] ?? [];
 
-        $assoUnique = $this->modele->getAssociationsParGestionnaire($idGest);
-        $associations = ($assoUnique) ? [$assoUnique] : [];
-
-        $alertes = $this->modele->getStockCritique($idGest);
-        $topProduits = $this->modele->getTopProduits($idGest);
-        $totalPertesGlobal = $this->modele->getTotalPertes($idGest);
-
-        $totalRecettesGlobal = 0;
-        $beneficeTotalNet = 0;
-        $tousLesBarmans = [];
-
-        foreach ($associations as $asso) {
-            $barmansAsso = $this->modele->getBarmansDeMonAssociation($idGest);
-
-            foreach ($barmansAsso as $b) {
-                $tousLesBarmans[$b['id']] = $b;
-            }
-
-            $statsAsso = $this->modele->getBenefices($asso['id']);
-            $totalRecettesGlobal += $statsAsso['recettes'];
-            $beneficeTotalNet += $statsAsso['benefice_net'];
+        if ($this->modele->validerInventaire($idAsso, $stocks)) {
+            $_SESSION['success'] = "Inventaire validé. Stock global et stock bar mis à jour.";
         }
 
-        $statsQuotidiennes = $this->modele->getStatsEvolutionSeptJours($idGest);
+        header("Location: index.php?module=gestionnaire&action=distribuer");
+        exit();
+    }
+    private function afficherTableauDeBord()
+    {
+        if (!isset($_SESSION['asso_choisi'])) {
+            header("Location: index.php?reset=1");
+            exit();
+        }
 
+        $idAsso = $_SESSION['asso_choisi'];
+        $prenom = $_SESSION['prenom'];
+
+        $assoInfo = $this->modele->getAssociationParId($idAsso);
+        $nomAsso = $assoInfo['nom'] ?? 'Association';
+        $_SESSION['asso_nom'] = $nomAsso;
+
+        $alertes = $this->modele->getStockCritiqueParAsso($idAsso);
+        $topProduits = $this->modele->getTopProduitsParAsso($idAsso);
+        $totalPertes = $this->modele->getTotalPertesParAsso($idAsso);
+        $statsFinancieres = $this->modele->getBenefices($idAsso);
+        $barmansAsso = $this->modele->getBarmansParAssociation($idAsso);
+        $statsQuotidiennes = $this->modele->getStatsEvolutionSeptJoursParAsso($idAsso);
         $data = [
-            'associations' => $associations,
+            'nom_asso' => $nomAsso,
             'alertes' => $alertes,
             'topProduits' => $topProduits,
-            'totalPertes' => $totalPertesGlobal,
-            'totalRecettes' => $totalRecettesGlobal,
-            'beneficeNet' => $beneficeTotalNet,
-            'nbBarmans' => count($tousLesBarmans),
+            'totalPertes' => $totalPertes,
+            'totalRecettes' => $statsFinancieres['recettes'] ?? 0,
+            'beneficeNet' => $statsFinancieres['benefice_net'] ?? 0,
+            'nbBarmans' => count($barmansAsso),
             'courbes' => [
                 'labels' => $statsQuotidiennes['dates'] ?? [],
                 'tresorerie' => $statsQuotidiennes['recettes'] ?? [],
@@ -246,7 +292,7 @@ class ControleurGestionnaire
             ]
         ];
 
-        $this->vue->afficherTableauDeBordAccueil($_SESSION['prenom'], $data);
+        $this->vue->afficherTableauDeBordAccueil($prenom, $data);
     }
 
     private function afficherProduits()
@@ -426,13 +472,10 @@ class ControleurGestionnaire
     private function afficherAssociations()
     {
         $id_gestionnaire = $_SESSION['id'] ?? '';
-
-        // On utilise la fonction qui fait le fetchAll() pour éviter que la vue soit vide
         $associations = $this->modele->getAssociationsGerees($id_gestionnaire);
-
-        // On passe le résultat à la vue
         $this->vue->afficherAssociationsValidees($associations);
     }
+
     private function accepterAssociation()
     {
         if (isset($_GET['id'])) {
@@ -491,13 +534,18 @@ class ControleurGestionnaire
 
     private function afficherBarmans()
     {
-        $idGestionnaire = $_SESSION['id'];
+        $idAsso = $_SESSION['asso_choisi'] ?? null;
 
-        $assoUnique = $this->modele->getAssociationsParGestionnaire($idGestionnaire);
-        $associations = ($assoUnique && isset($assoUnique['id'])) ? [$assoUnique] : $assoUnique;
+        if (!$idAsso) {
+            header("Location: index.php?reset=1");
+            exit();
+        }
 
-        $barmans = $this->modele->getBarmansDeMonAssociation($idGestionnaire);
-        $this->vue->afficherBarmans($barmans, $associations);
+        $barmans = $this->modele->getBarmansParAssociation($idAsso);
+        $asso = $this->modele->getAssociationParId($idAsso);
+        $nomAsso = $asso['nom'] ?? 'Association';
+
+        $this->vue->afficherBarmans($barmans, $nomAsso);
     }
 
     private function gererAjoutBarman()
@@ -510,19 +558,22 @@ class ControleurGestionnaire
                 $res = $this->modele->ajouterClientCommeBarman($clientId, $assoId);
 
                 if ($res) {
-                    $this->vue->afficherSuccesPromotion();
+                    header('Location: index.php?module=gestionnaire&action=voirBarmans&success=1');
                     exit();
                 } else {
-                    $_SESSION['error'] = "Ce membre est déjà barman ou une erreur est survenue.";
-                    header('Location: index.php?action=barmans');
+                    header('Location: index.php?module=gestionnaire&action=ajouterBarman&error=1');
                     exit();
                 }
             }
         } else {
             $q = $_GET['q'] ?? '';
             $clients = $this->modele->rechercherClients($q);
-            $assoData = $this->modele->getAssociationsParGestionnaire($_SESSION['id']);
-            $associations = (isset($assoData['id'])) ? [$assoData] : $assoData;
+
+            $associations = $this->modele->getAssociationsParGestionnaire($_SESSION['id']);
+
+            if (isset($associations['id'])) {
+                $associations = [$associations];
+            }
 
             $this->vue->formulaireAjouterBarman($clients, $associations);
         }
@@ -530,17 +581,13 @@ class ControleurGestionnaire
 
     private function activerDesactiverBarman()
     {
-        if (isset($_GET['id'])) {
-            $estActif = $this->modele->estBarmanActif($_GET['id']);
-            $success = $this->modele->activerDesactiverBarman($_GET['id'], !$estActif);
+        $id_barman = $_GET['id'] ?? null;
 
-            if ($success) {
-                $_SESSION['success'] = "Barman " . (!$estActif ? "activé" : "désactivé") . " avec succès";
-            } else {
-                $_SESSION['error'] = "Erreur lors de la modification du statut";
+        if ($id_barman) {
+            if ($this->modele->toggleStatutCompte($id_barman)) {
+                header("Location: index.php?action=voirProfilBarman&id=" . $id_barman);
+                exit();
             }
-            header('Location: index.php?action=barmans');
-            exit();
         }
     }
 
@@ -574,23 +621,6 @@ class ControleurGestionnaire
             $_SESSION['error'] = "Aucun ID spécifié pour la consultation.";
             header('Location: index.php?action=barmans');
             exit();
-        }
-    }
-    public function getBarmansParAssociation($id_gestionnaire)
-    {
-        try {
-            $sql = "SELECT c.*, asso.nom AS nom_association 
-                FROM compte c
-                JOIN appartient a ON c.id = a.compte_id
-                JOIN association asso ON a.association_id = asso.id
-                JOIN gestionne g ON asso.id = g.association_id
-                WHERE g.compte_id = ? AND a.role = 'barman'";
-
-            $stmt = self::getBdd()->prepare($sql);
-            $stmt->execute([$id_gestionnaire]);
-            return $stmt->fetchAll(PDO::FETCH_ASSOC);
-        } catch (PDOException $e) {
-            return [];
         }
     }
 
@@ -661,7 +691,6 @@ class ControleurGestionnaire
             if ($id_client && $id_assos) {
                 $success = $this->modele->ajouterClient($id_client, $id_assos);
                 if ($success) {
-                    // Redirige vers l'accueil ou la liste des clients
                     header("Location: index.php?action=accueil&success=client_ajoute");
                     exit();
                 } else {
@@ -677,28 +706,57 @@ class ControleurGestionnaire
 
     private function preparerVueAjout($erreur = null)
     {
-        $id_gest = $_SESSION['id'];
-        // On utilise getAssociationsGerees car elle fait un fetchAll()
-        $associations = $this->modele->getAssociationsGerees($id_gest);
+        $idAsso = $_GET['id'] ?? $_SESSION['asso_choisi'] ?? null;
+
         $clients = $this->modele->getClientSansAssos();
 
-        $this->vue->afficherFormulaireAjoutClient($associations, $clients, $erreur);
-    }
-    private function afficherClientsAssociation()
-    {
-        $idAsso = $_GET['id'] ?? $_SESSION['id_association'] ?? null;
         $association = $this->modele->getAssociationParId($idAsso);
 
-        if ($association) {
-            $clients = $this->modele->getClientsParAssociation($association['id']);
-            $this->vue->afficherClients($clients);
-        } else {
-            $_SESSION['error'] = "Aucune association trouvée.";
+        $this->vue->afficherFormulaireAjoutClient($association, $clients, $erreur);
+    }
+
+    private function retrograderBarman()
+    {
+        $id = $_GET['id'] ?? null;
+        if ($id) {
+            $this->modele->retrograderBarmanEnClient($id);
+        }
+        header("Location: index.php?action=barmans");
+        exit();
+    }
+
+    private function afficherClientsAssociation()
+    {
+        $idAsso = $_GET['id'] ?? $_SESSION['asso_choisi'] ?? null;
+
+        if (!$idAsso) {
+            $_SESSION['error'] = "Veuillez choisir une association.";
             header("Location: index.php?action=accueil");
             exit;
         }
+
+        $clients = $this->modele->getClientsParAssociation($idAsso);
+        $asso    = $this->modele->getAssociationParId($idAsso);
+
+        $nomAsso = $asso['nom'] ?? 'Association';
+
+        $this->vue->afficherClients($clients, $nomAsso);
     }
 
+
+    private function afficherInfoDuFournisseur()
+    {
+        $idAsso = $_GET['id'] ?? $_SESSION['asso_choisi'] ?? null;
+        $idFournisseur = isset($_GET['id']) ? intval($_GET['id']) : null;
+
+        if (!$idFournisseur) {
+            header("Location: index.php?module=gestionnaire&action=afficherFournisseurs");
+            exit();
+        }
+        $fournisseur = $this->modele->getFournisseurParId($idFournisseur);
+
+        $this->vue->afficherProfilFournisseur($fournisseur);
+    }
 
     private function afficherFournisseurs()
     {
@@ -709,19 +767,6 @@ class ControleurGestionnaire
         $associations = $this->modele->getAssociationsGerees($idGest);
 
         $this->vue->afficherFournisseurs($fournisseurs, $associations);
-    }
-
-    private function afficherDetailsFournisseur()
-    {
-        $id = $_GET['id'];
-        $tri = $_GET['tri'] ?? 'nom';
-        $search = $_GET['search'] ?? '';
-        $type = $_GET['type'] ?? '';
-
-        $fournisseur = $this->modele->getFournisseurParId($id);
-        $produits = $this->modele->getProduitsFournisseur($id, $tri, $search, $type);
-
-        $this->vue->afficherDetailsFournisseur($fournisseur, $produits);
     }
 
     private function rechercherPrixProduit()
@@ -791,12 +836,17 @@ class ControleurGestionnaire
 
         $associations = $this->modele->getAssociationsParGestionnaire($idGest);
         $reserve = $this->modele->getStockReserveGlobal();
-
         $commandesFournisseurs = $this->modele->getCommandesFournisseursRecentes($idGest);
-
         $historiqueAchats = $this->modele->getHistoriqueAchatsComplet($idGest);
+        $historiqueInventaires = $this->modele->getHistoriqueInventairesComplet($idGest);
 
-        $this->vue->afficherAffectationStock($associations, $reserve, $commandesFournisseurs, $historiqueAchats);
+        $this->vue->afficherAffectationStock(
+            $associations,
+            $reserve,
+            $commandesFournisseurs,
+            $historiqueAchats,
+            $historiqueInventaires
+        );
     }
 
 
@@ -858,70 +908,67 @@ class ControleurGestionnaire
         }
     }
 
+
     public function commanderFournisseur()
     {
         $id = $_GET['id'] ?? null;
-        if ($id) {
+
+        $idAsso = $_GET['id_asso'] ?? $_SESSION['asso_choisi'] ?? $_SESSION['id_asso_courante'] ?? null;
+
+        if ($id && $idAsso) {
             $fournisseur = $this->modele->getFournisseurParId($id);
             $produits = $this->modele->getProduitsFournisseur($id);
+            $assos = $this->modele->getAssociationParId($idAsso);
 
-            $this->vue->afficherDetailsFournisseur($fournisseur, $produits);
+            if (!$assos) {
+                $assos = ['id' => $idAsso, 'nom' => 'Association ' . $idAsso];
+            }
+
+            $this->vue->afficherDetailsFournisseur($fournisseur, $produits, $assos);
+        } else {
+            header("Location: index.php?module=gestionnaire&action=fournisseurs&error=no_asso_selected");
+            exit();
         }
     }
-
-    private function afficherDetailCommande()
+    public function afficherDetailsCommande()
     {
-        if (!isset($_GET['id'])) {
-            $_SESSION['error'] = "Commande non spécifiée.";
-            header('Location: index.php?action=mesCommandes');
+        $idCommande = $_GET['id'] ?? null;
+
+        if (!$idCommande) {
+            $_SESSION['error'] = "ID de commande manquant.";
+            header('Location: index.php?module=gestionnaire&action=fournisseurs');
             exit();
         }
-
-        $idCommande = $_GET['id'];
-        $commande = $this->modele->getDetailCommande($idCommande);
-
-        if (!$commande) {
-            $_SESSION['error'] = "Commande introuvable.";
-            header('Location: index.php?action=mesCommandes');
-            exit();
-        }
-
+        $commande = $this->modele->getDetailsCommande($idCommande);
         $produitsCommande = $this->modele->getProduitsCommande($idCommande);
+        if (!$commande) {
+            $_SESSION['error'] = "La commande n°$idCommande est introuvable.";
+            header('Location: index.php?module=gestionnaire&action=mesCommandes');
+            exit();
+        }
 
-        $this->vue->afficherDetailCommande($commande, $produitsCommande);
+        $this->vue->afficherDetailsCommande($commande, $produitsCommande);
     }
 
 
     private function annulerCommande()
     {
-        if (!isset($_GET['id'])) {
-            $_SESSION['error'] = "Commande non spécifiée.";
-            header('Location: index.php?action=mesCommandes');
-            exit();
+        $id = $_GET['id'] ?? null;
+        if ($id) {
+            $commande = $this->modele->getDetailsCommande($id);
+
+            if ($commande && $commande['statut'] !== 'annulee') {
+                $resAnnul = $this->modele->annulerCommande($id);
+
+                if ($resAnnul) {
+                    $this->modele->rembourserAssociation($commande['id_association'], $commande['montant_total']);
+                    $_SESSION['success'] = "Commande #$id annulée. Le montant de " . $commande['montant_total'] . "€ a été rendu à l'association.";
+                }
+            } else {
+                $_SESSION['error'] = "Impossible d'annuler cette commande.";
+            }
         }
-
-        $idCommande = $_GET['id'];
-        $commande = $this->modele->getDetailCommande($idCommande);
-
-        if (!$commande) {
-            $_SESSION['error'] = "Commande introuvable.";
-            header('Location: index.php?action=mesCommandes');
-            exit();
-        }
-
-        if ($commande['statut'] !== 'en_attente') {
-            $_SESSION['error'] = "Cette commande ne peut plus être annulée.";
-            header("Location: index.php?action=detailCommande&id=$idCommande");
-            exit();
-        }
-
-        if ($this->modele->annulerCommande($idCommande)) {
-            $_SESSION['success'] = "Commande #$idCommande annulée avec succès.";
-        } else {
-            $_SESSION['error'] = "Erreur lors de l'annulation de la commande.";
-        }
-
-        header('Location: index.php?action=mesCommandes');
+        header("Location: index.php?module=gestionnaire&action=mesCommandes");
         exit();
     }
 
@@ -962,63 +1009,79 @@ class ControleurGestionnaire
 
     private function afficherFormulaireInventaire()
     {
-        $id_assos = $_GET['id'] ?? $_SESSION['id_assos'];
+        $id_assos = $_GET['id'] ?? null;
+
+        if (!$id_assos) {
+            $_SESSION['error'] = "Aucune association sélectionnée pour l'inventaire.";
+            header("Location: index.php?action=distribuer");
+            exit();
+        }
+
         $produits = $this->modele->getProduitsParAssociation($id_assos);
         $this->vue->formulaireInventaire($produits, $id_assos);
     }
 
-    private function enregistrerInventaire()
-    {
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $id_assos = $_POST['association_id'];
-            $stocksReels = $_POST['stock_reel'];
-
-            $success = $this->modele->validerInventaire($id_assos, $stocksReels);
-
-            if ($success) {
-                $_SESSION['success'] = "Inventaire enregistré et stocks mis à jour.";
-            } else {
-                $_SESSION['error'] = "Erreur lors de l'enregistrement de l'inventaire.";
-            }
-            header("Location: index.php?action=gererAssociation&id=$id_assos");
-            exit();
-        }
-    }
 
     private function afficherStatistiques()
     {
-        $stats = [
-            'totalVentes' => $this->modele->getTotalVentes(),
-            'nbProduits' => $this->modele->getNbProduits(),
-            'nbUtilisateurs' => $this->modele->getNbUtilisateurs(),
-            'nbAssociations' => $this->modele->getNbAssociations(),
-            'nbBarmans' => $this->modele->getNbBarmans()
-        ];
-        $this->vue->afficherStatistiques($stats);
+        {
+            $idAsso = $_SESSION['asso_choisi'] ?? null;
+
+            if (!$idAsso) {
+                header("Location: index.php?module=gestionnaire&action=selection_asso");
+                exit;
+            }
+
+            $asso = $this->modele->getAssociationParId($idAsso);
+            $nomAsso = $asso['nom'] ?? "Mon Association";
+
+            $evolution = $this->modele->getStatsEvolutionSeptJoursParAsso($idAsso);
+            $topProduits = $this->modele->getTopProduitsParAsso($idAsso);
+            $pertesTotales = $this->modele->getTotalPertesParAsso($idAsso);
+
+            $topClients = $this->modele->getTopClients($idAsso);
+            $statsHoraires = $this->modele->getVentesParHeure($idAsso);
+
+
+            $this->vue->afficherStatsDetails(
+                $evolution,
+                $topProduits,
+                $pertesTotales,
+                $nomAsso,
+                $topClients,
+                $statsHoraires
+            );
+
+        }
     }
 
-    private function afficherTousProduits()
-    {
-        $id_assos = $_SESSION['id'] ?? '';
-        $produits = $this->modele->getProduitsParAssociation($id_assos);
-        $this->vue->afficherProduits($produits, $id_assos);
-    }
 
-    private function afficherStockGeneral()
-    {
-        $stocks = $this->modele->getStock();
-        $this->vue->afficherStock($stocks);
-    }
+private
+function afficherTousProduits()
+{
+    $id_assos = $_SESSION['id'] ?? '';
+    $produits = $this->modele->getProduitsParAssociation($id_assos);
+    $this->vue->afficherProduits($produits, $id_assos);
+}
 
-    private function afficherVentes()
-    {
-        $ventes = $this->modele->getVentes();
-        $this->vue->afficherVentes($ventes);
-    }
+private
+function afficherStockGeneral()
+{
+    $stocks = $this->modele->getStock();
+    $this->vue->afficherStock($stocks);
+}
 
-    private function afficherErreurAction()
-    {
-        $message = "L'action demandée n'existe pas.";
-        include 'templates/vue_erreur.php';
-    }
+private
+function afficherVentes()
+{
+    $ventes = $this->modele->getVentes();
+    $this->vue->afficherVentes($ventes);
+}
+
+private
+function afficherErreurAction()
+{
+    $message = "L'action demandée n'existe pas.";
+    include 'templates/vue_erreur.php';
+}
 }

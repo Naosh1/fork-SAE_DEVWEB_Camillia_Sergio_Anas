@@ -119,21 +119,6 @@ class ModeleGestionnaire extends ModeleStaff
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function getBarmansDeMonAssociation($id_gestionnaire)
-    {
-        // On ajoute une jointure avec la table 'association' pour avoir le nom
-        $sql = "SELECT c.*, assos.nom AS nom_association 
-            FROM compte c
-            JOIN appartient a ON c.id = a.compte_id
-            JOIN association assos ON a.association_id = assos.id
-            JOIN gestionne g ON a.association_id = g.association_id
-            WHERE g.compte_id = ? AND a.role = 'barman'";
-
-        $stmt = self::getBdd()->prepare($sql);
-        $stmt->execute([$id_gestionnaire]);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
-
     public function rechercherProduitGlobal($nomProduit)
     {
         $sql = "SELECT p.nom as produit_nom, f.nom as fournisseur_nom, f.id as id_f,
@@ -232,7 +217,7 @@ class ModeleGestionnaire extends ModeleStaff
     public function creerEnteteCommande($idFournisseur, $idAsso)
     {
         $sql = "INSERT INTO commande_fournisseur (id_fournisseur, id_association, date_commande, montant_total, statut) 
-            VALUES (:id_f, :id_a, NOW(), 0, 'en_attente')";
+            VALUES (:id_f, :id_a, NOW(), 0, 'payee')";
         $stmt = self::getBdd()->prepare($sql);
         $stmt->execute([
             'id_f' => $idFournisseur,
@@ -263,16 +248,49 @@ class ModeleGestionnaire extends ModeleStaff
             'prix' => $prixUnitaire
         ]);
     }
-
-    public function getProduitInfoParNomEtFournisseur($nom, $idFournisseur)
+    public function validerInventaire($idAssociation, $donneesStocks)
     {
-        $sql = "SELECT p.id as id_produit, fp.prix_achat 
-            FROM produit p 
-            JOIN fournisseur_produit fp ON p.id = fp.id_produit 
-            WHERE p.nom = :nom AND fp.id_fournisseur = :id_f";
-        $stmt = self::getBdd()->prepare($sql);
-        $stmt->execute(['nom' => $nom, 'id_f' => $idFournisseur]);
-        return $stmt->fetch(PDO::FETCH_ASSOC);
+        try {
+            $this->getBdd()->beginTransaction();
+
+            // 1. Création de l'inventaire (Historique)
+            $stmtInv = $this->getBdd()->prepare("INSERT INTO inventaire (date_inventaire, association_id) VALUES (NOW(), ?)");
+            $stmtInv->execute([$idAssociation]);
+            $idInventaire = $this->getBdd()->lastInsertId();
+
+            // 2. Préparation des Updates
+            $stmtDetail = $this->getBdd()->prepare("INSERT INTO concerne (produit_id, inventaire_id, stock_theorique, stock_reel, perte) VALUES (?, ?, ?, ?, ?)");
+
+            // Update Table GERE (Stock bar)
+            $stmtUpdateGere = $this->getBdd()->prepare("UPDATE gere SET stock_asso = ? WHERE association_id = ? AND produit_id = ?");
+
+            // Update Table PRODUIT (Stock global utilisé par afficherFormulaireInventaire)
+            $stmtUpdateGlobal = $this->getBdd()->prepare("UPDATE produit SET quantiteActuelle = ? WHERE id = ?");
+
+            foreach ($donneesStocks as $idProduit => $stockReel) {
+                // On récupère le stock actuel pour calculer l'écart
+                $sqlT = "SELECT stock_asso FROM gere WHERE association_id = ? AND produit_id = ?";
+                $st = $this->getBdd()->prepare($sqlT);
+                $st->execute([$idAssociation, $idProduit]);
+                $stockTheorique = $st->fetchColumn() ?: 0;
+
+                $perte = $stockTheorique - $stockReel;
+
+                // Enregistrer l'écart dans concerne
+                $stmtDetail->execute([$idProduit, $idInventaire, $stockTheorique, $stockReel, $perte]);
+
+                // ON MET À JOUR LES DEUX TABLES POUR ACTUALISER L'AFFICHAGE
+                $stmtUpdateGere->execute([$stockReel, $idAssociation, $idProduit]);
+                $stmtUpdateGlobal->execute([$stockReel, $idProduit]);
+            }
+
+            $this->getBdd()->commit();
+            return true;
+        } catch (Exception $e) {
+            if ($this->getBdd()->inTransaction()) $this->getBdd()->rollBack();
+            error_log("Erreur Inventaire : " . $e->getMessage());
+            return false;
+        }
     }
 
     public function creerCommandeFournisseur($idGestionnaire, $idFournisseur, $idAssociation, $notes = '')
@@ -295,45 +313,6 @@ class ModeleGestionnaire extends ModeleStaff
         }
     }
 
-    public function getProduitFournisseurInfo($idProduit)
-    {
-        try {
-            $sql = "SELECT p.*, fp.prix_achat 
-                FROM produits p 
-                JOIN fournisseur_produit fp ON p.id = fp.id_produit 
-                WHERE p.id = :id_produit";
-            $stmt = self::getBdd()->prepare($sql);
-            $stmt->execute([':id_produit' => $idProduit]);
-            return $stmt->fetch(PDO::FETCH_ASSOC);
-        } catch (PDOException $e) {
-            error_log("Erreur getProduitFournisseurInfo: " . $e->getMessage());
-            return false;
-        }
-    }
-
-
-    public function ajouterProduitCommande($idCommande, $idProduit, $quantite, $prixUnitaire)
-    {
-        try {
-            $sql = "INSERT INTO commande_produits 
-                (id_commande, id_produit, quantite, prix_unitaire, sous_total) 
-                VALUES (:id_commande, :id_produit, :quantite, :prix_unitaire, :sous_total)";
-            $stmt = self::getBdd()->prepare($sql);
-            $sousTotal = $prixUnitaire * $quantite;
-            $stmt->execute([
-                ':id_commande' => $idCommande,
-                ':id_produit' => $idProduit,
-                ':quantite' => $quantite,
-                ':prix_unitaire' => $prixUnitaire,
-                ':sous_total' => $sousTotal
-            ]);
-            return true;
-        } catch (PDOException $e) {
-            error_log("Erreur ajouterProduitCommande: " . $e->getMessage());
-            return false;
-        }
-    }
-
     public function getAssociationsGerees($idGest)
     {
         $sql = "SELECT a.* FROM association a 
@@ -341,24 +320,6 @@ class ModeleGestionnaire extends ModeleStaff
             WHERE g.compte_id = :id_gest";
         $stmt = self::getBdd()->prepare($sql);
         $stmt->execute(['id_gest' => $idGest]);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
-
-    public function getStocksActuelsParToutesAssos($idGest)
-    {
-        $sql = "SELECT 
-                a.nom as nom_asso, 
-                p.nom as nom_produit, 
-                g.stock_asso as quantite -- On s'assure que c'est bien stock_asso ici
-            FROM association a
-            INNER JOIN gestionne gest ON a.id = gest.association_id
-            INNER JOIN gere g ON g.association_id = a.id
-            INNER JOIN produit p ON g.produit_id = p.id
-            WHERE gest.compte_id = :id
-            ORDER BY a.nom ASC, p.nom ASC";
-
-        $stmt = self::getBdd()->prepare($sql);
-        $stmt->execute(['id' => $idGest]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
@@ -388,7 +349,6 @@ class ModeleGestionnaire extends ModeleStaff
                 p.id as id_produit, 
                 p.nom, 
                 p.type,
-                -- Total livré par les fournisseurs (statut 'livré')
                 COALESCE((
                     SELECT SUM(dc.quantite) 
                     FROM detail_commande_fournisseur dc 
@@ -396,7 +356,6 @@ class ModeleGestionnaire extends ModeleStaff
                     WHERE dc.id_produit = p.id 
                     AND cf.statut = 'livré'
                 ), 0) - 
-                -- Moins le total déjà envoyé sur le terrain (table gere)
                 COALESCE((
                     SELECT SUM(stock_asso) 
                     FROM gere 
@@ -419,6 +378,27 @@ class ModeleGestionnaire extends ModeleStaff
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    public function getHistoriqueInventairesComplet($idGest)
+    {
+        try {
+            $sql = "SELECT c.stock_theorique as quantite_theorique, 
+                       c.stock_reel as quantite_trouvee, 
+                       i.date_inventaire as date, 
+                       p.nom as produit 
+                FROM concerne c
+                JOIN inventaire i ON c.inventaire_id = i.id 
+                JOIN produit p ON c.produit_id = p.id 
+                JOIN association a ON i.association_id = a.id
+                WHERE a.id IN (SELECT association_id FROM gestionne WHERE compte_id = ?)
+                ORDER BY i.date_inventaire DESC 
+                LIMIT 30";
+            $req = self::getBdd()->prepare($sql);
+            $req->execute([$idGest]);
+            return $req->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            return [];
+        }
+    }
     public function distribuerStock($idAsso, $idProduit, $qte)
     {
         try {
@@ -460,25 +440,56 @@ class ModeleGestionnaire extends ModeleStaff
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function getDetailCommande($idCommande)
+    public function getDetailsCommande($idCommande)
     {
         try {
-            $sql = "SELECT c.*, f.nom as nom_fournisseur, f.email as email_fournisseur,
-                f.telephone as tel_fournisseur, a.nom as nom_association,
-                g.prenom as prenom_gestionnaire, g.nom as nom_gestionnaire
-                FROM commandes_fournisseur c
-                JOIN fournisseurs f ON c.id_fournisseur = f.id
-                JOIN associations a ON c.id_association = a.id
-JOIN compte g ON c.id_gestionnaire = g.id                WHERE c.id = :id_commande";
+            $sql = "SELECT c.*, f.nom AS nom_fournisseur, a.nom AS nom_association 
+                    FROM commande_fournisseur c
+                    JOIN fournisseur f ON c.id_fournisseur = f.id
+                    JOIN association a ON c.id_association = a.id
+                    WHERE c.id = ?";
             $stmt = self::getBdd()->prepare($sql);
-            $stmt->execute([':id_commande' => $idCommande]);
+            $stmt->execute([$idCommande]);
             return $stmt->fetch(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
-            error_log("Erreur getDetailCommande: " . $e->getMessage());
+            error_log("Erreur getDetailsCommande: " . $e->getMessage());
             return false;
         }
     }
+    public function toggleStatutCompte($id_compte) {
+        try {
+            $stmt = self::getBdd()->prepare("SELECT actif FROM compte WHERE id = ?");
+            $stmt->execute([$id_compte]);
+            $etatActuel = $stmt->fetchColumn();
 
+            $nouvelEtat = ($etatActuel == 1) ? 0 : 1;
+
+            $update = self::getBdd()->prepare("UPDATE compte SET actif = ? WHERE id = ?");
+            return $update->execute([$nouvelEtat, $id_compte]);
+        } catch (PDOException $e) {
+            error_log("Erreur toggleStatutCompte: " . $e->getMessage());
+            return false;
+        }
+    }
+    public function retrograderBarmanEnClient($id_compte) {
+        try {
+            $bdd = self::getBdd();
+            $bdd->beginTransaction();
+
+            $req1 = $bdd->prepare("UPDATE compte SET role = 'client' WHERE id = ?");
+            $req1->execute([$id_compte]);
+
+            $req2 = $bdd->prepare("DELETE FROM appartient WHERE compte_id = ? AND role = 'barman'");
+            $req2->execute([$id_compte]);
+
+            $bdd->commit();
+            return true;
+        } catch (PDOException $e) {
+            if ($bdd->inTransaction()) $bdd->rollBack();
+            error_log("Erreur retrograderBarmanEnClient: " . $e->getMessage());
+            return false;
+        }
+    }
     public function getPrixAchatFournisseur($idFournisseur, $idProduit)
     {
         $sql = "SELECT prix_achat FROM fournisseur_produit 
@@ -508,11 +519,25 @@ JOIN compte g ON c.id_gestionnaire = g.id                WHERE c.id = :id_comman
     public function annulerCommande($idCommande)
     {
         try {
-            $sql = "UPDATE commandes_fournisseur SET statut = 'annulee' WHERE id = :id AND statut = 'en_attente'";
+            $sql = "UPDATE commande_fournisseur SET statut = 'annulee' WHERE id = :id";
             $stmt = self::getBdd()->prepare($sql);
             return $stmt->execute([':id' => $idCommande]);
         } catch (PDOException $e) {
             error_log("Erreur annulerCommande: " . $e->getMessage());
+            return false;
+        }
+    }
+    public function rembourserAssociation($idAsso, $montant)
+    {
+        try {
+            $sql = "UPDATE association SET solde = solde + :montant WHERE id = :id";
+            $stmt = self::getBdd()->prepare($sql);
+            return $stmt->execute([
+                ':montant' => $montant,
+                ':id' => $idAsso
+            ]);
+        } catch (PDOException $e) {
+            error_log("Erreur remboursement: " . $e->getMessage());
             return false;
         }
     }
@@ -535,7 +560,25 @@ JOIN compte g ON c.id_gestionnaire = g.id                WHERE c.id = :id_comman
             return [];
         }
     }
+    public function ajouterBarmanALAssociation($id_compte, $id_asso) {
+        try {
+            $sql = "INSERT IGNORE INTO appartient (compte_id, association_id, role) 
+                VALUES (?, ?, 'barman')";
 
+            $stmt = self::getBdd()->prepare($sql);
+            $res = $stmt->execute([$id_compte, $id_asso]);
+
+            if ($res) {
+                $update = self::getBdd()->prepare("UPDATE compte SET actif = 1 WHERE id = ?");
+                $update->execute([$id_compte]);
+            }
+
+            return $res;
+        } catch (PDOException $e) {
+            error_log("Erreur promotion barman: " . $e->getMessage());
+            return false;
+        }
+    }
     public function ajouterClient($id_client, $id_assos)
     {
         try {
@@ -558,91 +601,37 @@ JOIN compte g ON c.id_gestionnaire = g.id                WHERE c.id = :id_comman
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    public function getDetailsBarman($idBarman) {
-        $sql = "SELECT c.*, a.nom as nom_association, app.role 
-            FROM compte c
-            LEFT JOIN appartient app ON c.id = app.compte_id
-            LEFT JOIN association a ON app.association_id = a.id
-            WHERE c.id = ? AND c.role = 'barman'";
-
-        $stmt = self::getBdd()->prepare($sql);
-        $stmt->execute([$idBarman]);
-        return $stmt->fetch(PDO::FETCH_ASSOC);
-    }
-
-    public function ajouterClientCommeBarman($clientId, $assoId)
-    {
+    public function ajouterClientCommeBarman($clientId, $assoId) {
         try {
-            $bdd = self::getBdd();
-            $bdd->beginTransaction();
+            $sql = "INSERT INTO appartient (compte_id, association_id, role) 
+                VALUES (?, ?, 'barman') 
+                ON DUPLICATE KEY UPDATE role = 'barman'";
 
-            // 1. Mise à jour du rôle global dans la table 'compte'
-            $sql1 = "UPDATE compte SET role = 'barman' WHERE id = :cid";
-            $stmt1 = $bdd->prepare($sql1);
-            $stmt1->execute(['cid' => $clientId]);
+            $stmt = self::getBdd()->prepare($sql);
+            $res = $stmt->execute([$clientId, $assoId]);
 
-            // 2. Mise à jour ou Insertion dans la table 'appartient'
-            // C'est ICI que se joue le "non assigné"
-            // On utilise ON DUPLICATE KEY UPDATE pour être sûr que le rôle est bien 'barman'
-            $sql2 = "INSERT INTO appartient (compte_id, association_id, role) 
-                VALUES (:cid, :aid, 'barman')
-                ON DUPLICATE KEY UPDATE role = 'barman', association_id = :aid2";
+            if ($res) {
+                $update = self::getBdd()->prepare("UPDATE compte SET actif = 1 WHERE id = ?");
+                $update->execute([$clientId]);
+            }
 
-            $stmt2 = $bdd->prepare($sql2);
-            $stmt2->execute([
-                'cid'  => $clientId,
-                'aid'  => $assoId,
-                'aid2' => $assoId
-            ]);
-
-            $bdd->commit();
-            return true;
-
+            return $res;
         } catch (PDOException $e) {
-            if (isset($bdd)) { $bdd->rollBack(); }
             error_log("Erreur promotion barman : " . $e->getMessage());
             return false;
         }
     }
 
-    public function activerDesactiverBarman($id, $actif)
-    {
+    public function retirerClientDeLasso($idClient, $idAsso) {
         try {
-            if (!$actif) {
-                $requete = self::getBdd()->prepare(
-                    "DELETE FROM dispose 
-                 WHERE compte_id = ? 
-                 AND role_id = (SELECT id FROM role WHERE nom = 'barman')"
-                );
-                return $requete->execute([$id]);
-            } else {
-                $requeteRole = self::getBdd()->prepare("SELECT id FROM role WHERE nom = 'barman'");
-                $requeteRole->execute();
-                $role = $requeteRole->fetch(PDO::FETCH_ASSOC);
-
-                if ($role) {
-                    $requeteVerif = self::getBdd()->prepare(
-                        "SELECT COUNT(*) FROM dispose 
-                     WHERE compte_id = ? AND role_id = ?"
-                    );
-                    $requeteVerif->execute([$id, $role['id']]);
-
-                    if (!$requeteVerif->fetchColumn()) {
-                        $requeteLien = self::getBdd()->prepare(
-                            "INSERT INTO dispose (role_id, compte_id) VALUES (?, ?)"
-                        );
-                        return $requeteLien->execute([$role['id'], $id]);
-                    }
-                    return true;
-                }
-                return false;
-            }
-        } catch (PDOException $e) {
-            error_log("Erreur activerDesactiverBarman: " . $e->getMessage());
+            $sql = "DELETE FROM appartient WHERE compte_id = ? AND association_id = ?";
+            $stmt = $this->getBdd()->prepare($sql);
+            return $stmt->execute([$idClient, $idAsso]);
+        } catch (Exception $e) {
+            error_log("Erreur retirerClientDeLasso: " . $e->getMessage());
             return false;
         }
     }
-
 
     public function supprimerBarman($id)
     {
@@ -707,28 +696,29 @@ JOIN compte g ON c.id_gestionnaire = g.id                WHERE c.id = :id_comman
             FROM association a
             JOIN gestionne g ON g.association_id = a.id
             WHERE g.compte_id = ?
-            LIMIT 1"; // On récupère la première association trouvée
+            LIMIT 1";
 
             $stmt = self::getBdd()->prepare($sql);
             $stmt->execute([$id_gestionnaire]);
 
-            return $stmt->fetch(PDO::FETCH_ASSOC); // Retourne un tableau simple ou false
+            return $stmt->fetch(PDO::FETCH_ASSOC);
 
         } catch (PDOException $e) {
             error_log('Erreur getAssociationsParGestionnaire : ' . $e->getMessage());
-            return false; // Retourne false en cas d'erreur
+            return false;
         }
     }
 
-    public function getProduitsParFournisseur($idFournisseur)
-    {
-        $sql = "SELECT p.id, p.nom, fp.prix_achat 
-            FROM produit p 
-            JOIN fournisseur_produit fp ON p.id = fp.id_produit 
-            WHERE fp.id_fournisseur = ?";
+    public function getBarmansParAssociation($id_association) {
+        $sql = "SELECT c.id, c.nom, c.prenom, c.email, c.actif, a.role, asso.nom AS nom_association
+            FROM compte c
+            JOIN appartient a ON c.id = a.compte_id
+            JOIN association asso ON a.association_id = asso.id
+            WHERE a.association_id = ? 
+            AND a.role = 'barman'";
 
-        $stmt = $this->getBdd()->prepare($sql);
-        $stmt->execute([$idFournisseur]);
+        $stmt = self::getBdd()->prepare($sql);
+        $stmt->execute([$id_association]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
@@ -815,18 +805,6 @@ JOIN compte g ON c.id_gestionnaire = g.id                WHERE c.id = :id_comman
     }
 
 
-    public function getNbProduits()
-    {
-        try {
-            $requete = self::getBdd()->query("SELECT COUNT(*) as nb FROM produit");
-            $result = $requete->fetch(PDO::FETCH_ASSOC);
-            return $result['nb'];
-        } catch (PDOException $e) {
-            error_log("Erreur getNbProduits: " . $e->getMessage());
-            return 0;
-        }
-    }
-
     public function getNbUtilisateurs()
     {
         try {
@@ -878,32 +856,6 @@ JOIN compte g ON c.id_gestionnaire = g.id                WHERE c.id = :id_comman
             return false;
         }
     }
-
-
-    public function getBarmans()
-    {
-        try {
-            $requete = self::getBdd()->query(
-                "SELECT c.id, c.nom, c.prenom, c.email, c.solde, c.role, 
-                        assos.nom as nom_association
-                 FROM compte c
-                 LEFT JOIN appartient a ON c.id = a.compte_id
-                 LEFT JOIN association assos ON a.association_id = assos.id
-                 WHERE c.role = 'barman' 
-                 OR c.id IN (
-                     SELECT compte_id FROM dispose WHERE role_id = 
-                        (SELECT id FROM role WHERE nom = 'barman')
-                 )
-                 ORDER BY c.nom, c.prenom"
-            );
-            return $requete->fetchAll(PDO::FETCH_ASSOC);
-        } catch (PDOException $e) {
-            error_log("Erreur getBarmans: " . $e->getMessage());
-            return [];
-        }
-    }
-
-
     public function changerSoldeClient($id, $solde)
     {
         $stmt = self::getBdd()->prepare("UPDATE compte SET solde = ? WHERE id = ?");
@@ -912,15 +864,15 @@ JOIN compte g ON c.id_gestionnaire = g.id                WHERE c.id = :id_comman
 
     public function getListeBarmans($id_gestionnaire)
     {
-
-        $sql = "SELECT id, nom, prenom, role 
-            FROM compte 
-            WHERE (role = 'barman' OR role = 'gestionnaire')
-            AND id != ?
-            ORDER BY role DESC, nom ASC";
+        $sql = "SELECT c.id, c.nom, c.prenom, c.email, c.actif, a.nom as nom_association 
+            FROM compte c 
+            JOIN appartient ap ON c.id = ap.compte_id
+            JOIN association a ON ap.association_id = a.id
+            WHERE ap.role = 'barman' 
+            ORDER BY c.nom ASC";
 
         $req = self::getBdd()->prepare($sql);
-        $req->execute([$id_gestionnaire]);
+        $req->execute();
         return $req->fetchAll(PDO::FETCH_ASSOC);
     }
 }

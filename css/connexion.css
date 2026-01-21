@@ -1,0 +1,44 @@
+/* Import des polices */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap');
+
+body {
+    font-family: 'Montserrat', sans-serif;
+    margin: 0;
+}
+
+/* Fond ambiance Buvette / Nocturne */
+.bg-buvette {
+    background: #020617;
+    background-image:
+            radial-gradient(circle at 10% 20%, rgba(30, 58, 138, 0.4) 0%, transparent 40%),
+            radial-gradient(circle at 90% 80%, rgba(59, 130, 246, 0.2) 0%, transparent 40%);
+    min-height: screen;
+}
+
+/* Carte effet Verre (Glassmorphism) */
+.glass-panel {
+    background: rgba(15, 23, 42, 0.7);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+/* Champs de saisie */
+.input-group:focus-within {
+    border-color: #3b82f6;
+    box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
+}
+
+/* Loader de connexion */
+#loader {
+    transition: opacity 0.3s ease;
+}
+
+@keyframes spin-slow {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.animate-spin-custom {
+    animation: spin-slow 1s linear infinite;
+}
