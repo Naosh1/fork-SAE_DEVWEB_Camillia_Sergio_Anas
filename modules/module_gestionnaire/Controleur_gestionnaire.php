@@ -525,10 +525,8 @@ class ControleurGestionnaire
             $q = $_GET['q'] ?? '';
             $clients = $this->modele->rechercherClients($q);
 
-            // Récupération des assos du gestionnaire
             $associations = $this->modele->getAssociationsParGestionnaire($_SESSION['id']);
 
-            // Normalisation au cas où il n'y a qu'une asso
             if (isset($associations['id'])) { $associations = [$associations]; }
 
             $this->vue->formulaireAjouterBarman($clients, $associations);
@@ -540,7 +538,6 @@ class ControleurGestionnaire
 
         if ($id_barman) {
             if ($this->modele->toggleStatutCompte($id_barman)) {
-                // On redirige vers le profil pour voir le changement
                 header("Location: index.php?action=voirProfilBarman&id=" . $id_barman);
                 exit();
             }
@@ -859,15 +856,22 @@ class ControleurGestionnaire
     public function commanderFournisseur()
     {
         $id = $_GET['id'] ?? null;
-        $idAsso = $_GET['id_asso'] ?? $_SESSION['id_asso_courante'] ?? null;
 
-        if ($id) {
+        $idAsso = $_GET['id_asso'] ?? $_SESSION['asso_choisi'] ?? $_SESSION['id_asso_courante'] ?? null;
+
+        if ($id && $idAsso) {
             $fournisseur = $this->modele->getFournisseurParId($id);
             $produits = $this->modele->getProduitsFournisseur($id);
             $assos = $this->modele->getAssociationParId($idAsso);
+
+            if (!$assos) {
+                $assos = ['id' => $idAsso, 'nom' => 'Association ' . $idAsso];
+            }
+
             $this->vue->afficherDetailsFournisseur($fournisseur, $produits, $assos);
         } else {
-            header("Location: index.php?module=gestionnaire&action=fournisseurs");
+            header("Location: index.php?module=gestionnaire&action=fournisseurs&error=no_asso_selected");
+            exit();
         }
     }
 
@@ -961,7 +965,6 @@ class ControleurGestionnaire
 
     private function afficherFormulaireInventaire()
     {
-        // On récupère l'ID passé dans le lien (ex: &id=1)
         $id_assos = $_GET['id'] ?? null;
 
         if (!$id_assos) {

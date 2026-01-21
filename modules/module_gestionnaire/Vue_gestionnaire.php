@@ -50,122 +50,102 @@ class VueGestionnaire extends VueStaff
     public function afficherDetailsFournisseur($fournisseur, $produits, $assos)
     {
         $this->afficherNav();
+
+        $nomAsso = (is_array($assos) && isset($assos['nom'])) ? $assos['nom'] : "Association";
+        $idAsso = (is_array($assos) && isset($assos['id'])) ? $assos['id'] : 0;
+
+        $nomFournisseur = ($fournisseur && isset($fournisseur['nom'])) ? $fournisseur['nom'] : "Fournisseur inconnu";
+        $idFournisseur = ($fournisseur && isset($fournisseur['id'])) ? $fournisseur['id'] : 0;
         ?>
-        <link rel="stylesheet" href="css/reappro-detail.css">
+        <link rel="stylesheet" href="css/reappro-detail.css?v=<?= time() ?>">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
-        <div class="reappro-wrapper" style="padding: 20px 0;">
+        <div class="reappro-scope">
+            <div class="reappro-wrapper">
+                <header class="hero-header">
+                    <div class="header-content">
+                        <a href="index.php?module=gestionnaire&action=fournisseurs" class="back-link" style="color:#94a3b8; text-decoration:none; font-weight:bold; font-size:12px; text-transform:uppercase;">
+                            <i class="fa-solid fa-arrow-left"></i> Retour
+                        </a>
+                        <span class="pre-title" style="display:block; color:#f59e0b; font-weight:800; letter-spacing:2px; font-size:11px; text-transform:uppercase; margin-top:10px;">Espace Logistique</span>
+                        <h1 class="main-asso-display"><?= htmlspecialchars($nomAsso) ?></h1>
+                        <div class="supplier-pill" style="background:rgba(245,158,11,0.1); padding:8px 16px; border-radius:50px; display:inline-flex; align-items:center; gap:10px; color:#f59e0b; border:1px solid rgba(245,158,11,0.2);">
+                            <i class="fa-solid fa-truck-fast"></i>
+                            <span>Fournisseur : <strong><?= htmlspecialchars($nomFournisseur) ?></strong></span>
+                        </div>
+                    </div>
+                </header>
 
-            <div style="max-width: 1400px; margin: 0 auto 20px auto; padding: 0 20px;">
-                <a href="index.php?module=gestionnaire&action=fournisseurs"
-                   style="text-decoration: none; color: var(--text-dim); font-size: 0.8rem; font-weight: 700; text-transform: uppercase; display: flex; align-items: center; gap: 8px; transition: 0.3s;"
-                   onmouseover="this.style.color='#f59e0b'" onmouseout="this.style.color='var(--text-dim)'">
-                    <i class="fa-solid fa-arrow-left"></i> Retour aux fournisseurs
-                </a>
-            </div>
+                <div class="reappro-grid">
+                    <div class="catalog-side">
+                        <div style="position:relative; margin-bottom:30px;">
+                            <i class="fa-solid fa-magnifying-glass" style="position:absolute; left:20px; top:50%; transform:translateY(-50%); color:#f59e0b;"></i>
+                            <input type="text" id="searchBar" onkeyup="filterCatalogue()"
+                                   placeholder="Rechercher un produit..."
+                                   style="width:100%; padding:15px 15px 15px 50px; background:#0f172a; border:1px solid rgba(255,255,255,0.1); border-radius:15px; color:white; font-size:1rem; outline:none;">
+                        </div>
 
-            <div class="reappro-grid">
-                <div class="catalog-side">
-                    <div style="margin-bottom: 30px;">
-                        <p style="color: var(--text-dim); font-weight: 700; letter-spacing: 2px; font-size: 0.8rem; margin: 0;">
-                            RÉAPPROVISIONNEMENT POUR
-                        </p>
-                        <h1 style="font-family: 'Montserrat', sans-serif; font-weight: 900; font-style: italic; text-transform: uppercase; font-size: 3.2rem; color: #f59e0b; line-height: 1; margin: 5px 0;">
-                            <?= htmlspecialchars($assos['nom']) ?>
-                        </h1>
-                        <p style="color: var(--text-dim); font-size: 0.9rem;">FOURNISSEUR : <strong><?= htmlspecialchars($fournisseur['nom']) ?></strong></p>
+                        <form id="mainOrderForm" action="index.php?module=gestionnaire&action=validerReappro" method="POST">
+                            <input type="hidden" name="id_fournisseur" value="<?= $idFournisseur ?>">
+                            <input type="hidden" name="id_association" value="<?= $idAsso ?>">
+
+                            <div id="catalogList">
+                                <?php if (!empty($produits)): ?>
+                                    <?php foreach ($produits as $p): ?>
+                                        <div class="product-card" data-price="<?= $p['prix_achat'] ?>">
+                                            <div class="p-details">
+                                                <h3 style="margin:0; font-size:1.1rem; font-weight:800; text-transform:uppercase;"><?= htmlspecialchars($p['nom']) ?></h3>
+                                                <span style="color:#f59e0b; font-weight:700;"><?= number_format($p['prix_achat'], 2) ?>€</span>
+                                            </div>
+                                            <div class="qty-selector">
+                                                <button type="button" class="q-btn" onclick="updateQty(this, -1)" style="width:35px; height:35px; background:#1e293b; color:white; border:none; border-radius:8px; cursor:pointer; font-weight:bold;">-</button>
+                                                <input type="number" name="produits[<?= $p['id'] ?>][quantite]"
+                                                       class="qty-input" value="0" readonly>
+                                                <button type="button" class="q-btn" onclick="updateQty(this, 1)" style="width:35px; height:35px; background:#1e293b; color:white; border:none; border-radius:8px; cursor:pointer; font-weight:bold;">+</button>
+                                            </div>
+                                        </div>
+                                    <?php endforeach; ?>
+                                <?php else: ?>
+                                    <p style="color:#94a3b8; text-align:center;">Aucun produit disponible.</p>
+                                <?php endif; ?>
+                            </div>
+                        </form>
                     </div>
 
-                    <input type="text" id="searchBar" onkeyup="filterCatalogue()"
-                           placeholder="Chercher un produit (ex: Coca, Chips...)" class="search-input">
+                    <aside class="cart-side">
+                        <div class="glass-cart">
+                            <div style="display:flex; align-items:center; gap:10px; margin-bottom:20px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:15px;">
+                                <i class="fa-solid fa-basket-shopping" style="color:#f59e0b;"></i>
+                                <h2 style="margin:0; font-size:1rem; font-weight:800; letter-spacing:1px;">VOTRE PANIER</h2>
+                            </div>
 
-                    <form id="mainOrderForm" action="index.php?module=gestionnaire&action=validerReappro" method="POST">
-                        <input type="hidden" name="id_fournisseur" value="<?= $fournisseur['id'] ?>">
-                        <input type="hidden" name="id_association" value="<?= $assos['id'] ?>">
+                            <div id="error-message" style="display:none; color:#ef4444; background:rgba(239,68,68,0.1); padding:10px; border-radius:10px; text-align:center; font-weight:bold; margin-bottom:15px;">Panier vide !</div>
 
-                        <div id="catalogList">
-                            <?php foreach ($produits as $p): ?>
-                                <div class="product-card" data-price="<?= $p['prix_achat'] ?>">
-                                    <div>
-                                        <h3 style="font-weight: 700; text-transform: uppercase; margin: 0;"><?= htmlspecialchars($p['nom']) ?></h3>
-                                        <span style="font-weight: 400; color: var(--text-dim); font-size: 0.9rem;">
-                                    Prix unitaire : <?= number_format($p['prix_achat'], 2) ?>€
-                                </span>
-                                    </div>
+                            <div id="cartSummaryList" class="cart-items-list">
+                                <p class="empty-msg">Aucun article sélectionné</p>
+                            </div>
 
-                                    <div class="qty-controls">
-                                        <button type="button" class="qty-btn" onclick="updateQty(this, -1)">-</button>
-                                        <input type="number"
-                                               name="produits[<?= $p['id'] ?>][quantite]"
-                                               class="qty-input" value="0" readonly>
-                                        <button type="button" class="qty-btn" onclick="updateQty(this, 1)">+</button>
-                                    </div>
+                            <div style="margin-top:20px;">
+                                <div style="display:flex; justify-content:space-between; margin-bottom:5px; color:#94a3b8; font-size:0.8rem; font-weight:bold; text-transform:uppercase;">
+                                    <span>Articles</span>
+                                    <span id="totalQtyCount">0</span>
                                 </div>
-                            <?php endforeach; ?>
+                                <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid rgba(255,255,255,0.1); padding-top:15px; margin-top:10px;">
+                                    <span style="color:white; font-weight:bold;">TOTAL HT</span>
+                                    <span style="font-size:2rem; font-weight:900; color:#f59e0b;"><span id="totalPriceSum">0.00</span>€</span>
+                                </div>
+                                <button type="button" onclick="validerPanier()"
+                                        style="width:100%; padding:18px; background:#f59e0b; border:none; border-radius:15px; font-weight:900; text-transform:uppercase; margin-top:20px; cursor:pointer; transition:0.3s;">
+                                    CONFIRMER
+                                </button>
+                            </div>
                         </div>
-                    </form>
-                </div>
-
-                <div class="cart-side">
-                    <div class="cart-title">
-                        <i class="fa-solid fa-cart-shopping" style="color: #f59e0b; margin-right: 10px;"></i>
-                        RÉSUMÉ COMMANDE
-                    </div>
-
-                    <div id="error-message" style="display: none; background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; color: #ef4444; padding: 12px; border-radius: 8px; font-size: 0.8rem; font-weight: 600; margin-bottom: 15px; text-align: center;">
-                        <i class="fa-solid fa-circle-exclamation"></i> Votre panier est vide !
-                    </div>
-
-                    <div id="cartSummaryList" style="min-height: 100px; margin-bottom: 25px; border-bottom: 1px solid #1e293b; padding-bottom: 15px;">
-                        <p style="text-align:center; color:#475569; font-size:0.8rem;">Panier vide</p>
-                    </div>
-
-                    <div style="background: rgba(0,0,0,0.2); padding: 20px; border-radius: 12px;">
-                        <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-                            <span style="font-size: 0.7rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase;">Articles</span>
-                            <span id="totalQtyCount" style="font-weight: 700;">0</span>
-                        </div>
-                        <div style="display:flex; justify-content:space-between; align-items: center;">
-                            <span style="font-size: 0.7rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase;">Total HT</span>
-                            <span style="font-size: 1.6rem; font-weight: 900; color: #f59e0b;">
-                        <span id="totalPriceSum">0.00</span>€
-                    </span>
-                        </div>
-                    </div>
-
-                    <button type="button" class="btn-validate" onclick="validerPanier()">
-                        CONFIRMER L'ACHAT
-                    </button>
+                    </aside>
                 </div>
             </div>
         </div>
 
-        <script>
-            function validerPanier() {
-                const totalArticles = parseInt(document.getElementById('totalQtyCount').innerText);
-                const errorDiv = document.getElementById('error-message');
-
-                if (totalArticles <= 0) {
-                    errorDiv.style.display = 'block';
-                    errorDiv.style.animation = 'shake 0.4s ease-in-out';
-                    setTimeout(() => {
-                        errorDiv.style.display = 'none';
-                    }, 3000);
-                } else {
-                    document.getElementById('mainOrderForm').submit();
-                }
-            }
-        </script>
-
-        <style>
-            @keyframes shake {
-                0%, 100% { transform: translateX(0); }
-                25% { transform: translateX(-5px); }
-                75% { transform: translateX(5px); }
-            }
-        </style>
-
-        <script src="js/reappro.js"></script>
+        <script src="js/reappro.js?v=<?= time() ?>"></script>
         <?php
     }
     public function afficherSuccesCommande()
@@ -2432,103 +2412,86 @@ class VueGestionnaire extends VueStaff
     public function afficherFournisseurs($fournisseurs, $associations)
     {
         $this->afficherNav();
+
+        $currentAssoId = $_SESSION['asso_choisi'] ?? null;
+        $currentAssoName = "Gestionnaire";
+
+        if ($currentAssoId) {
+            foreach ($associations as $asso) {
+                if ($asso['id'] == $currentAssoId) {
+                    $currentAssoName = $asso['nom'];
+                    break;
+                }
+            }
+        }
         ?>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-        <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,800;1,800&display=swap"
-              rel="stylesheet">
-        <link rel="stylesheet" href="css/reappro.css">
+        <link rel="stylesheet" href="css/reappro_fournisseurs.css">
 
-        <div class="fixed-top-section" style="background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(245, 158, 11, 0.1); padding: 15px 0; position: sticky; top: 0; z-index: 1000;">
-            <div class="max-w-[1600px] mx-auto px-10 flex justify-between items-center gap-6">
-
-                <div class="flex items-center gap-4">
-                    <div style="background: linear-gradient(135deg, #f59e0b, #fbbf24); width: 45px; height: 45px; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #000; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);">
-                        <i class="fa-solid fa-truck-fast text-xl"></i>
+        <div class="reappro-header">
+            <div class="header-content">
+                <div class="top-navigation">
+                    <div class="brand-mini">
+                        <i class="fa-solid fa-truck-fast text-amber-500"></i>
+                        <span>Logistique & Approvisionnement</span>
                     </div>
-                    <div>
-                        <h1 style="font-family: 'Montserrat', sans-serif; font-weight: 900; font-style: italic;" class="text-2xl text-white uppercase m-0 leading-none tracking-tighter">
-                            RÉAPPRO<span style="color: #f59e0b;">.</span>
-                        </h1>
-                        <span class="text-[10px] text-amber-500/80 font-black tracking-[0.2em] uppercase">Logistique & Stocks</span>
-                    </div>
-                </div>
-
-                <div class="global-selector-bar" id="selectorContainer" style="flex: 0 1 500px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.05); border-radius: 14px; padding: 6px 15px; display: flex; align-items: center; gap: 12px; transition: all 0.3s ease;">
-                    <i class="fa-solid fa-store text-amber-500"></i>
-                    <div class="search-box" style="flex:1; position:relative;">
-                        <input type="text" id="mainAssoInput"
-                               style="background: transparent; border: none; color: white; width: 100%; outline: none; font-weight: 600; font-size: 0.95rem;"
-                               placeholder="Saisir le nom d'une association..."
-                               autocomplete="off">
-
-                        <div id="mainAssoResults" class="search-results shadow-2xl" style="position: absolute; top: 120%; left: -15px; right: -15px; background: #1e293b; border-radius: 12px; border: 1px solid rgba(245, 158, 11, 0.2); overflow: hidden; display: none; z-index: 1001;">
-                            <?php foreach ($associations as $asso): ?>
-                                <div class="result-item" data-id="<?= $asso['id'] ?>" style="padding: 12px 18px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center; transition: background 0.2s;">
-                                    <div class="flex flex-col">
-                                        <strong class="text-white text-sm uppercase"><?= htmlspecialchars($asso['nom']) ?></strong>
-                                        <span class="text-[10px] text-slate-400 font-bold uppercase">ID: #<?= $asso['id'] ?></span>
-                                    </div>
-                                    <span style="background: rgba(34, 197, 94, 0.1); color: #22c55e; padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: 800;">
-                                <?= number_format($asso['solde'], 2) ?>€
-                            </span>
-                                </div>
-                            <?php endforeach; ?>
-                        </div>
-                    </div>
-                    <i class="fa-solid fa-chevron-down text-[10px] text-slate-500"></i>
-                </div>
-
-                <div class="flex items-center gap-3">
-                    <a href="index.php?module=gestionnaire&action=rechercherPrix" class="flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-xs uppercase transition-all"
-                       style="background: #f59e0b; color: black; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);">
-                        <i class="fa-solid fa-magnifying-glass-chart"></i> Comparateur
-                    </a>
-                    <a href="index.php?module=gestionnaire&action=mesCommandes" class="flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-xs uppercase transition-all"
-                       style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1); color: white;">
-                        <i class="fa-solid fa-clock-rotate-left text-amber-500"></i> Historique
-                    </a>
-                </div>
-            </div>
-        </div>
-
-        <style>
-            .result-item:hover {
-                background: rgba(245, 158, 11, 0.1) !important;
-            }
-            #selectorContainer:focus-within {
-                border-color: #f59e0b !important;
-                background: rgba(0,0,0,0.5) !important;
-                box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
-            }
-        </style>
-
-        <div class="supplier-grid">
-            <?php foreach ($fournisseurs as $f): ?>
-                <div class="supplier-card">
-                <span class="status-badge" id="badge-<?= $f['id'] ?>">
-                    <i class="fa-solid fa-lock text-slate-500"></i> Sélectionner asso
-                </span>
-                    <h2 class="text-2xl font-black text-white uppercase mb-4"><?= htmlspecialchars($f['nom']) ?></h2>
-
-                    <a href="javascript:void(0)"
-                       id="btn-cat-<?= $f['id'] ?>"
-                       data-base-url="index.php?module=gestionnaire&action=voirFournisseur&id=<?= $f['id'] ?>"
-                       class="catalog-btn">
-                        <i class="fa-solid fa-cart-flatbed"></i> Ouvrir Catalogue
-                    </a>
-
-                    <div class="action-grid"
-                         style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px;">
-                        <a href="index.php?module=gestionnaire&action=contacterFournisseur&id=<?= $f['id'] ?>"
-                           class="btn-sub btn-contact-full">
-                            <i class="fa-solid fa-address-card"></i> Contacter
+                    <div class="header-actions">
+                        <a href="index.php?module=gestionnaire&action=rechercherPrix" class="nav-btn">
+                            <i class="fa-solid fa-chart-line"></i> Comparateur
+                        </a>
+                        <a href="index.php?module=gestionnaire&action=mesCommandes" class="nav-btn">
+                            <i class="fa-solid fa-clock-rotate-left"></i> Historique
+                        </a>
+                        <a href="index.php?reset=1" class="nav-btn reset">
+                            <i class="fa-solid fa-arrow-rotate-left"></i> Changer d'asso
                         </a>
                     </div>
                 </div>
-            <?php endforeach; ?>
+
+                <h1 class="main-asso-title">
+                    <?= htmlspecialchars($currentAssoName) ?><span class="dot">.</span>
+                </h1>
+            </div>
         </div>
 
-        <script src="js/recherche_assos.js"></script>
+        <div class="supplier-container">
+            <div class="supplier-grid">
+                <?php foreach ($fournisseurs as $f): ?>
+                    <div class="supplier-card-modern">
+                        <div class="card-top">
+                            <div class="avatar-circle">
+                                <?= strtoupper(substr($f['nom'], 0, 1)) ?>
+                            </div>
+                            <div class="badge-status <?= $currentAssoId ? 'on' : 'off' ?>">
+                                <?= $currentAssoId ? 'Disponible' : 'Bloqué' ?>
+                            </div>
+                        </div>
+
+                        <div class="card-mid">
+                            <h2 class="name"><?= htmlspecialchars($f['nom']) ?></h2>
+                            <div class="contact-row">
+                                <i class="fa-solid fa-envelope"></i>
+                                <span><?= htmlspecialchars($f['email'] ?? 'Non renseigné') ?></span>
+                            </div>
+                        </div>
+
+                        <div class="card-bottom">
+                            <?php if ($currentAssoId): ?>
+                                <a href="index.php?module=gestionnaire&action=voirFournisseur&id=<?= $f['id'] ?>" class="btn-main">
+                                    <i class="fa-solid fa-box-open"></i> Catalogue
+                                </a>
+                            <?php else: ?>
+                                <a href="index.php" class="btn-main lock">Choisir une association</a>
+                            <?php endif; ?>
+
+                            <a href="index.php?module=gestionnaire&action=contacterFournisseur&id=<?= $f['id'] ?>" class="btn-side" title="Contacter">
+                                <i class="fa-solid fa-paper-plane"></i>
+                            </a>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        </div>
         <?php
     }
 
