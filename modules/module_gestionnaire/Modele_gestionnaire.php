@@ -7,11 +7,31 @@ class ModeleGestionnaire extends ModeleStaff
 {
     public function getTousLesFournisseurs()
     {
-        $req = $this->getBdd()->prepare("SELECT id, nom, telephone, email FROM fournisseur ORDER BY nom ASC");
+        $req =self::getBdd()->prepare("SELECT id, nom, telephone, email FROM fournisseur ORDER BY nom ASC");
         $req->execute();
         return $req->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    public function sauvegarderDemande($idGest, $nomAsso, $pdfIdentite, $pdfPv, $pdfAgo) {
+        try {
+            $sql = "INSERT INTO demandes_association 
+            (id_gestionnaire, nom_association, pdf_identite, pdf_pv_creation, pdf_ago, statut, date_soumission) 
+            VALUES (?, ?, ?, ?, ?, 'en_attente', NOW())";
+            $stmt = self::getBdd()->prepare($sql);
+            return $stmt->execute([$idGest, $nomAsso, $pdfIdentite, $pdfPv, $pdfAgo]);
+        } catch (PDOException $e) {
+            error_log("Erreur sauvegarderDemande: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    public function demandeExisteDeja($idGest, $nomAsso) {
+        $sql = "SELECT COUNT(*) FROM demandes_association 
+            WHERE id_gestionnaire = ? AND nom_association = ?";
+        $stmt = self::getBdd()->prepare($sql);
+        $stmt->execute([$idGest, $nomAsso]);
+        return $stmt->fetchColumn() > 0;
+    }
     public function getBenefices($associationId)
     {
         try {
@@ -53,72 +73,18 @@ class ModeleGestionnaire extends ModeleStaff
         }
     }
 
-
-    public function getStatsEvolutionSeptJours($idGest)
-    {
-        $stats = ['dates' => [], 'recettes' => [], 'pertes' => [], 'benefices' => []];
-
-        for ($i = 6; $i >= 0; $i--) {
-            $date = date('Y-m-d', strtotime("-$i days"));
-            $stats['dates'][] = date('d/m', strtotime($date));
-
-            $sqlR = "SELECT SUM(v.montant_total) 
-                     FROM vente v
-                     JOIN appartient a ON v.compte_id = a.compte_id
-                     JOIN gestionne g ON a.association_id = g.association_id
-                     WHERE g.compte_id = ? AND v.date_vente = ? AND a.role = 'barman'";
-            $stmtR = self::getBdd()->prepare($sqlR);
-            $stmtR->execute([$idGest, $date]);
-            $r = (float)$stmtR->fetchColumn() ?: 0;
-
-
-            $sqlP = "SELECT SUM(co.perte * p.prix) 
-                     FROM concerne co
-                     JOIN produit p ON co.produit_id = p.id
-                     JOIN inventaire i ON co.inventaire_id = i.id
-                     JOIN gestionne g ON i.association_id = g.association_id
-                     WHERE g.compte_id = ? AND i.date_inventaire = ?";
-            $stmtP = self::getBdd()->prepare($sqlP);
-            $stmtP->execute([$idGest, $date]);
-            $p = (float)$stmtP->fetchColumn() ?: 0;
-
-            $stats['recettes'][] = $r;
-            $stats['pertes'][] = $p;
-            $stats['benefices'][] = $r - $p;
-        }
-        return $stats;
-    }
-
-    public function getTotalPertes($idGestionnaire)
-    {
-        $sql = "SELECT SUM(perte * prix) as valeur_perte 
-            FROM concerne 
-            JOIN produit ON concerne.produit_id = produit.id
-            JOIN gere ON produit.id = gere.produit_id
-            JOIN gestionne ON gere.association_id = gestionne.association_id
-            WHERE gestionne.compte_id = ?";
+    public function getDemandeEnCours($idGest) {
+        $sql = "SELECT * FROM demandes_association WHERE id_gestionnaire = ? AND statut = 'en_attente' LIMIT 1";
         $stmt = self::getBdd()->prepare($sql);
-        $stmt->execute([$idGestionnaire]);
-        return $stmt->fetchColumn() ?: 0;
+        $stmt->execute([$idGest]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
     }
-
-    public function getTopProduits($idGest)
-    {
-        $sql = "SELECT p.nom, SUM(c.quantite) as total_vendu, p.prix
-            FROM contient c
-            JOIN produit p ON c.produit_id = p.id
-            JOIN gere g ON p.id = g.produit_id
-            JOIN gestionne gn ON g.association_id = gn.association_id
-            WHERE gn.compte_id = :idGest
-            GROUP BY p.id
-            ORDER BY total_vendu DESC
-            LIMIT 5";
-
+    public function getDemandesGestionnaire($idGest) {
+        $sql = "SELECT * FROM demandes_association WHERE id_gestionnaire = ? ORDER BY date_soumission DESC";
         $stmt = self::getBdd()->prepare($sql);
-        $stmt->execute(['idGest' => $idGest]);
+        $stmt->execute([$idGest]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
-
     public function rechercherProduitGlobal($nomProduit)
     {
         $sql = "SELECT p.nom as produit_nom, f.nom as fournisseur_nom, f.id as id_f,
@@ -251,35 +217,22 @@ class ModeleGestionnaire extends ModeleStaff
     public function validerInventaire($idAssociation, $donneesStocks)
     {
         try {
-            $this->getBdd()->beginTransaction();
-
-            // 1. Création de l'inventaire (Historique)
-            $stmtInv = $this->getBdd()->prepare("INSERT INTO inventaire (date_inventaire, association_id) VALUES (NOW(), ?)");
+            self::getBdd()->beginTransaction();
+            $stmtInv = self::getBdd()->prepare("INSERT INTO inventaire (date_inventaire, association_id) VALUES (NOW(), ?)");
             $stmtInv->execute([$idAssociation]);
             $idInventaire = $this->getBdd()->lastInsertId();
 
-            // 2. Préparation des Updates
-            $stmtDetail = $this->getBdd()->prepare("INSERT INTO concerne (produit_id, inventaire_id, stock_theorique, stock_reel, perte) VALUES (?, ?, ?, ?, ?)");
-
-            // Update Table GERE (Stock bar)
-            $stmtUpdateGere = $this->getBdd()->prepare("UPDATE gere SET stock_asso = ? WHERE association_id = ? AND produit_id = ?");
-
-            // Update Table PRODUIT (Stock global utilisé par afficherFormulaireInventaire)
-            $stmtUpdateGlobal = $this->getBdd()->prepare("UPDATE produit SET quantiteActuelle = ? WHERE id = ?");
+            $stmtDetail = self::getBdd()->prepare("INSERT INTO concerne (produit_id, inventaire_id, stock_theorique, stock_reel, perte) VALUES (?, ?, ?, ?, ?)");
+            $stmtUpdateGere = self::getBdd()->prepare("UPDATE gere SET stock_asso = ? WHERE association_id = ? AND produit_id = ?");
+            $stmtUpdateGlobal = self::getBdd()->prepare("UPDATE produit SET quantiteActuelle = ? WHERE id = ?");
 
             foreach ($donneesStocks as $idProduit => $stockReel) {
-                // On récupère le stock actuel pour calculer l'écart
                 $sqlT = "SELECT stock_asso FROM gere WHERE association_id = ? AND produit_id = ?";
-                $st = $this->getBdd()->prepare($sqlT);
+                $st = self::getBdd()->prepare($sqlT);
                 $st->execute([$idAssociation, $idProduit]);
                 $stockTheorique = $st->fetchColumn() ?: 0;
-
                 $perte = $stockTheorique - $stockReel;
-
-                // Enregistrer l'écart dans concerne
                 $stmtDetail->execute([$idProduit, $idInventaire, $stockTheorique, $stockReel, $perte]);
-
-                // ON MET À JOUR LES DEUX TABLES POUR ACTUALISER L'AFFICHAGE
                 $stmtUpdateGere->execute([$stockReel, $idAssociation, $idProduit]);
                 $stmtUpdateGlobal->execute([$stockReel, $idProduit]);
             }
@@ -287,32 +240,11 @@ class ModeleGestionnaire extends ModeleStaff
             $this->getBdd()->commit();
             return true;
         } catch (Exception $e) {
-            if ($this->getBdd()->inTransaction()) $this->getBdd()->rollBack();
+            if (self::getBdd()->inTransaction()) $this->getBdd()->rollBack();
             error_log("Erreur Inventaire : " . $e->getMessage());
             return false;
         }
     }
-
-    public function creerCommandeFournisseur($idGestionnaire, $idFournisseur, $idAssociation, $notes = '')
-    {
-        try {
-            $sql = "INSERT INTO commandes_fournisseur 
-                (id_gestionnaire, id_fournisseur, id_association, notes, statut, date_commande) 
-                VALUES (:id_gest, :id_fourn, :id_asso, :notes, 'en_attente', NOW())";
-            $stmt = self::getBdd()->prepare($sql);
-            $stmt->execute([
-                ':id_gest' => $idGestionnaire,
-                ':id_fourn' => $idFournisseur,
-                ':id_asso' => $idAssociation,
-                ':notes' => $notes
-            ]);
-            return $this->pdo->lastInsertId();
-        } catch (PDOException $e) {
-            error_log("Erreur creerCommandeFournisseur: " . $e->getMessage());
-            return false;
-        }
-    }
-
     public function getAssociationsGerees($idGest)
     {
         $sql = "SELECT a.* FROM association a 

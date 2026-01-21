@@ -30,11 +30,12 @@ class ControleurGestionnaire
             case 'accueil':
                 $this->afficherTableauDeBord();
                 break;
-
             case 'voirProduits':
                 $this->afficherProduits();
                 break;
-
+            case 'mesDemandes':
+                $this->afficherDemandesEnCours();
+                break;
             case 'ajouterProduit':
                 $this->gererAjoutProduit();
                 break;
@@ -191,6 +192,16 @@ class ControleurGestionnaire
                 $this->annulerCommande();
                 break;
 
+            case 'demanderCreationAsso':
+                $this->afficherFormulaireDemandeAsso();
+                break;
+
+            case 'envoyerDemande':
+                $this->envoyerDemande();
+                break;
+            case 'demandeEnCours':
+                $this->afficherPageDemandeEnCours();
+                break;
             case 'mesMessages':
                 $this->afficherMessages();
                 break;
@@ -233,6 +244,81 @@ class ControleurGestionnaire
         }
     }
 
+    private function afficherFormulaireDemandeAsso() {
+        $idGest = $_SESSION['id'] ?? null;
+        $historique = $this->modele->getDemandesGestionnaire($idGest);
+        if (isset($_GET['action']) && $_GET['action'] == 'demanderCreationAsso' && isset($_GET['nouveau'])) {
+            $this->vue->afficherFormulaireDemande();
+        } elseif (empty($historique)) {
+            $this->vue->afficherFormulaireDemande();
+        } else {
+            $this->vue->afficherDemandeEnCours($historique);
+        }
+    }
+
+
+    private function envoyerDemande() {
+        $idGest = $_SESSION['id'];
+        $nomAsso = $_POST['nom_association'] ?? '';
+
+        if ($this->modele->demandeExisteDeja($idGest, $nomAsso)) {
+            echo "Erreur : Vous avez déjà une demande pour ce nom ou une demande en attente.";
+            return;
+        }
+
+        $uploadDir = 'uploads/dossiers_assos/';
+        if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
+
+        $paths = [];
+        $filesToUpload = [
+            'pdf_identite' => 'CNI',
+            'pdf_pv'       => 'PV',
+            'pdf_ago'      => 'AGO'
+        ];
+
+        foreach ($filesToUpload as $key => $prefix) {
+            if (isset($_FILES[$key]) && $_FILES[$key]['error'] === UPLOAD_ERR_OK) {
+                $extension = pathinfo($_FILES[$key]['name'], PATHINFO_EXTENSION);
+                $filename = $idGest . "_" . $prefix . "_" . time() . "." . $extension;
+                $destination = $uploadDir . $filename;
+
+                if (move_uploaded_file($_FILES[$key]['tmp_name'], $destination)) {
+                    $paths[$key] = $destination;
+                }
+            }
+        }
+
+        if (count($paths) === 3) {
+            $success = $this->modele->sauvegarderDemande(
+                $idGest,
+                $nomAsso,
+                $paths['pdf_identite'],
+                $paths['pdf_pv'],
+                $paths['pdf_ago']
+            );
+
+            if ($success) {
+                header("Location: index.php?module=gestionnaire&action=demanderCreationAsso");
+                exit();
+            }
+        } else {
+            echo "Erreur lors de l'upload des fichiers.";
+        }
+    }
+
+
+    private function afficherPageDemandeEnCours()
+    {
+        $nomAsso = $_SESSION['nom_association_demandee'] ?? null;
+        $this->vue->afficherDemandeEnCours($nomAsso);
+        unset($_SESSION['nom_association_demandee']);
+    }
+
+    private function afficherDemandesEnCours() {
+        $idGest = $_SESSION['id'];
+        $demandes = $this->modele->getDemandesGestionnaire($idGest);
+        $this->vue->afficherDemandeEnCours($demandes);
+    }
     private function afficherDetailsProduits() {
         $idAsso = $_SESSION['asso_choisi'] ?? null;
         if ($idAsso) {

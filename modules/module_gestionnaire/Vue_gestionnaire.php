@@ -7,6 +7,120 @@ class VueGestionnaire extends VueStaff
 {
     private $nbMessages = 0;
 
+    public function afficherFormulaireDemande() {
+        ?>
+        <div class="max-w-4xl mx-auto p-8 bg-white/5 border border-white/10 rounded-[3rem] shadow-2xl mt-10">
+            <h1 class="text-4xl font-black text-white italic mb-8 uppercase tracking-tighter">Créer une Association</h1>
+
+            <form id="formDemandeAsso" action="index.php?module=gestionnaire&action=envoyerDemande" method="POST" enctype="multipart/form-data" class="space-y-8">
+
+                <div class="space-y-2">
+                    <label class="text-[10px] font-black text-emerald-500 uppercase tracking-widest ml-4">Nom de l'association</label>
+                    <input type="text" name="nom_association" required minlength="3" placeholder="Ex: BDE Informatique"
+                           class="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all">
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <?php
+                    $files = [
+                            'pdf_identite' => 'Carte d\'identité',
+                            'pdf_pv' => 'Procès-Verbal',
+                            'pdf_ago' => 'Statuts / AGO'
+                    ];
+                    foreach ($files as $name => $label): ?>
+                        <div class="relative group">
+                            <label class="block p-6 bg-black/40 border-2 border-dashed border-white/10 rounded-3xl hover:border-emerald-500/50 transition-all cursor-pointer text-center">
+                                <input type="file" name="<?= $name ?>" id="<?= $name ?>" accept=".pdf" required class="hidden" onchange="updateFileName('<?= $name ?>')">
+                                <i class="fa-solid fa-file-pdf text-3xl text-white/20 group-hover:text-emerald-500 mb-3 block"></i>
+                                <span class="text-[10px] font-black text-white/40 uppercase block mb-1"><?= $label ?></span>
+                                <span id="label_<?= $name ?>" class="text-xs text-emerald-500 font-bold truncate block">Choisir un PDF</span>
+                            </label>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+
+                <button type="submit" id="btnEnvoyer"
+                        class="w-full bg-emerald-500 hover:bg-emerald-400 text-black font-black py-6 rounded-2xl uppercase tracking-widest shadow-xl shadow-emerald-500/20 transition-all transform hover:scale-[1.02] active:scale-95">
+                    <span id="btnText">Envoyer le dossier</span>
+                </button>
+            </form>
+        </div>
+
+        <script>
+            function updateFileName(id) {
+                const input = document.getElementById(id);
+                const label = document.getElementById('label_' + id);
+                if (input.files.length > 0) {
+                    label.innerText = input.files[0].name;
+                    label.classList.replace('text-emerald-500', 'text-white');
+                }
+            }
+
+            document.getElementById('formDemandeAsso').onsubmit = function() {
+                const btn = document.getElementById('btnEnvoyer');
+                const txt = document.getElementById('btnText');
+
+                btn.disabled = true;
+                btn.style.opacity = "0.7";
+                btn.style.cursor = "not-allowed";
+                txt.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Envoi en cours...';
+            };
+        </script>
+        <?php
+    }
+
+    public function afficherDemandeEnCours($demandes = []) {
+        $this->afficherNav();
+        ?>
+        <div class="max-w-5xl mx-auto p-8 mt-10">
+            <div class="flex items-center justify-between mb-12">
+                <div>
+                    <h1 class="text-4xl font-black text-white italic uppercase tracking-tighter">Suivi de mes dossiers</h1>
+                    <p class="text-slate-500 text-sm">Vous pouvez soumettre plusieurs demandes d'association.</p>
+                </div>
+
+                <a href="index.php?module=gestionnaire&action=demanderCreationAsso&nouveau=1"
+                   class="bg-emerald-500 hover:bg-emerald-400 text-black px-6 py-3 rounded-2xl font-black uppercase text-[10px] tracking-widest transition-all shadow-lg shadow-emerald-500/20">
+                    + Nouvelle demande
+                </a>
+            </div>
+
+            <?php if (empty($demandes)): ?>
+                <div class="bg-white/5 border border-dashed border-white/10 rounded-[3rem] p-20 text-center">
+                    <i class="fa-solid fa-folder-open text-white/10 text-6xl mb-6"></i>
+                    <p class="text-slate-400 font-bold">Aucun dossier envoyé.</p>
+                </div>
+            <?php else: ?>
+                <div class="grid gap-6">
+                    <?php foreach ($demandes as $d):
+                        $statut = $d['statut'] ?? 'en_attente';
+                        $config = [
+                                'en_attente' => ['label' => 'En cours', 'class' => 'bg-amber-500/10 text-amber-500 border-amber-500/20', 'icon' => 'fa-hourglass-half'],
+                                'validee'    => ['label' => 'Acceptée', 'class' => 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20', 'icon' => 'fa-check-circle'],
+                                'refusee'    => ['label' => 'Refusée', 'class' => 'bg-rose-500/10 text-rose-500 border-rose-500/20', 'icon' => 'fa-times-circle']
+                        ];
+                        $current = $config[$statut] ?? $config['en_attente'];
+                        ?>
+                        <div class="bg-white/5 border border-white/10 rounded-[2rem] p-6 flex items-center justify-between hover:bg-white/[0.08] transition-all">
+                            <div class="flex items-center gap-6">
+                                <div class="w-16 h-16 bg-black/40 rounded-2xl flex items-center justify-center text-emerald-500">
+                                    <i class="fa-solid fa-building text-2xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-xl font-black text-white uppercase italic"><?= htmlspecialchars((string)$d['nom_association']) ?></h3>
+                                    <p class="text-xs text-slate-500">Envoyé le <?= date('d/m/Y à H:i', strtotime($d['date_soumission'])) ?></p>
+                                </div>
+                            </div>
+                            <span class="px-5 py-2 rounded-full border text-[10px] font-black uppercase tracking-widest <?= $current['class'] ?>">
+                        <i class="fa-solid <?= $current['icon'] ?> mr-2"></i> <?= $current['label'] ?>
+                    </span>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
+        </div>
+        <?php
+    }
     public function afficherProfilFournisseur($f)
     {
         $this->afficherNav();
@@ -597,9 +711,9 @@ class VueGestionnaire extends VueStaff
             </a>
 
             <a href="index.php?action=voirListeClients" class="flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all duration-300 ' . ($actionActuelle == 'voirListeClients' ? $activeClass : $inactiveClass) . '">
-    <i class="fa-solid fa-address-book text-lg"></i>
-    <span class="font-bold text-sm tracking-tight">Clients</span>
-</a>
+                <i class="fa-solid fa-address-book text-lg"></i>
+                <span class="font-bold text-sm tracking-tight">Clients</span>
+            </a>
 
             <a href="index.php?action=fournisseurs" class="flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all duration-300 ' . ($actionActuelle == 'fournisseurs' ? $activeClass : $inactiveClass) . '">
                 <i class="fa-solid fa-truck-fast text-lg"></i>
@@ -609,6 +723,13 @@ class VueGestionnaire extends VueStaff
             <a href="index.php?action=distribuer" class="flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all duration-300 ' . ($actionActuelle == 'distribuer' ? $activeClass : $inactiveClass) . '">
                 <i class="fa-solid fa-boxes-stacked text-lg"></i>
                 <span class="font-bold text-sm tracking-tight">Stocks & Logistique</span>
+            </a>
+
+            <p class="text-[9px] font-black text-slate-600 uppercase tracking-[0.3em] px-4 mt-8 mb-3">Configuration</p>
+            
+            <a href="index.php?module=gestionnaire&action=demanderCreationAsso" class="flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all duration-300 ' . ($actionActuelle == 'demanderCreationAsso' ? $activeClass : $inactiveClass) . '">
+                <i class="fa-solid fa-file-shield text-lg text-emerald-500"></i>
+                <span class="font-bold text-sm tracking-tight text-emerald-500">Nouvelle Association</span>
             </a>
 
             <div class="pt-4 mt-4 border-t border-white/5">
