@@ -151,7 +151,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <form method="post" id="loginForm" class="space-y-5">
             <div class="relative">
                 <i class="fa-regular fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-slate-500"></i>
-                <input type="email" name="email" placeholder="Email professionnel"
+                <input type="email" name="email" placeholder="Email"
                        class="input-glass w-full pl-12 pr-4 py-4 rounded-2xl outline-none" required>
             </div>
 
