@@ -86,17 +86,29 @@ class ModeleStaff extends ModeleCommun
         $stmt->execute([$idAsso]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
-    public function getTopProduitsParAsso($idAsso) {
-        $sql = "SELECT p.nom, SUM(c.quantite) as total 
-            FROM produit p 
-            JOIN contient c ON p.id = c.produit_id 
-            JOIN vente v ON c.vente_id = v.id
-            WHERE v.association_id = ?
-            GROUP BY p.id 
-            ORDER BY total DESC LIMIT 5";
-        $stmt = self::getBdd()->prepare($sql);
-        $stmt->execute([$idAsso]);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    public function getTopProduitsParAsso($idAsso)
+    {
+        try {
+            $sql = "SELECT 
+                    p.nom, 
+                    IFNULL(p.type, 'Autre') as type, 
+                    SUM(c.quantite) as total 
+                FROM produit p
+                JOIN contient c ON p.id = c.produit_id
+                JOIN vente v ON c.vente_id = v.id
+                JOIN appartient a ON v.compte_id = a.compte_id
+                WHERE a.association_id = ?
+                GROUP BY p.id, p.nom, p.type 
+                ORDER BY total DESC";
+
+            $stmt = self::getBdd()->prepare($sql);
+            $stmt->execute([$idAsso]);
+
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Erreur getTopProduitsParAsso : " . $e->getMessage());
+            return [];
+        }
     }
     public function getVentesParHeure($idAsso) {
         $sql = "SELECT HOUR(date_vente) as heure, SUM(montant_total) as total 
@@ -115,12 +127,14 @@ class ModeleStaff extends ModeleCommun
         return $complet;
     }
     public function getTopClients($idAsso) {
-        $sql = "SELECT c.nom, c.prenom, SUM(v.montant_total) as depense_totale 
-            FROM compte c 
-            JOIN vente v ON v.compte_id = c.id 
-            WHERE v.association_id = ? 
-            GROUP BY c.id 
-            ORDER BY depense_totale DESC LIMIT 5";
+        $sql = "SELECT c.nom, c.prenom, 
+            SUM(v.montant_total) as depense_totale, 
+            COUNT(v.id) as nb_commandes
+            FROM compte c
+            JOIN vente v ON c.id = v.compte_id
+            WHERE v.association_id = ?
+            GROUP BY c.id
+            ORDER BY depense_totale DESC";
         $stmt = self::getBdd()->prepare($sql);
         $stmt->execute([$idAsso]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);

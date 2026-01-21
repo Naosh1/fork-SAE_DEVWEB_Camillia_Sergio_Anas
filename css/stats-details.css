@@ -16,7 +16,8 @@ html, body {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    background: radial-gradient(circle at 50% 0%, rgba(16, 185, 129, 0.08) 0%, transparent 50%), #020617 !important;
+    /* Dégradé Bleu Nuit Profond */
+    background: radial-gradient(circle at 50% 0%, rgba(30, 58, 138, 0.15) 0%, transparent 50%), #020617 !important;
 }
 
 h1, h2, .font-black {
@@ -29,6 +30,7 @@ h1, h2, .font-black {
 .chart-bar-flux {
     transform-origin: bottom;
     animation: growBar 1.2s cubic-bezier(0.17, 0.67, 0.2, 1);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
 }
 
 @keyframes growBar {
@@ -36,6 +38,13 @@ h1, h2, .font-black {
     to { transform: scaleY(1); }
 }
 
+/* Scrollbar invisible pour garder le look clean */
 ::-webkit-scrollbar {
     display: none;
+}
+
+/* Effets de survol sur les boutons détails */
+a:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(37, 99, 235, 0.2);
 }

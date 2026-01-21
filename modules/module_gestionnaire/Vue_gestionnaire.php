@@ -392,132 +392,40 @@ class VueGestionnaire extends VueStaff
 
     public function afficherFormulaireSolde($personne)
     {
-        echo '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">';
-        echo '<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">';
-
         $this->afficherNav();
+        ?>
+        <link rel="stylesheet" href="css/gestion-solde.css">
 
+        <?php
         $idAsso = $personne['association_id'] ?? ($_GET['id_asso'] ?? '');
         $solde = (float)($personne['solde'] ?? 0);
         $isAsso = isset($personne['nom_association']) || (isset($personne['type']) && $personne['type'] === 'association');
         $nom = $isAsso ? ($personne['nom'] ?? $personne['nom_association']) : ($personne['prenom'] . ' ' . $personne['nom']);
-
         ?>
-        <style>
-            .font-cyber {
-                font-family: 'Montserrat', sans-serif;
-            }
 
-            .wrapper-centrage {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                min-height: 85vh;
-                width: 100%;
-                background: radial-gradient(circle at center, rgba(16, 185, 129, 0.02) 0%, transparent 70%);
-            }
-
-            .glass-premium {
-                background: rgba(15, 23, 42, 0.9);
-                backdrop-filter: blur(30px);
-                border: 1px solid rgba(255, 255, 255, 0.1);
-                border-radius: 3rem;
-                width: 100%;
-                max-width: 480px;
-                position: relative;
-                box-shadow: 0 0 40px rgba(0, 0, 0, 0.5);
-                overflow: hidden;
-            }
-
-            /* Le texte passe en blanc pur */
-            .glow-text {
-                color: #ffffff;
-                text-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
-                animation: pulse-glow-white 3s infinite alternate;
-            }
-
-            @keyframes pulse-glow-white {
-                from {
-                    text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
-                }
-                to {
-                    text-shadow: 0 0 25px rgba(255, 255, 255, 0.4);
-                }
-            }
-
-            .op-card {
-                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-                cursor: pointer;
-                border: 1px solid rgba(255, 255, 255, 0.05);
-                background: rgba(255, 255, 255, 0.02);
-            }
-
-            .op-card.selected[data-op="ajouter"] {
-                border-color: #10b981;
-                background: rgba(16, 185, 129, 0.1);
-            }
-
-            .op-card.selected[data-op="retirer"] {
-                border-color: #ef4444;
-                background: rgba(239, 68, 68, 0.1);
-            }
-
-            .m-input {
-                background: rgba(0, 0, 0, 0.4);
-                border: 2px solid rgba(255, 255, 255, 0.05);
-                transition: all 0.4s ease;
-            }
-
-            .m-input:focus {
-                border-color: #10b981;
-                box-shadow: 0 0 30px rgba(16, 185, 129, 0.1);
-            }
-
-            /* Bouton dynamique : Vert par défaut (Recharge) */
-            .btn-cyber {
-                background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-                transition: all 0.3s ease;
-                color: #020617;
-            }
-
-            .btn-cyber:hover {
-                transform: translateY(-2px);
-                filter: brightness(1.1);
-            }
-
-            input::-webkit-outer-spin-button, input::-webkit-inner-spin-button {
-                -webkit-appearance: none;
-                margin: 0;
-            }
-        </style>
-
-        <div class="bg-[#020617] font-cyber min-h-screen">
+        <div class="bg-[#020617] font-montserrat min-h-screen">
             <div class="wrapper-centrage">
                 <div class="w-full px-4 py-10">
                     <div class="max-w-[480px] mx-auto">
-
-                        <div class="flex justify-between items-center mb-6 px-4">
+                        <div class="mb-6 px-4">
                             <a href="index.php?action=<?= $isAsso ? 'gererAssociation&id=' : 'voirListeClients&id=' ?><?= $idAsso ?>"
-                               class="flex items-center gap-2 text-slate-500 hover:text-emerald-500 transition-all text-[11px] font-black no-underline tracking-widest group">
-                                <i class="fas fa-circle-chevron-left text-lg group-hover:-translate-x-1 transition-transform"></i>
-                                <span>RETOUR</span>
+                               class="inline-flex items-center gap-2 text-slate-500 hover:text-blue-500 transition-all text-[11px] font-black uppercase tracking-[0.2em] group no-underline">
+                                <i class="fas fa-arrow-left group-hover:-translate-x-1 transition-transform"></i>
+                                <span>Retour terminal</span>
                             </a>
                         </div>
 
-                        <div class="glass-premium p-10 mx-auto">
+                        <div class="glass-premium p-10">
                             <div class="text-center mb-10">
-                                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 mb-4">
-                                    <i class="fa-solid fa-address-book text-emerald-500 text-[10px]"></i>
-                                    <span class="text-white text-[9px] font-black uppercase tracking-widest opacity-60">
-                                    Client
-                                </span>
+                                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-600/10 border border-blue-500/20 mb-6">
+                                    <span class="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse"></span>
+                                    <span class="text-blue-500 text-[9px] font-black uppercase tracking-[0.2em]">Compte Client</span>
                                 </div>
-                                <h2 class="text-white text-base font-black uppercase italic tracking-tighter mb-2">
+                                <h2 class="text-white text-2xl font-black uppercase italic tracking-tighter mb-4">
                                     <?= htmlspecialchars($nom) ?>
                                 </h2>
-                                <div class="text-6xl font-900 text-amber-500 italic tracking-tighter glow-text">
-                                    <?= number_format($solde, 2, ',', ' ') ?><span
-                                            class="text-2xl not-italic ml-1 opacity-40">€</span>
+                                <div class="text-6xl font-[900] text-white italic tracking-tighter glow-text">
+                                    <?= number_format($solde, 2, ',', ' ') ?><span class="text-2xl not-italic ml-1 opacity-30">€</span>
                                 </div>
                             </div>
 
@@ -526,90 +434,94 @@ class VueGestionnaire extends VueStaff
                                 <input type="hidden" name="id_personne" value="<?= $personne['id'] ?? '' ?>">
 
                                 <div class="flex gap-4">
-                                    <div class="op-card flex-1 p-5 rounded-3xl text-center selected" data-op="ajouter">
-                                        <div class="w-10 h-10 mx-auto bg-emerald-500/10 rounded-full flex items-center justify-center mb-3">
-                                            <i class="fas fa-plus text-emerald-500"></i>
-                                        </div>
-                                        <div class="text-[10px] font-black uppercase text-white tracking-widest">
-                                            Recharger
-                                        </div>
+                                    <div class="op-card flex-1 p-6 rounded-[2rem] text-center selected" data-op="ajouter">
+                                        <i class="fas fa-plus text-blue-500 mb-3 text-lg"></i>
+                                        <div class="text-[10px] font-black uppercase text-white tracking-widest">Recharger</div>
                                         <input type="radio" name="operation" value="ajouter" class="hidden" checked>
                                     </div>
-                                    <div class="op-card flex-1 p-5 rounded-3xl text-center" data-op="retirer">
-                                        <div class="w-10 h-10 mx-auto bg-red-500/10 rounded-full flex items-center justify-center mb-3">
-                                            <i class="fas fa-minus text-red-500"></i>
-                                        </div>
-                                        <div class="text-[10px] font-black uppercase text-white tracking-widest">
-                                            Encaisser
-                                        </div>
+                                    <div class="op-card flex-1 p-6 rounded-[2rem] text-center" data-op="retirer">
+                                        <i class="fas fa-minus text-red-500 mb-3 text-lg"></i>
+                                        <div class="text-[10px] font-black uppercase text-white tracking-widest">Encaisser</div>
                                         <input type="radio" name="operation" value="retirer" class="hidden">
                                     </div>
                                 </div>
 
                                 <div class="space-y-4">
-                                    <div class="relative group">
-                                        <input type="number" name="montant" id="mInput" step="0.01" min="0" required
-                                               placeholder="0.00"
-                                               class="m-input w-full rounded-3xl p-8 text-5xl font-900 text-white text-center outline-none">
-                                    </div>
-
-                                    <div class="grid grid-cols-5 gap-2">
+                                    <input type="number" name="montant" id="mInput" step="0.01" min="0" required placeholder="0.00"
+                                           class="m-input w-full rounded-[2rem] p-8 text-5xl font-[900] text-white text-center outline-none">
+                                    <div class="grid grid-cols-5 gap-2 px-2">
                                         <?php foreach ([1, 2, 5, 10, 20] as $v): ?>
                                             <button type="button" onclick="addVal(<?= $v ?>)"
-                                                    class="bg-white/5 border border-white/5 py-3 rounded-xl text-[11px] font-black text-emerald-500 hover:bg-emerald-500 hover:text-black hover:scale-105 transition-all">
+                                                    class="bg-white/5 border border-white/5 py-3 rounded-xl text-[11px] font-black text-blue-500 hover:bg-blue-600 hover:text-white transition-all">
                                                 +<?= $v ?>
                                             </button>
                                         <?php endforeach; ?>
                                     </div>
                                 </div>
 
-                                <button type="submit"
-                                        class="btn-cyber w-full font-900 uppercase italic py-6 rounded-3xl shadow-2xl active:scale-95 flex items-center justify-center gap-3">
-                                    <span class="tracking-[0.3em] text-sm">Valider la transaction</span>
-                                    <i class="fas fa-bolt-lightning animate-bounce"></i>
+                                <button type="submit" class="btn-cyber w-full font-[900] uppercase italic py-6 rounded-[2rem] flex items-center justify-center gap-3">
+                                    <span class="tracking-[0.2em] text-sm">Valider Transaction</span>
+                                    <i class="fas fa-bolt-lightning"></i>
                                 </button>
                             </form>
                         </div>
                     </div>
                 </div>
             </div>
+
+            <div id="customModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#020617]/90 backdrop-blur-md">
+                <div class="glass-premium max-w-sm w-full p-8 border-blue-500/30 shadow-[0_0_50px_rgba(37,99,235,0.2)]">
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-blue-600/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <i class="fas fa-shield-halved text-blue-500 text-2xl animate-pulse"></i>
+                        </div>
+                        <h3 class="text-white font-black uppercase italic tracking-tighter text-xl mb-2">Confirmation</h3>
+                        <p id="modalMessage" class="text-slate-400 text-sm font-bold mb-8 uppercase tracking-widest leading-relaxed">
+                            Voulez-vous valider cette transaction ?
+                        </p>
+                        <div class="flex gap-4">
+                            <button type="button" onclick="closeModal()" class="flex-1 py-4 rounded-2xl bg-white/5 border border-white/10 text-slate-500 font-black text-[10px] uppercase tracking-widest hover:bg-white/10 transition-all">
+                                Annuler
+                            </button>
+                            <button type="button" id="confirmBtn" class="flex-1 py-4 rounded-2xl bg-blue-600 text-white font-black text-[10px] uppercase tracking-widest shadow-lg shadow-blue-600/20 hover:bg-blue-500 transition-all">
+                                Confirmer
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="loaderModal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#020617] backdrop-blur-2xl">
+                <div class="text-center">
+                    <div class="relative w-24 h-24 mx-auto mb-8">
+                        <div class="absolute inset-0 border-4 border-blue-600/20 rounded-full"></div>
+                        <div class="absolute inset-0 border-4 border-t-blue-500 rounded-full animate-spin shadow-[0_0_15px_rgba(59,130,246,0.5)]"></div>
+                        <i class="fas fa-bolt-lightning text-blue-500 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-2xl animate-pulse"></i>
+                    </div>
+                    <h3 class="text-white font-[950] uppercase italic tracking-[0.3em] text-xl mb-2">Mise à jour</h3>
+                    <p class="text-blue-500/50 text-[10px] font-black uppercase tracking-[0.5em] animate-pulse">Veuillez patienter...</p>
+                    <div class="w-48 h-1 bg-white/5 mx-auto mt-8 rounded-full overflow-hidden">
+                        <div class="h-full bg-blue-600 animate-[progress_2s_ease-in-out_infinite]"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="errorModal" class="hidden fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+                <div class="glass-premium max-w-sm w-full p-8 border-red-500/50">
+                    <div class="text-center">
+                        <i class="fas fa-triangle-exclamation text-red-500 text-4xl mb-4"></i>
+                        <h3 class="text-white font-black uppercase italic mb-2">Erreur</h3>
+                        <p id="errorMessage" class="text-slate-400 text-xs font-bold mb-8 uppercase tracking-widest"></p>
+                        <button type="button" onclick="closeModal()" class="w-full py-4 rounded-2xl bg-red-600 text-white font-black text-[10px] uppercase">
+                            Retour
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <script>
-            document.querySelectorAll('.op-card').forEach(card => {
-                card.addEventListener('click', function () {
-                    document.querySelectorAll('.op-card').forEach(c => c.classList.remove('selected'));
-                    this.classList.add('selected');
-                    this.querySelector('input').checked = true;
-
-                    const btn = document.querySelector('.btn-cyber');
-                    const mInput = document.getElementById('mInput');
-
-                    if (this.dataset.op === 'retirer') {
-                        btn.style.background = 'linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)';
-                        mInput.style.borderColor = 'rgba(239, 68, 68, 0.3)';
-                    } else {
-                        btn.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
-                        mInput.style.borderColor = '#10b981';
-                    }
-                });
-            });
-
-            function addVal(v) {
-                const input = document.getElementById('mInput');
-                input.value = (parseFloat(input.value || 0) + v).toFixed(2);
-            }
-
-            document.getElementById('soldeForm').onsubmit = function () {
-                const m = parseFloat(document.getElementById('mInput').value);
-                const op = document.querySelector('input[name="operation"]:checked').value;
-                if (op === 'retirer' && m > <?= $solde ?>) {
-                    alert('🚨 ALERTE : SOLDE INSUFFISANT');
-                    return false;
-                }
-                return confirm('⚠ CONFIRMER ' + m + '€ ?');
-            };
-        </script>
+        <script>window.currentSolde = <?= $solde ?>;</script>
+        <script src="js/gestion-solde.js"></script>
         <?php
     }
 
@@ -630,7 +542,7 @@ class VueGestionnaire extends VueStaff
 <style>
     .font-montserrat { font-family: "Montserrat", sans-serif; }
     .glass-sidebar {
-        background: rgba(2, 6, 23, 0.8) !important;
+        background: rgba(2, 6, 23, 0.9) !important;
         backdrop-filter: blur(25px);
         -webkit-backdrop-filter: blur(25px);
     }
@@ -639,7 +551,7 @@ class VueGestionnaire extends VueStaff
 </style>
 
 <div class="flex min-h-screen bg-[#020617] font-montserrat">
-    <aside class="w-72 glass-sidebar border-r border-white/5 hidden md:flex flex-col sticky top-0 h-screen z-50">
+    <aside class="w-72 glass-sidebar border-r border-white/5 hidden md:flex flex-col sticky top-0 h-screen z-[1001]">
         
         <div class="h-24 flex items-center px-8">
             <div class="flex items-center gap-3">
@@ -672,27 +584,22 @@ class VueGestionnaire extends VueStaff
                 <span class="font-bold text-sm tracking-tight">Mon Planning</span>
             </a>
 
-            <a href="index.php?action=mesNotes" class="flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all duration-300 ' . ($actionActuelle == 'mesNotes' ? $activeClass : $inactiveClass) . '">
-                <i class="fa-solid fa-note-sticky text-lg"></i>
-                <span class="font-bold text-sm tracking-tight">Notes & Rappels</span>
-            </a>
-
             <p class="text-[9px] font-black text-slate-600 uppercase tracking-[0.3em] px-4 mt-8 mb-3">Gestion Globale</p>
 
-           
-           <a href="index.php?reset=1" class="flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all duration-300 ' . $inactiveClass . '">
-    <i class="fa-solid fa-right-left text-lg"></i>
-    <span class="font-bold text-sm tracking-tight">Changer Association</span>
-</a><li class="flex items-center gap-3">
-    <a href="index.php?module=gestionnaire&action=statistiques" class="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all hover:bg-amber-500/10 hover:text-amber-500">
-        <i class="fa-solid fa-chart-pie"></i>
-        <span>Stats</span>
-    </a>
-</li>
+            <a href="index.php?module=gestionnaire&action=statistiques" class="flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all duration-300 ' . ($actionActuelle == 'statistiques' ? $activeClass : $inactiveClass) . '">
+                <i class="fa-solid fa-chart-pie text-lg"></i>
+                <span class="font-bold text-sm tracking-tight">Analytique & Stats</span>
+            </a>
+
             <a href="index.php?action=barmans" class="flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all duration-300 ' . ($actionActuelle == 'barmans' ? $activeClass : $inactiveClass) . '">
-                <i class="fa-solid fa-user-group text-lg"></i>
+                <i class="fa-solid fa-id-card-clip text-lg"></i>
                 <span class="font-bold text-sm tracking-tight">Équipe Barmans</span>
             </a>
+
+            <a href="index.php?action=voirListeClients" class="flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all duration-300 ' . ($actionActuelle == 'voirListeClients' ? $activeClass : $inactiveClass) . '">
+    <i class="fa-solid fa-address-book text-lg"></i>
+    <span class="font-bold text-sm tracking-tight">Clients</span>
+</a>
 
             <a href="index.php?action=fournisseurs" class="flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all duration-300 ' . ($actionActuelle == 'fournisseurs' ? $activeClass : $inactiveClass) . '">
                 <i class="fa-solid fa-truck-fast text-lg"></i>
@@ -700,9 +607,16 @@ class VueGestionnaire extends VueStaff
             </a>
 
             <a href="index.php?action=distribuer" class="flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all duration-300 ' . ($actionActuelle == 'distribuer' ? $activeClass : $inactiveClass) . '">
-                <i class="fa-solid fa-truck-ramp-box text-lg"></i>
-                <span class="font-bold text-sm tracking-tight">Commandes & Stock</span>
+                <i class="fa-solid fa-boxes-stacked text-lg"></i>
+                <span class="font-bold text-sm tracking-tight">Stocks & Logistique</span>
             </a>
+
+            <div class="pt-4 mt-4 border-t border-white/5">
+                <a href="index.php?reset=1" class="flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all duration-300 text-amber-500/70 hover:bg-amber-500/10 hover:text-amber-500">
+                    <i class="fa-solid fa-right-left text-lg"></i>
+                    <span class="font-bold text-sm tracking-tight">Changer Association</span>
+                </a>
+            </div>
 
         </nav>
 
@@ -716,7 +630,7 @@ class VueGestionnaire extends VueStaff
                     </div>
                 </div>
                 <div class="flex-1 min-w-0">
-                    <p class="text-sm font-bold text-white truncate">' . $this->e($prenom) . '</p>
+                    <p class="text-sm font-bold text-white truncate">' . htmlspecialchars($prenom) . '</p>
                     <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest italic">Gestionnaire</p>
                 </div>
             </a>
@@ -727,7 +641,7 @@ class VueGestionnaire extends VueStaff
             </a>
         </div>
     </aside>
-    <main class="flex-1">';
+    <main class="flex-1 relative overflow-y-auto">';
     }
 
     public function afficherTableauDeBordAccueil($prenom, $data)
@@ -1709,254 +1623,77 @@ class VueGestionnaire extends VueStaff
     }
 
 
-    public function afficherFormulaireAjoutClient($associations, $clients, $erreur = null)
+    public function afficherFormulaireAjoutClient($assoActuelle, $clients, $erreur = null)
     {
         $this->afficherNav();
+
+        $idAsso = is_array($assoActuelle) ? ($assoActuelle['id'] ?? '') : $assoActuelle;
+        $nomAsso = is_array($assoActuelle) ? ($assoActuelle['nom'] ?? 'Association') : 'Association';
+        $success = $_GET['success'] ?? null;
         ?>
+
         <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
         <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
+        <link rel="stylesheet" href="css/ajout-client.css">
 
-        <style>
-            :root {
-                --nav-bg: #020617;
-                --card-bg: #0f172a;
-                --input-bg: #1e293b;
-                --amber: #f59e0b;
-                --amber-glow: rgba(245, 158, 11, 0.4);
-                --slate-400: #94a3b8;
-            }
+        <div id="cyber-overlay">
+            <div class="cyber-spinner"></div>
+            <p class="loading-text">Liaison au serveur...</p>
+        </div>
 
-            .dashboard-container {
-                min-height: 100vh;
-                padding: 4rem 2rem;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                background: var(--nav-bg);
-                font-family: 'Montserrat', sans-serif;
-            }
-
-            .form-card {
-                width: 100%;
-                max-width: 580px;
-                background: linear-gradient(145deg, rgba(15, 23, 42, 0.9), rgba(2, 6, 23, 0.95));
-                backdrop-filter: blur(20px);
-                border: 1px solid rgba(255, 255, 255, 0.08);
-                border-radius: 2.5rem;
-                padding: 4rem;
-                box-shadow: 0 50px 100px -20px rgba(0, 0, 0, 0.6);
-                overflow: visible !important;
-                position: relative;
-            }
-
-            /* Effet de lueur derrière la carte */
-            .form-card::before {
-                content: '';
-                position: absolute;
-                top: -2px;
-                left: -2px;
-                right: -2px;
-                bottom: -2px;
-                background: linear-gradient(45deg, transparent, rgba(245, 158, 11, 0.1), transparent);
-                border-radius: 2.5rem;
-                z-index: -1;
-            }
-
-            .label-style {
-                display: flex;
-                align-items: center;
-                gap: 12px;
-                font-size: 10px;
-                font-weight: 800;
-                text-transform: uppercase;
-                letter-spacing: 0.25em;
-                color: var(--slate-400);
-                margin-bottom: 1.2rem;
-                transition: color 0.3s ease;
-            }
-
-            /* Style Tom Select Custom */
-            .ts-wrapper .ts-control {
-                background: var(--input-bg) !important;
-                border: 1px solid rgba(255, 255, 255, 0.1) !important;
-                border-radius: 1.25rem !important;
-                padding: 1.2rem !important;
-                color: #ffffff !important;
-                font-size: 0.9rem;
-                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            }
-
-            .ts-wrapper.focus .ts-control {
-                border-color: var(--amber) !important;
-                box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.1) !important;
-            }
-
-            .ts-dropdown {
-                background: #1e293b !important;
-                border: 1px solid rgba(245, 158, 11, 0.3) !important;
-                border-radius: 1.25rem !important;
-                margin-top: 8px !important;
-                padding: 8px !important;
-                box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5) !important;
-            }
-
-            .ts-dropdown .option {
-                border-radius: 0.8rem;
-                padding: 12px 15px !important;
-                color: #cbd5e1 !important;
-            }
-
-            .ts-dropdown .active {
-                background: var(--amber) !important;
-                color: #000 !important;
-                font-weight: 700;
-            }
-
-            /* Bouton Dynamique */
-            .btn-submit {
-                width: 100%;
-                padding: 1.4rem;
-                background: var(--amber);
-                color: #000;
-                font-weight: 900;
-                text-transform: uppercase;
-                letter-spacing: 0.2em;
-                border-radius: 1.5rem;
-                border: none;
-                cursor: pointer;
-                box-shadow: 0 15px 30px -10px var(--amber-glow);
-                transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-                margin-top: 1.5rem;
-            }
-
-            .btn-submit:hover {
-                transform: translateY(-4px) scale(1.02);
-                box-shadow: 0 20px 40px -10px var(--amber-glow);
-                filter: brightness(1.1);
-            }
-
-            .btn-submit:active {
-                transform: translateY(0);
-            }
-
-            .back-link {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                gap: 10px;
-                margin-top: 2.5rem;
-                font-size: 10px;
-                font-weight: 800;
-                color: var(--slate-400);
-                text-transform: uppercase;
-                letter-spacing: 0.2em;
-                transition: all 0.3s ease;
-            }
-
-            .back-link:hover {
-                color: #fff;
-                transform: translateX(-5px);
-            }
-
-            /* Animation d'apparition */
-            @keyframes slideUp {
-                from {
-                    opacity: 0;
-                    transform: translateY(20px);
-                }
-                to {
-                    opacity: 1;
-                    transform: translateY(0);
-                }
-            }
-
-            .animate-up {
-                animation: slideUp 0.6s ease forwards;
-            }
-        </style>
+        <?php if ($success): ?>
+        <div id="success-toast" class="success-toast">
+            <div class="toast-content">
+                <i class="fa-solid fa-check-double"></i>
+                <div>
+                    <p class="toast-title">Succès</p>
+                    <p class="toast-msg">Le client a été bien ajouté !</p>
+                </div>
+            </div>
+            <div class="toast-progress"></div>
+        </div>
+    <?php endif; ?>
 
         <div class="dashboard-container">
-            <div class="text-center mb-16 animate-up">
-                <h2 class="text-7xl font-black text-white italic tracking-tighter uppercase">
-                    Link<span class="text-amber-500">Member</span>
+            <div class="text-center mb-10 animate-up">
+                <h2 class="text-6xl font-[1000] text-white italic tracking-tighter uppercase glow-title">
+                    Link<span class="text-blue-600">Member</span>
                 </h2>
-                <p class="text-[10px] text-slate-500 font-bold uppercase tracking-[0.5em] mt-4">Management Protocol
-                    v2.0</p>
             </div>
 
-            <div class="form-card animate-up" style="animation-delay: 0.1s;">
-                <?php if ($erreur): ?>
-                    <div class="bg-red-500/10 border border-red-500/20 p-5 rounded-2xl mb-8 flex items-center gap-4 text-red-400 text-xs font-bold">
-                        <i class="fa-solid fa-triangle-exclamation text-lg"></i>
-                        <?= htmlspecialchars($erreur) ?>
-                    </div>
-                <?php endif; ?>
-
+            <div class="form-card animate-up">
                 <form action="index.php?action=validerAjoutClient" method="POST" id="clientForm">
-                    <div class="mb-10">
-                        <label class="label-style">
-                            <i class="fa-solid fa-id-card text-amber-500"></i> Dossier Client
-                        </label>
-                        <select name="id_client" id="select-client" required>
-                            <option value="">Entrer un nom ou un email...</option>
+                    <input type="hidden" name="id_assos" value="<?= htmlspecialchars($idAsso) ?>">
+
+                    <div class="mb-6">
+                        <label class="label-style">Rechercher le membre</label>
+                        <select name="id_client" id="select-client" placeholder="Saisir un nom ou email..." required>
+                            <option value=""></option>
                             <?php foreach ($clients as $c): ?>
                                 <option value="<?= $c['id'] ?>">
-                                    <?= htmlspecialchars($c['nom'] . " " . $c['prenom']) ?>
-                                    — <?= htmlspecialchars($c['email']) ?>
+                                    <?= htmlspecialchars(($c['nom'] ?? '') . " " . ($c['prenom'] ?? '')) ?> — <?= htmlspecialchars($c['email'] ?? '') ?>
                                 </option>
                             <?php endforeach; ?>
                         </select>
                     </div>
 
-                    <div class="mb-14">
-                        <label class="label-style">
-                            <i class="fa-solid fa-hubspot text-amber-500"></i> Réseau de destination
-                        </label>
-                        <select name="id_assos" id="select-asso" required>
-                            <option value="">Sélectionner l'entité...</option>
-                            <?php foreach ($associations as $a): ?>
-                                <option value="<?= $a['id'] ?>">
-                                    <?= htmlspecialchars($a['nom']) ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
+                    <div class="destination-badge">
+                        <span class="dest-label">Unité de destination</span>
+                        <span class="dest-name"><?= htmlspecialchars($nomAsso) ?></span>
                     </div>
 
-                    <button type="submit" class="btn-submit">
-                        <i class="fa-solid fa-bolt mr-2"></i> Finaliser la liaison
+                    <button type="submit" class="btn-cyber-submit">
+                        Confirmer l'ajout <i class="fa-solid fa-bolt ml-2"></i>
                     </button>
 
-                    <a href="index.php?action=accueil" class="back-link">
-                        <i class="fa-solid fa-chevron-left"></i> Retour au Dashboard
-                    </a>
+                    <a href="index.php?action=voirListeClients&id=<?= $idAsso ?>" class="back-link">Annuler l'opération</a>
                 </form>
             </div>
         </div>
 
-        <script>
-            document.addEventListener('DOMContentLoaded', function () {
-                const config = {
-                    create: false,
-                    maxOptions: 10,
-                    dropdownParent: 'body',
-                    onDropdownOpen: function () {
-                        this.wrapper.classList.add('focus');
-                    },
-                    onDropdownClose: function () {
-                        this.wrapper.classList.remove('focus');
-                    }
-                };
-
-                if (typeof TomSelect !== "undefined") {
-                    new TomSelect('#select-client', config);
-                    new TomSelect('#select-asso', config);
-                }
-            });
-        </script>
+        <script src="js/ajout-client.js"></script>
         <?php
     }
-
-
     public function afficherFormulaireLiaisonFournisseur($fournisseurs, $produits)
     {
         $this->afficherNav();
@@ -2372,8 +2109,9 @@ class VueGestionnaire extends VueStaff
     public function afficherStatsDetails($evolution, $topProduits, $pertesTotales, $nomAsso, $topClients, $statsHoraires) {
         $this->afficherNav();
         echo '<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&display=swap" rel="stylesheet">';
+
         $heuresCompletes = [];
-        for ($h = 10; $h <= 23; $h++) {
+        for ($h = 8; $h <= 23; $h++) {
             $heuresCompletes[$h] = $statsHoraires[$h] ?? 0;
         }
 
@@ -2386,16 +2124,16 @@ class VueGestionnaire extends VueStaff
             <div class="max-w-7xl w-full mx-auto mb-6 flex justify-between items-center bg-white/5 p-10 rounded-[3rem] border border-white/5 shadow-2xl relative">
                 <div class="relative z-10">
                     <div class="flex items-center gap-3 mb-2">
-                        <span class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                        <span class="h-2 w-2 rounded-full bg-blue-500 animate-pulse"></span>
                         <p class="text-slate-500 font-black text-[10px] uppercase tracking-[0.4em]">Dashboard Logistique</p>
                     </div>
                     <h1 class="text-6xl font-black text-white italic uppercase tracking-tighter">
-                        <?= htmlspecialchars($nomAsso) ?><span class="text-emerald-500">.</span>STATS
+                        <?= htmlspecialchars($nomAsso) ?><span class="text-blue-600">.</span>STATS
                     </h1>
                 </div>
 
-                <div class="relative z-10 text-right bg-rose-500/10 border border-rose-500/20 px-10 py-6 rounded-[2.5rem]">
-                    <p class="text-[10px] font-black text-rose-500 uppercase tracking-widest mb-1">Pertes Inventaire</p>
+                <div class="relative z-10 text-right bg-blue-500/10 border border-blue-500/20 px-10 py-6 rounded-[2.5rem]">
+                    <p class="text-[10px] font-black text-blue-400 uppercase tracking-widest mb-1">Pertes Inventaire</p>
                     <div class="text-4xl font-black text-white italic tracking-tighter">
                         -<?= number_format($pertesTotales, 2, ',', ' ') ?> €
                     </div>
@@ -2406,7 +2144,7 @@ class VueGestionnaire extends VueStaff
 
                 <div class="col-span-12 lg:col-span-8 bg-white/5 border border-white/5 rounded-[2.5rem] p-8 flex flex-col">
                     <h2 class="text-xs font-black text-white uppercase italic tracking-widest mb-8 flex items-center gap-3">
-                        <i class="fa-solid fa-chart-line text-emerald-500"></i> Performance Hebdomadaire
+                        <i class="fa-solid fa-chart-line text-blue-500"></i> Performance Hebdomadaire
                     </h2>
                     <div class="flex-1 flex items-end justify-between gap-4 px-2 pb-2">
                         <?php foreach($evolution['dates'] as $i => $date):
@@ -2414,10 +2152,10 @@ class VueGestionnaire extends VueStaff
                             $h_bar = ($val / $maxRecette) * 100;
                             ?>
                             <div class="flex-1 flex flex-col items-center gap-4 h-full justify-end group/bar relative">
-                                <div class="absolute -top-10 bg-emerald-500 text-[#020617] text-[10px] font-black px-2 py-1 rounded-lg opacity-0 group-hover/bar:opacity-100 transition-all">
+                                <div class="absolute -top-10 bg-blue-600 text-white text-[10px] font-black px-2 py-1 rounded-lg opacity-0 group-hover/bar:opacity-100 transition-all">
                                     <?= round($val) ?>€
                                 </div>
-                                <div class="chart-bar-flux w-full max-w-[45px] bg-emerald-500/20 border-t-2 border-emerald-500/40 rounded-t-xl transition-all duration-700 group-hover/bar:bg-emerald-500"
+                                <div class="chart-bar-flux w-full max-w-[45px] bg-blue-500/10 border-t-2 border-blue-500/40 rounded-t-xl transition-all duration-700 group-hover/bar:bg-blue-600 group-hover/bar:shadow-[0_0_20px_rgba(37,99,235,0.3)]"
                                      style="height: <?= max($h_bar, 5) ?>%;"></div>
                                 <span class="text-[9px] font-black text-slate-600 uppercase italic"><?= $date ?></span>
                             </div>
@@ -2427,7 +2165,7 @@ class VueGestionnaire extends VueStaff
 
                 <div class="col-span-12 lg:col-span-4 bg-white/5 border border-white/5 rounded-[2.5rem] p-8 flex flex-col shadow-2xl">
                     <h2 class="text-xs font-black text-white uppercase italic tracking-widest mb-8 flex items-center gap-3">
-                        <i class="fa-solid fa-bolt text-emerald-500"></i> Affluence Live
+                        <i class="fa-solid fa-bolt text-blue-400"></i> Affluence Live
                     </h2>
                     <div class="flex-1 flex items-end justify-between gap-1 px-1">
                         <?php foreach($heuresCompletes as $h_idx => $valeur):
@@ -2437,8 +2175,8 @@ class VueGestionnaire extends VueStaff
                                 <div class="absolute -top-8 bg-white text-black text-[8px] font-black px-1.5 py-0.5 rounded opacity-0 group-hover/h:opacity-100 transition-all">
                                     <?= round($valeur) ?>€
                                 </div>
-                                <div class="w-2 bg-white/10 rounded-full h-full flex items-end overflow-hidden">
-                                    <div class="w-full bg-emerald-500 rounded-full shadow-[0_0_15px_rgba(16,185,129,0.4)] transition-all duration-1000"
+                                <div class="w-2 bg-white/5 rounded-full h-full flex items-end overflow-hidden">
+                                    <div class="w-full bg-blue-500 rounded-full shadow-[0_0_15px_rgba(59,130,246,0.4)] transition-all duration-1000"
                                          style="height: <?= max($hauteur, 3) ?>%;"></div>
                                 </div>
                                 <span class="text-[8px] font-black text-slate-600"><?= $h_idx ?>H</span>
@@ -2448,28 +2186,37 @@ class VueGestionnaire extends VueStaff
                 </div>
 
                 <div class="col-span-6 bg-white/5 border border-white/5 rounded-[2.5rem] p-6 shadow-2xl">
-                    <h2 class="text-[11px] font-black text-white uppercase italic mb-4 flex items-center gap-2">
-                        <i class="fa-solid fa-fire text-emerald-500"></i> Top Ventes
-                    </h2>
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-[11px] font-black text-white uppercase italic flex items-center gap-2">
+                            <i class="fa-solid fa-fire text-blue-500"></i> Top Ventes
+                        </h2>
+                        <a href="index.php?module=gestionnaire&action=detailsProduitsStats" class="text-[9px] bg-blue-500/10 text-blue-400 border border-blue-500/20 px-3 py-1 rounded-full hover:bg-blue-600 hover:text-white transition-all font-black uppercase">Détails</a>
+                    </div>
                     <div class="space-y-2">
                         <?php foreach(array_slice($topProduits, 0, 3) as $p): ?>
-                            <div class="flex items-center justify-between p-3 bg-black/20 border border-white/5 rounded-2xl hover:border-emerald-500/30 transition-all">
+                            <div class="flex items-center justify-between p-3 bg-black/20 border border-white/5 rounded-2xl hover:border-blue-500/30 transition-all">
                                 <span class="text-xs font-bold text-slate-200"><?= htmlspecialchars($p['nom']) ?></span>
-                                <span class="text-emerald-500 font-black text-[10px]"><?= $p['total'] ?> UNITÉS</span>
+                                <span class="text-blue-500 font-black text-[10px]"><?= $p['total'] ?> UNITÉS</span>
                             </div>
                         <?php endforeach; ?>
                     </div>
                 </div>
 
                 <div class="col-span-6 bg-white/5 border border-white/5 rounded-[2.5rem] p-6 shadow-2xl">
-                    <h2 class="text-[11px] font-black text-white uppercase italic mb-4 flex items-center gap-2">
-                        <i class="fa-solid fa-crown text-emerald-500"></i> Élite Clients
-                    </h2>
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-[11px] font-black text-white uppercase italic flex items-center gap-2">
+                            <i class="fa-solid fa-crown text-blue-500"></i> Élite Clients
+                        </h2>
+                        <a href="index.php?module=gestionnaire&action=detailsClientsStats" class="text-[9px] bg-blue-500/10 text-blue-400 border border-blue-500/20 px-3 py-1 rounded-full hover:bg-blue-600 hover:text-white transition-all font-black uppercase">Voir Tout</a>
+                    </div>
                     <div class="space-y-2">
                         <?php foreach(array_slice($topClients, 0, 3) as $c): ?>
-                            <div class="flex items-center justify-between p-3 bg-black/20 border border-white/5 rounded-2xl hover:border-emerald-500/30 transition-all">
-                                <span class="text-xs font-bold text-white"><?= htmlspecialchars($c['prenom'].' '.$c['nom']) ?></span>
-                                <span class="text-emerald-500 font-black italic text-sm"><?= number_format($c['depense_totale'], 2) ?>€</span>
+                            <div class="flex items-center justify-between p-3 bg-black/20 border border-white/5 rounded-2xl hover:border-blue-500/30 transition-all">
+                                <div class="flex flex-col">
+                                    <span class="text-xs font-bold text-white"><?= htmlspecialchars($c['prenom'].' '.$c['nom']) ?></span>
+                                    <span class="text-[9px] text-slate-500 font-black uppercase"><?= $c['nb_commandes'] ?? 0 ?> Commandes</span>
+                                </div>
+                                <span class="text-blue-500 font-black italic text-sm"><?= number_format($c['depense_totale'], 2) ?>€</span>
                             </div>
                         <?php endforeach; ?>
                     </div>

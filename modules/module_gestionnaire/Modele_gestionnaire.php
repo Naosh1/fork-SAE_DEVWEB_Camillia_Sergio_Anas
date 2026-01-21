@@ -577,6 +577,16 @@ JOIN compte g ON c.id_gestionnaire = g.id                WHERE c.id = :id_comman
         }
     }
 
+    public function retirerClientDeLasso($idClient, $idAsso) {
+        try {
+            $sql = "DELETE FROM appartient WHERE compte_id = ? AND association_id = ?";
+            $stmt = $this->getBdd()->prepare($sql);
+            return $stmt->execute([$idClient, $idAsso]);
+        } catch (Exception $e) {
+            error_log("Erreur retirerClientDeLasso: " . $e->getMessage());
+            return false;
+        }
+    }
 
     public function supprimerBarman($id)
     {

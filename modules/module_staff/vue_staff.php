@@ -282,137 +282,203 @@ class VueStaff extends VueCommun
         </div>
         <?php
     }
-    public function afficherClients($clients)
-    {
+    public function afficherClients($clients, $nomAssos) {
+    $this->afficherNav();
+    ?>
+    <link rel="stylesheet" href="css/liste-clients.css">
+
+    <div class="p-8 bg-[#020617] min-h-screen font-montserrat">
+        <div class="max-w-5xl mx-auto">
+
+            <header class="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-6">
+                <div>
+                    <h1 class="text-4xl font-[950] text-white italic uppercase tracking-tighter">
+                        <?= htmlspecialchars($nomAssos) ?> <span class="text-blue-600">/ Clients</span>
+                    </h1>
+                    <p class="text-slate-500 font-bold text-[10px] uppercase tracking-[0.4em] mt-2 flex items-center gap-2">
+                        <span class="w-2 h-2 bg-blue-600 rounded-full animate-pulse"></span>
+                        Base de données des membres actifs
+                    </p>
+                </div>
+
+                <div class="flex items-center gap-4 w-full md:w-auto">
+                    <a href="index.php?action=ajouterClient"
+                       class="flex-1 md:flex-none flex items-center justify-center gap-3 bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-lg shadow-blue-900/30 group">
+                        <i class="fa-solid fa-plus-circle text-lg group-hover:rotate-90 transition-transform duration-300"></i>
+                        <span>Inscrire un client</span>
+                    </a>
+
+                    <div class="bg-white/[0.03] border border-white/10 px-5 py-2.5 rounded-2xl flex flex-col items-center min-w-[90px]">
+                        <span class="text-white font-black text-2xl leading-none"><?= count($clients) ?></span>
+                        <span class="text-blue-500 text-[8px] font-black uppercase tracking-tighter mt-1">Membres</span>
+                    </div>
+                </div>
+            </header>
+
+            <div class="grid gap-4">
+                <?php if(empty($clients)): ?>
+                    <div class="text-center py-24 bg-white/[0.01] border border-white/5 rounded-[2rem] border-dashed">
+                        <div class="w-20 h-20 bg-slate-900 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <i class="fa-solid fa-users-slash text-slate-700 text-3xl"></i>
+                        </div>
+                        <p class="text-slate-500 font-bold uppercase tracking-widest text-sm">Aucun client trouvé pour cette association</p>
+                    </div>
+                <?php else: ?>
+                    <?php $i = 0; foreach($clients as $c): ?>
+                        <div class="client-card cascade-row row-delay-<?= ($i < 6) ? $i : '5' ?> p-5 rounded-3xl flex items-center justify-between transition-all group">
+
+                            <div class="flex items-center gap-6">
+                                <div class="relative">
+                                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-600 to-blue-900 flex items-center justify-center text-white font-black text-xl shadow-xl group-hover:scale-110 transition-transform">
+                                        <?= strtoupper(substr($c['nom'], 0, 1)) ?>
+                                    </div>
+                                    <div class="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-4 border-[#020617] rounded-full"></div>
+                                </div>
+
+                                <div>
+                                    <h3 class="text-white font-black text-xl tracking-tight group-hover:text-blue-400 transition-colors uppercase italic">
+                                        <?= htmlspecialchars(mb_strtoupper($c['nom'] . ' ' . $c['prenom'])) ?>
+                                    </h3>
+                                    <div class="flex items-center gap-3 mt-1">
+                                        <span class="bg-blue-600/10 text-blue-500 text-[9px] font-black px-2 py-0.5 rounded-md uppercase tracking-tighter">ID #<?= $c['id'] ?></span>
+                                        <span class="text-slate-600 text-[10px] font-bold italic">Membre régulier</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center gap-6">
+                                <div class="text-right hidden sm:block">
+                                    <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Solde Disponible</p>
+                                    <p class="text-2xl font-black text-white italic tracking-tighter">
+                                        <?= number_format($c['solde'], 2, ',', ' ') ?><span class="text-blue-600 ml-1">€</span>
+                                    </p>
+                                </div>
+
+                                <div class="flex gap-3">
+                                    <a href="index.php?action=gererSolde&id=<?= $c['id'] ?>"
+                                       class="blue-btn" title="Gérer le solde">
+                                        <i class="fa-solid fa-wallet"></i>
+                                    </a>
+
+                                    <a href="index.php?action=retirerClient&id=<?= $c['id'] ?>"
+                                       class="red-btn"
+                                       onclick="return confirm('Voulez-vous vraiment retirer ce client ?')"
+                                       title="Retirer de l'asso">
+                                        <i class="fa-solid fa-trash-can"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <?php $i++; endforeach; ?>
+                <?php endif; ?>
+            </div>
+        </div>
+    </div>
+    </main></div>
+    <?php
+}
+
+    public function afficherListeCompleteClients($clients, $nomAsso) {
         $this->afficherNav();
         ?>
-        <style>
-            @keyframes slideInRight {
-                from {
-                    opacity: 0;
-                    transform: translateX(-15px);
-                }
-                to {
-                    opacity: 1;
-                    transform: translateX(0);
-                }
-            }
+        <link rel="stylesheet" href="css/clients-stats.css">
 
-            .cascade-row {
-                opacity: 0;
-                animation: slideInRight 0.4s ease forwards;
-            }
-
-            .glass-table-container {
-                background: rgba(255, 255, 255, 0.02);
-                backdrop-filter: blur(20px);
-                border: 1px solid rgba(245, 158, 11, 0.1);
-            }
-
-            .amber-btn {
-                background: rgba(245, 158, 11, 0.1);
-                border: 1px solid rgba(245, 158, 11, 0.2);
-                color: #fbbf24;
-                transition: all 0.3s ease;
-            }
-
-            .amber-btn:hover {
-                background: #f59e0b;
-                color: #020617;
-                box-shadow: 0 0 20px rgba(245, 158, 11, 0.4);
-            }
-
-            <?php for($i = 0; $i < 50; $i++): ?>
-            .row-delay-<?= $i ?> {
-                animation-delay: <?= $i * 0.05 ?>s;
-            }
-
-            <?php endfor; ?>
-        </style>
-
-        <div class="p-6 md:p-12 bg-[#020617] min-h-screen font-montserrat text-white relative">
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10 cascade-row row-delay-1">
-                <div>
-                    <span class="text-amber-500 font-black uppercase text-[10px] tracking-[0.4em] mb-2 block italic">Database Management</span>
-                    <h1 class="text-4xl font-black tracking-tighter uppercase flex items-center gap-4">
-                        <i class="fa-solid fa-address-book text-amber-500"></i> Base Clients
-                    </h1>
+        <div class="stats-container">
+            <header class="stats-header">
+                <div class="stats-header-content">
+                    <div>
+                        <h1 class="stats-title">
+                            TOP <span class="stats-highlight">CLIENTS</span>
+                        </h1>
+                        <p style="color: #64748b; font-weight: 800; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 2px;">
+                            <i class="fa-solid fa-crown mr-2" style="color: var(--accent-blue);"></i>
+                            <?= htmlspecialchars($nomAsso) ?>
+                        </p>
+                    </div>
+                    <a href="index.php?module=gestionnaire&action=statistiques" class="btn-back">
+                        Retour
+                    </a>
                 </div>
-                <a href="index.php?action=ajouterClient"
-                   class="amber-btn flex items-center gap-3 px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest active:scale-95">
-                    <i class="fa-solid fa-user-plus"></i> Nouveau Client
-                </a>
-            </div>
+            </header>
 
-            <div class="glass-table-container rounded-[2.5rem] overflow-hidden shadow-2xl">
-                <div class="overflow-x-auto">
-                    <table class="min-w-full border-separate border-spacing-0 text-left">
-                        <thead>
-                        <tr class="bg-white/[0.03]">
-                            <th class="px-8 py-6 text-[9px] font-black text-slate-500 uppercase tracking-[0.3em]">ID
-                            </th>
-                            <th class="px-8 py-6 text-[9px] font-black text-slate-500 uppercase tracking-[0.3em]">
-                                Identité
-                            </th>
-                            <th class="px-8 py-6 text-[9px] font-black text-slate-500 uppercase tracking-[0.3em]">
-                                Solde
-                            </th>
-                            <th class="px-8 py-6 text-[9px] font-black text-slate-500 uppercase tracking-[0.3em]">
-                                Statut
-                            </th>
-                            <th class="px-8 py-6 text-right text-[9px] font-black text-slate-500 uppercase tracking-[0.3em]">
-                                Actions
-                            </th>
-                        </tr>
-                        </thead>
-                        <tbody class="divide-y divide-white/5">
-                        <?php $idx = 2;
-                        foreach ($clients as $client): ?>
-                            <tr class="hover:bg-amber-500/[0.03] transition-colors group cascade-row row-delay-<?= $idx ?>">
-                                <td class="px-8 py-6 text-amber-500/40 font-mono text-[10px] font-bold tracking-tighter">
-                                    // <?= $client['id'] ?></td>
-                                <td class="px-8 py-6">
-                                <span class="text-white font-black uppercase text-sm group-hover:text-amber-400 transition-colors">
-                                    <?= htmlspecialchars($client['nom']) ?> <?= htmlspecialchars($client['prenom']) ?>
-                                </span>
-                                    <span class="block text-slate-500 text-[10px] italic"><?= htmlspecialchars($client['email']) ?></span>
-                                </td>
-                                <td class="px-8 py-6 whitespace-nowrap font-black">
-                                <span class="<?= $client['solde'] >= 0 ? 'text-amber-400' : 'text-rose-500' ?> text-sm">
-                                    <?= number_format($client['solde'] ?? 0, 2, ',', ' ') ?> €
-                                </span>
-                                </td>
-                                <td class="px-8 py-6">
-                                    <?= !empty($client['est_barman']) ? '<span class="bg-amber-500 text-[#020617] text-[8px] font-black px-2 py-1 rounded">STAFF</span>' : '<span class="text-slate-500 text-[8px] font-black border border-white/10 px-2 py-1 rounded">CLIENT</span>' ?>
-                                </td>
-                                <td class="px-8 py-6 text-right">
-                                    <div class="flex justify-end gap-2">
-                                        <a href="index.php?action=gererSolde&id=<?= $client['id'] ?>"
-                                           class="w-10 h-10 flex items-center justify-center rounded-xl bg-amber-500/10 text-amber-500 hover:bg-amber-500 hover:text-[#020617] transition-all"
-                                           title="Gérer le solde">
-                                            <i class="fa-solid fa-wallet text-xs"></i>
-                                        </a>
-                                        <a href="index.php?action=modifierClient&id=<?= $client['id'] ?>"
-                                           class="w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 text-slate-400 hover:bg-white/10 hover:text-white transition-all">
-                                            <i class="fa-solid fa-sliders text-xs"></i>
-                                        </a>
-                                        <a href="index.php?action=supprimerClient&id=<?= $client['id'] ?>"
-                                           class="w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 text-slate-400 hover:bg-rose-600 hover:text-white transition-all"
-                                           onclick="return confirm('Supprimer ce client ?')">
-                                            <i class="fa-solid fa-power-off text-xs"></i>
-                                        </a>
-                                    </div>
-                                </td>
-                            </tr>
-                            <?php $idx++; endforeach; ?>
-                        </tbody>
-                    </table>
-                </div>
+            <div class="stats-grid">
+                <?php foreach($clients as $index => $c): ?>
+                    <div class="stats-card">
+                        <div style="display: flex; align-items: center; gap: 20px;">
+                        <span class="rank-badge <?= $index < 3 ? 'top-rank' : '' ?>">
+                            #<?= $index + 1 ?>
+                        </span>
+
+                            <div class="item-info">
+                                <h3><?= htmlspecialchars(mb_strtoupper($c['prenom'].' '.$c['nom'])) ?></h3>
+                                <span style="font-size: 0.7rem; color: #64748b; font-weight: 700; text-transform: uppercase;">
+                                <i class="fa-solid fa-receipt mr-1"></i>
+                                <?= $c['nb_commandes'] ?? 0 ?> commandes
+                            </span>
+                            </div>
+                        </div>
+
+                        <div style="text-align: right;">
+                            <span style="display:block; font-size: 0.6rem; font-weight: 900; color: var(--accent-blue); text-transform: uppercase; margin-bottom: 2px;">Dépense</span>
+                            <span class="value-amount">
+                            <?= number_format($c['depense_totale'] ?? 0, 2, ',', ' ') ?>€
+                        </span>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
             </div>
         </div>
         <?php
     }
+    public function afficherListeCompleteProduits($produits, $nomAsso) {
+        $this->afficherNav();
+        ?>
+        <link rel="stylesheet" href="css/produits-stats.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
+        <div class="stats-container">
+            <header class="stats-header">
+                <div class="stats-header-content">
+                    <div>
+                        <h1 class="stats-title">
+                            PERFORMANCES <span style="color:var(--accent)">PRODUITS</span>
+                        </h1>
+                        <span class="asso-name"><?= htmlspecialchars($nomAsso) ?></span>
+                    </div>
+                    <a href="index.php?action=statistiques" class="btn-back">
+                        <i class="fa-solid fa-arrow-left mr-2"></i> Retour
+                    </a>
+                </div>
+            </header>
+
+            <div class="stats-grid">
+                <?php foreach($produits as $p):
+                    $type = strtolower($p['type'] ?? 'autre');
+                    if (strpos($type, 'boisson') !== false) { $class="cat-boisson"; $icon="fa-wine-glass"; }
+                    elseif (strpos($type, 'nourriture') !== false) { $class="cat-nourriture"; $icon="fa-burger"; }
+                    else { $class="cat-autre"; $icon="fa-tag"; }
+                    ?>
+                    <div class="stats-card">
+                        <div style="display: flex; align-items: center; gap: 25px;">
+                            <div class="icon-container <?= $class ?>">
+                                <i class="fa-solid <?= $icon ?>"></i>
+                            </div>
+                            <div>
+                                <span class="item-name"><?= htmlspecialchars(mb_strtoupper($p['nom'])) ?></span><br>
+                                <span class="item-type"><?= htmlspecialchars($p['type']) ?></span>
+                            </div>
+                        </div>
+
+                        <div class="value-box">
+                            <span class="value-unit">Unités vendues</span>
+                            <span class="value-total"><?= $p['total'] ?? 0 ?></span>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        </div>
+        <?php
+    }
     public function afficherProduits($produits, $associations, $titre = "Stock")
     {
         $this->afficherNav();

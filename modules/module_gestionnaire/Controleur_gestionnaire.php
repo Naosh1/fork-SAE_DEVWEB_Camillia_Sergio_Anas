@@ -153,10 +153,32 @@ class ControleurGestionnaire
                 $this->validerCommandeFournisseur();
                 break;
 
+            case 'detailsClientsStats':
+                $idAsso = $_SESSION['asso_choisi'] ?? null;
+                if ($idAsso) {
+                    $clients = $this->modele->getTopClients($idAsso);
+                    $asso = $this->modele->getAssociationParId($idAsso);
+                    $this->vue->afficherListeCompleteClients($clients, $asso['nom']);
+                } else {
+                    header("Location: index.php?action=accueil");
+                }
+                break;
+            case 'detailsProduitsStats':
+                $this->afficherDetailsProduits();
+                break;
             case 'distribuer':
                 $this->afficherDistribution();
                 break;
+            case 'retirerClient':
+                $idClient = $_GET['id'] ?? null;
+                $idAsso = $_SESSION['asso_choisi'] ?? null;
 
+                if ($idClient && $idAsso) {
+                    $this->modele->retirerClientDeLasso($idClient, $idAsso);
+
+                    header("Location: index.php?action=voirListeClients");
+                }
+                break;
             case 'validerDistribution':
                 $this->validerDistribution();
                 break;
@@ -211,7 +233,16 @@ class ControleurGestionnaire
         }
     }
 
-
+    private function afficherDetailsProduits() {
+        $idAsso = $_SESSION['asso_choisi'] ?? null;
+        if ($idAsso) {
+            $produits = $this->modele->getTopProduitsParAsso($idAsso);
+            $asso = $this->modele->getAssociationParId($idAsso);
+            $this->vue->afficherListeCompleteProduits($produits, $asso['nom']);
+        } else {
+            header("Location: index.php?action=accueil");
+        }
+    }
     private function afficherTableauDeBord()
     {
         if (!isset($_SESSION['asso_choisi'])) {
@@ -662,11 +693,13 @@ class ControleurGestionnaire
 
     private function preparerVueAjout($erreur = null)
     {
-        $id_gest = $_SESSION['id'];
-        $associations = $this->modele->getAssociationsGerees($id_gest);
+        $idAsso = $_GET['id'] ?? $_SESSION['asso_choisi'] ?? null;
+
         $clients = $this->modele->getClientSansAssos();
 
-        $this->vue->afficherFormulaireAjoutClient($associations, $clients, $erreur);
+        $association = $this->modele->getAssociationParId($idAsso);
+
+        $this->vue->afficherFormulaireAjoutClient($association, $clients, $erreur);
     }
 
     private function retrograderBarman()
@@ -681,21 +714,26 @@ class ControleurGestionnaire
 
     private function afficherClientsAssociation()
     {
-        $idAsso = $_GET['id'] ?? $_SESSION['id_association'] ?? null;
-        $association = $this->modele->getAssociationParId($idAsso);
+        $idAsso = $_GET['id'] ?? $_SESSION['asso_choisi'] ?? null;
 
-        if ($association) {
-            $clients = $this->modele->getClientsParAssociation($association['id']);
-            $this->vue->afficherClients($clients);
-        } else {
-            $_SESSION['error'] = "Aucune association trouvée.";
+        if (!$idAsso) {
+            $_SESSION['error'] = "Veuillez choisir une association.";
             header("Location: index.php?action=accueil");
             exit;
         }
+
+        $clients = $this->modele->getClientsParAssociation($idAsso);
+        $asso    = $this->modele->getAssociationParId($idAsso);
+
+        $nomAsso = $asso['nom'] ?? 'Association';
+
+        $this->vue->afficherClients($clients, $nomAsso);
     }
+
 
     private function afficherInfoDuFournisseur()
     {
+        $idAsso = $_GET['id'] ?? $_SESSION['asso_choisi'] ?? null;
         $idFournisseur = isset($_GET['id']) ? intval($_GET['id']) : null;
 
         if (!$idFournisseur) {
@@ -879,7 +917,6 @@ class ControleurGestionnaire
             exit();
         }
     }
-
     public function afficherDetailsCommande()
     {
 
