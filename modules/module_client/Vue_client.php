@@ -413,7 +413,7 @@ class Vue_client extends VueCommun {
             <div class="nav-links">
                 <?php if (isset($_SESSION['id'])): ?>
 
-                    <?php if ($_SESSION['role'] === 'SuperAdmin'): ?>
+                    <?php if ($_SESSION['role'] === 'admin'): ?>
                         <a href="index.php?module=client&action=gestion" class="nav-item">
                             <i class="fa-solid fa-gauge-high"></i> Gestion
                         </a>
