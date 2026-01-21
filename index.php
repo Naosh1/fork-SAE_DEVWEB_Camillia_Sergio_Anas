@@ -62,14 +62,12 @@ if (isset($_POST['choisir_asso'])) {
     exit("NOT_MEMBER");
 }
 
-/* =======================
-   RECHERCHE AJAX
-======================= */
+
 if (isset($_GET['search'])) {
     $stmt = $bdd->prepare("
         SELECT a.id, a.nom, a.email,
         (SELECT 1 FROM gestionne WHERE association_id = a.id AND compte_id = ?) as is_gest,
-        (SELECT 1 FROM appartient WHERE association_id = a.id AND compte_id = ?) as is_app
+        (SELECT role FROM appartient WHERE association_id = a.id AND compte_id = ?) as user_role
         FROM association a WHERE a.nom LIKE ?");
     $stmt->execute([$_SESSION['id'], $_SESSION['id'], "%".$_GET['search']."%"]);
 
@@ -81,11 +79,18 @@ if (isset($_GET['search'])) {
 
     foreach ($results as $asso) {
         $initiale = strtoupper(substr($asso['nom'], 0, 1));
-        $badge = $asso['is_gest'] ? "<span class='status-badge badge-admin'>Gérant</span>" : ($asso['is_app'] ? "<span class='status-badge badge-member'>Membre</span>" : "");
-        $action = ($asso['is_gest'] || $asso['is_app'])
+        if ($asso['is_gest']) {
+            $badge = "<span class='status-badge badge-admin'>Gérant</span>";
+        } elseif ($asso['user_role'] === 'barman') {
+            $badge = "<span class='status-badge badge-barman'>Barman</span>";
+        } elseif ($asso['user_role']) {
+            $badge = "<span class='status-badge badge-member'>Membre</span>";
+        } else {
+            $badge = "";
+        }
+        $action = ($asso['is_gest'] || $asso['user_role'])
                 ? "<button class='enter-btn' data-id='{$asso['id']}'><i class='fa-solid fa-arrow-right-to-bracket'></i> Entrer</button>"
                 : "<button class='join-btn' data-id='{$asso['id']}'><i class='fa-solid fa-plus'></i> Rejoindre</button>";
-
         echo "
         <div class='asso-card'>
             <div class='asso-content'>
@@ -138,7 +143,7 @@ if (isset($_SESSION['asso_choisi'])) {
             display: flex; flex-direction: column; align-items: center;
             overflow-x: hidden;
         }
-
+        .badge-barman { background: rgba(37, 99, 235, 0.15); color: #3b82f6; border: 1px solid rgba(37, 99, 235, 0.3); }
         /* OVERLAY CHARGEMENT */
         #loader-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
