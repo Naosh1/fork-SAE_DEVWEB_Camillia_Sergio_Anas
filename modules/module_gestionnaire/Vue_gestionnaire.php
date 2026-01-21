@@ -1149,23 +1149,17 @@ class VueGestionnaire extends VueStaff
                 color: #f8fafc;
             }
 
-            /* État désactivé amélioré */
             .member-card.is-inactive {
                 opacity: 0.6;
                 filter: grayscale(0.5);
                 border-color: rgba(239, 68, 68, 0.3) !important;
-                background: rgba(239, 68, 68, 0.02);
+                background: rgba(239, 68, 68, 0.05);
             }
 
             .member-card.is-inactive:hover {
                 opacity: 0.9;
                 filter: grayscale(0);
                 border-color: #ef4444 !important;
-            }
-
-            .dot-offline {
-                background: #ef4444 !important;
-                box-shadow: 0 0 10px rgba(239, 68, 68, 0.5) !important;
             }
 
             .page-container {
@@ -1179,10 +1173,7 @@ class VueGestionnaire extends VueStaff
                 box-sizing: border-box;
             }
 
-            .fixed-top-section {
-                flex-shrink: 0;
-                margin-bottom: 1rem;
-            }
+            .fixed-top-section { flex-shrink: 0; margin-bottom: 1rem; }
 
             .page-header {
                 display: flex;
@@ -1264,34 +1255,15 @@ class VueGestionnaire extends VueStaff
             }
 
             .avatar-box {
-                width: 45px;
-                height: 45px;
-                border-radius: 14px;
+                width: 45px; height: 45px; border-radius: 14px;
                 background: linear-gradient(135deg, #064e3b 0%, #020617 100%);
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-weight: 900;
-                color: #10b981;
+                display: flex; align-items: center; justify-content: center;
+                font-weight: 900; color: #10b981;
             }
 
-            .status-tag {
-                font-size: 10px;
-                font-weight: 900;
-                text-transform: uppercase;
-                display: flex;
-                align-items: center;
-                gap: 8px;
-            }
-
-            .dot {
-                width: 8px;
-                height: 8px;
-                border-radius: 50%;
-            }
-
+            .dot { width: 8px; height: 8px; border-radius: 50%; }
             .dot-online { background: #10b981; box-shadow: 0 0 12px #10b981; }
-            .dot-offline { background: #475569; }
+            .dot-offline { background: #ef4444; box-shadow: 0 0 10px rgba(239, 68, 68, 0.5); }
 
             .btn-view {
                 background: #10b981;
@@ -1328,7 +1300,7 @@ class VueGestionnaire extends VueStaff
 
                 <div class="glass-search-bar">
                     <i class="fa-solid fa-magnifying-glass text-emerald-500"></i>
-                    <input type="text" id="filterSearch" placeholder="Rechercher par nom, mail ou matricule..."
+                    <input type="text" id="filterSearch" placeholder="Rechercher par nom, mail ou ID..."
                            class="flex-1 bg-transparent border-none text-white outline-none font-bold text-sm placeholder:text-slate-600">
 
                     <div class="h-6 w-[1px] bg-white/10"></div>
@@ -1353,7 +1325,6 @@ class VueGestionnaire extends VueStaff
 
             <div id="barmanList">
                 <?php foreach ($barmans as $barman):
-                    // Correction ici : On s'assure que le statut est bien lu
                     $isActif = (isset($barman['actif']) && (int)$barman['actif'] === 1);
                     $nomAsso = !empty($barman['nom_association']) ? $barman['nom_association'] : 'Non assigné';
                     ?>
@@ -1364,9 +1335,7 @@ class VueGestionnaire extends VueStaff
                        data-active="<?= $isActif ? 'true' : 'false' ?>">
 
                         <div style="display: flex; align-items: center;">
-                        <span class="id-pill">
-                            ID-<?= str_pad($barman['id'], 3, '0', STR_PAD_LEFT) ?>
-                        </span>
+                            <span class="id-pill">ID-<?= str_pad($barman['id'], 3, '0', STR_PAD_LEFT) ?></span>
                         </div>
 
                         <div class="flex items-center gap-5">
@@ -1408,6 +1377,58 @@ class VueGestionnaire extends VueStaff
                 <?php endforeach; ?>
             </div>
         </div>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const searchInput = document.getElementById('filterSearch');
+                const assoSelect = document.getElementById('filterAsso');
+                const tabBtns = document.querySelectorAll('.tab-btn');
+                const rows = document.querySelectorAll('.barman-row');
+
+                function filterTable() {
+                    const searchValue = searchInput.value.toLowerCase().trim();
+                    const assoValue = assoSelect.value;
+                    const activeTab = document.querySelector('.tab-btn.active');
+                    const statusFilter = activeTab ? activeTab.getAttribute('data-status') : 'all';
+
+                    rows.forEach(row => {
+                        const text = row.innerText.toLowerCase();
+                        const rowAsso = row.getAttribute('data-asso');
+                        const isActive = row.getAttribute('data-active') === 'true';
+
+                        const matchesSearch = text.includes(searchValue);
+
+                        const matchesAsso = (assoValue === 'all' || rowAsso === assoValue);
+
+                        let matchesStatus = true;
+                        if (statusFilter === 'active') {
+                            matchesStatus = (isActive === true);
+                        } else if (statusFilter === 'inactive') {
+                            matchesStatus = (isActive === false);
+                        } else {
+                            matchesStatus = true;
+                        }
+
+                        if (matchesSearch && matchesAsso && matchesStatus) {
+                            row.style.display = 'grid';
+                        } else {
+                            row.style.display = 'none';
+                        }
+                    });
+                }
+
+                tabBtns.forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        tabBtns.forEach(b => b.classList.remove('active'));
+                        this.classList.add('active');
+                        filterTable();
+                    });
+                });
+
+                searchInput.addEventListener('input', filterTable);
+                assoSelect.addEventListener('change', filterTable);
+            });
+        </script>
         <?php
     }
     public function afficherSuccesPromotion()

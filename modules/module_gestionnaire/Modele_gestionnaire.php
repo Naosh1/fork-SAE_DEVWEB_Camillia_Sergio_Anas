@@ -515,37 +515,22 @@ JOIN compte g ON c.id_gestionnaire = g.id                WHERE c.id = :id_comman
             return [];
         }
     }
-    public function ajouterBarmanALAssociation($nom, $prenom, $email, $mdp, $idAsso) {
+    public function ajouterBarmanALAssociation($id_compte, $id_asso) {
         try {
-            $this->getBdd()->beginTransaction();
+            $sql = "INSERT IGNORE INTO appartient (compte_id, association_id, role) 
+                VALUES (?, ?, 'barman')";
 
-            $stmt = $this->getBdd()->prepare("SELECT id FROM compte WHERE email = ?");
-            $stmt->execute([$email]);
-            $user = $stmt->fetch();
+            $stmt = self::getBdd()->prepare($sql);
+            $res = $stmt->execute([$id_compte, $id_asso]);
 
-            if (!$user) {
-                $hash = password_hash($mdp, PASSWORD_DEFAULT);
-                $stmt = $this->getBdd()->prepare("INSERT INTO compte (nom, prenom, email, mdp, role, actif) VALUES (?, ?, ?, ?, 'barman', 1)");
-                $stmt->execute([$nom, $prenom, $email, $hash]);
-                $userId = $this->getBdd()->lastInsertId();
-            } else {
-                $userId = $user['id'];
-                $stmt = $this->getBdd()->prepare("UPDATE compte SET role = 'barman' WHERE id = ?");
-                $stmt->execute([$userId]);
+            if ($res) {
+                $update = self::getBdd()->prepare("UPDATE compte SET actif = 1 WHERE id = ?");
+                $update->execute([$id_compte]);
             }
 
-            $stmt = $this->getBdd()->prepare("
-            INSERT INTO appartient (compte_id, association_id, role) 
-            VALUES (?, ?, 'barman') 
-            ON DUPLICATE KEY UPDATE role = 'barman'
-        ");
-            $stmt->execute([$userId, $idAsso]);
-
-            $this->getBdd()->commit();
-            return true;
-        } catch (Exception $e) {
-            if ($this->getBdd()->inTransaction()) $this->getBdd()->rollBack();
-            error_log("Erreur ajout barman : " . $e->getMessage());
+            return $res;
+        } catch (PDOException $e) {
+            error_log("Erreur promotion barman: " . $e->getMessage());
             return false;
         }
     }
@@ -571,70 +556,24 @@ JOIN compte g ON c.id_gestionnaire = g.id                WHERE c.id = :id_comman
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    public function ajouterClientCommeBarman($clientId, $assoId)
-    {
+    public function ajouterClientCommeBarman($clientId, $assoId) {
         try {
-            $bdd = self::getBdd();
-            $bdd->beginTransaction();
+            // INSERT IGNORE ou ON DUPLICATE KEY car le client est peut-être déjà lié à l'asso
+            $sql = "INSERT INTO appartient (compte_id, association_id, role) 
+                VALUES (?, ?, 'barman') 
+                ON DUPLICATE KEY UPDATE role = 'barman'";
 
-            $sql1 = "UPDATE compte SET role = 'barman' WHERE id = :cid";
-            $stmt1 = $bdd->prepare($sql1);
-            $stmt1->execute(['cid' => $clientId]);
-            $sql2 = "INSERT INTO appartient (compte_id, association_id, role) 
-                VALUES (:cid, :aid, 'barman')
-                ON DUPLICATE KEY UPDATE role = 'barman', association_id = :aid2";
+            $stmt = self::getBdd()->prepare($sql);
+            $res = $stmt->execute([$clientId, $assoId]);
 
-            $stmt2 = $bdd->prepare($sql2);
-            $stmt2->execute([
-                'cid'  => $clientId,
-                'aid'  => $assoId,
-                'aid2' => $assoId
-            ]);
-
-            $bdd->commit();
-            return true;
-
-        } catch (PDOException $e) {
-            if (isset($bdd)) { $bdd->rollBack(); }
-            error_log("Erreur promotion barman : " . $e->getMessage());
-            return false;
-        }
-    }
-
-    public function activerDesactiverBarman($id, $actif)
-    {
-        try {
-            if (!$actif) {
-                $requete = self::getBdd()->prepare(
-                    "DELETE FROM dispose 
-                 WHERE compte_id = ? 
-                 AND role_id = (SELECT id FROM role WHERE nom = 'barman')"
-                );
-                return $requete->execute([$id]);
-            } else {
-                $requeteRole = self::getBdd()->prepare("SELECT id FROM role WHERE nom = 'barman'");
-                $requeteRole->execute();
-                $role = $requeteRole->fetch(PDO::FETCH_ASSOC);
-
-                if ($role) {
-                    $requeteVerif = self::getBdd()->prepare(
-                        "SELECT COUNT(*) FROM dispose 
-                     WHERE compte_id = ? AND role_id = ?"
-                    );
-                    $requeteVerif->execute([$id, $role['id']]);
-
-                    if (!$requeteVerif->fetchColumn()) {
-                        $requeteLien = self::getBdd()->prepare(
-                            "INSERT INTO dispose (role_id, compte_id) VALUES (?, ?)"
-                        );
-                        return $requeteLien->execute([$role['id'], $id]);
-                    }
-                    return true;
-                }
-                return false;
+            if ($res) {
+                $update = self::getBdd()->prepare("UPDATE compte SET actif = 1 WHERE id = ?");
+                $update->execute([$clientId]);
             }
+
+            return $res;
         } catch (PDOException $e) {
-            error_log("Erreur activerDesactiverBarman: " . $e->getMessage());
+            error_log("Erreur promotion barman : " . $e->getMessage());
             return false;
         }
     }
@@ -715,25 +654,17 @@ JOIN compte g ON c.id_gestionnaire = g.id                WHERE c.id = :id_comman
             return false;
         }
     }
-    public function getBarmansParAssociation($id_association)
-    {
-        try {
-            $sql = "SELECT c.id, c.nom, c.prenom, c.email, c.tel, c.photo, c.actif, a.role, asso.nom AS nom_association
+    public function getBarmansParAssociation($id_association) {
+        $sql = "SELECT c.id, c.nom, c.prenom, c.email, c.actif, a.role, asso.nom AS nom_association
             FROM compte c
             JOIN appartient a ON c.id = a.compte_id
             JOIN association asso ON a.association_id = asso.id
-            WHERE a.association_id = :id_asso 
-            AND a.role = 'barman'";
+            WHERE a.association_id = ? 
+            AND a.role = 'barman'"; // On ne filtre PAS sur c.actif ici
 
-            $stmt = self::getBdd()->prepare($sql);
-            $stmt->execute([':id_asso' => $id_association]);
-
-            return $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        } catch (PDOException $e) {
-            error_log('Erreur getBarmansParAssociation : ' . $e->getMessage());
-            return [];
-        }
+        $stmt = self::getBdd()->prepare($sql);
+        $stmt->execute([$id_association]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function getDetailsAssos($idAssociation)

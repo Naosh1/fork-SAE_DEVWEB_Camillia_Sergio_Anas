@@ -514,19 +514,22 @@ class ControleurGestionnaire
                 $res = $this->modele->ajouterClientCommeBarman($clientId, $assoId);
 
                 if ($res) {
-                    $this->vue->afficherSuccesPromotion();
+                    header('Location: index.php?module=gestionnaire&action=voirBarmans&success=1');
                     exit();
                 } else {
-                    $_SESSION['error'] = "Ce membre est déjà barman ou une erreur est survenue.";
-                    header('Location: index.php?action=barmans');
+                    header('Location: index.php?module=gestionnaire&action=ajouterBarman&error=1');
                     exit();
                 }
             }
         } else {
             $q = $_GET['q'] ?? '';
             $clients = $this->modele->rechercherClients($q);
-            $assoData = $this->modele->getAssociationsParGestionnaire($_SESSION['id']);
-            $associations = (isset($assoData['id'])) ? [$assoData] : $assoData;
+
+            // Récupération des assos du gestionnaire
+            $associations = $this->modele->getAssociationsParGestionnaire($_SESSION['id']);
+
+            // Normalisation au cas où il n'y a qu'une asso
+            if (isset($associations['id'])) { $associations = [$associations]; }
 
             $this->vue->formulaireAjouterBarman($clients, $associations);
         }
