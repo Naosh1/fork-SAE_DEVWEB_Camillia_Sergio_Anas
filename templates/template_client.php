@@ -1,27 +1,3 @@
-<?php
-//
-//
-//if (isset($_GET['action']) && $_GET['action'] === 'deconnexion') {
-//    session_unset();
-//    session_destroy();
-//    header('Location: templates/connexion.php');
-//    exit();
-//}
-//
-//if (!isset($_SESSION['id'])) {
-//    header('Location: templates/connexion.php');
-//    exit();
-//}
-//$role = $_SESSION['role_effectif'] ?? '';
-//if ($role !== 'client') {
-//    header('Location: index.php');
-//    exit();
-//}
-//$prenom = $_SESSION['prenom'] ?? 'Utilisateur';
-//$nom = $_SESSION['nom'] ?? '';
-//$email = $_SESSION['email'] ?? '';
-//?>
-
 <!DOCTYPE html>
     <html lang="fr">
     <head>
