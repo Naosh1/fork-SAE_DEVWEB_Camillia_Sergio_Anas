@@ -296,7 +296,6 @@ class ControleurGestionnaire
                 $paths['pdf_pv'],
                 $paths['pdf_ago']
             );
-
             if ($success) {
                 header("Location: index.php?module=gestionnaire&action=demanderCreationAsso");
                 exit();
