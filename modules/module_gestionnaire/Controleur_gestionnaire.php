@@ -243,6 +243,19 @@ class ControleurGestionnaire
             header("Location: index.php?action=accueil");
         }
     }
+
+    private function enregistrerInventaire()
+    {
+        $idAsso = $_POST['association_id'] ?? $_SESSION['asso_choisi'];
+        $stocks = $_POST['stock_reel'] ?? [];
+
+        if ($this->modele->validerInventaire($idAsso, $stocks)) {
+            $_SESSION['success'] = "Inventaire validé. Stock global et stock bar mis à jour.";
+        }
+
+        header("Location: index.php?module=gestionnaire&action=distribuer");
+        exit();
+    }
     private function afficherTableauDeBord()
     {
         if (!isset($_SESSION['asso_choisi'])) {
@@ -919,7 +932,6 @@ class ControleurGestionnaire
     }
     public function afficherDetailsCommande()
     {
-
         $idCommande = $_GET['id'] ?? null;
 
         if (!$idCommande) {
@@ -927,46 +939,36 @@ class ControleurGestionnaire
             header('Location: index.php?module=gestionnaire&action=fournisseurs');
             exit();
         }
-        $commande = $this->modeleStaff->getDetailsCommande($idCommande);
-        $produitsCommande = $this->modeleStaff->getProduitsCommande($idCommande);
-
+        $commande = $this->modele->getDetailsCommande($idCommande);
+        $produitsCommande = $this->modele->getProduitsCommande($idCommande);
         if (!$commande) {
-            die("Erreur : La commande n°$idCommande n'a pas été trouvée dans la base de données.");
+            $_SESSION['error'] = "La commande n°$idCommande est introuvable.";
+            header('Location: index.php?module=gestionnaire&action=mesCommandes');
+            exit();
         }
+
         $this->vue->afficherDetailsCommande($commande, $produitsCommande);
     }
 
 
     private function annulerCommande()
     {
-        if (!isset($_GET['id'])) {
-            $_SESSION['error'] = "Commande non spécifiée.";
-            header('Location: index.php?action=mesCommandes');
-            exit();
+        $id = $_GET['id'] ?? null;
+        if ($id) {
+            $commande = $this->modele->getDetailsCommande($id);
+
+            if ($commande && $commande['statut'] !== 'annulee') {
+                $resAnnul = $this->modele->annulerCommande($id);
+
+                if ($resAnnul) {
+                    $this->modele->rembourserAssociation($commande['id_association'], $commande['montant_total']);
+                    $_SESSION['success'] = "Commande #$id annulée. Le montant de " . $commande['montant_total'] . "€ a été rendu à l'association.";
+                }
+            } else {
+                $_SESSION['error'] = "Impossible d'annuler cette commande.";
+            }
         }
-
-        $idCommande = $_GET['id'];
-        $commande = $this->modele->getDetailCommande($idCommande);
-
-        if (!$commande) {
-            $_SESSION['error'] = "Commande introuvable.";
-            header('Location: index.php?action=mesCommandes');
-            exit();
-        }
-
-        if ($commande['statut'] !== 'en_attente') {
-            $_SESSION['error'] = "Cette commande ne peut plus être annulée.";
-            header("Location: index.php?action=detailCommande&id=$idCommande");
-            exit();
-        }
-
-        if ($this->modele->annulerCommande($idCommande)) {
-            $_SESSION['success'] = "Commande #$idCommande annulée avec succès.";
-        } else {
-            $_SESSION['error'] = "Erreur lors de l'annulation de la commande.";
-        }
-
-        header('Location: index.php?action=mesCommandes');
+        header("Location: index.php?module=gestionnaire&action=mesCommandes");
         exit();
     }
 
@@ -1019,23 +1021,6 @@ class ControleurGestionnaire
         $this->vue->formulaireInventaire($produits, $id_assos);
     }
 
-    private function enregistrerInventaire()
-    {
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $id_assos = $_POST['association_id'];
-            $stocksReels = $_POST['stock_reel'];
-
-            $success = $this->modele->validerInventaire($id_assos, $stocksReels);
-
-            if ($success) {
-                $_SESSION['success'] = "Inventaire enregistré et stocks mis à jour.";
-            } else {
-                $_SESSION['error'] = "Erreur lors de l'enregistrement de l'inventaire.";
-            }
-            header("Location: index.php?action=gererAssociation&id=$id_assos");
-            exit();
-        }
-    }
 
     private function afficherStatistiques()
     {

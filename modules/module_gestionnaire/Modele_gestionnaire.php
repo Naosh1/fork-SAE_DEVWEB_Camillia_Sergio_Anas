@@ -217,7 +217,7 @@ class ModeleGestionnaire extends ModeleStaff
     public function creerEnteteCommande($idFournisseur, $idAsso)
     {
         $sql = "INSERT INTO commande_fournisseur (id_fournisseur, id_association, date_commande, montant_total, statut) 
-            VALUES (:id_f, :id_a, NOW(), 0, 'en_attente')";
+            VALUES (:id_f, :id_a, NOW(), 0, 'payee')";
         $stmt = self::getBdd()->prepare($sql);
         $stmt->execute([
             'id_f' => $idFournisseur,
@@ -248,16 +248,49 @@ class ModeleGestionnaire extends ModeleStaff
             'prix' => $prixUnitaire
         ]);
     }
-
-    public function getProduitInfoParNomEtFournisseur($nom, $idFournisseur)
+    public function validerInventaire($idAssociation, $donneesStocks)
     {
-        $sql = "SELECT p.id as id_produit, fp.prix_achat 
-            FROM produit p 
-            JOIN fournisseur_produit fp ON p.id = fp.id_produit 
-            WHERE p.nom = :nom AND fp.id_fournisseur = :id_f";
-        $stmt = self::getBdd()->prepare($sql);
-        $stmt->execute(['nom' => $nom, 'id_f' => $idFournisseur]);
-        return $stmt->fetch(PDO::FETCH_ASSOC);
+        try {
+            $this->getBdd()->beginTransaction();
+
+            // 1. Création de l'inventaire (Historique)
+            $stmtInv = $this->getBdd()->prepare("INSERT INTO inventaire (date_inventaire, association_id) VALUES (NOW(), ?)");
+            $stmtInv->execute([$idAssociation]);
+            $idInventaire = $this->getBdd()->lastInsertId();
+
+            // 2. Préparation des Updates
+            $stmtDetail = $this->getBdd()->prepare("INSERT INTO concerne (produit_id, inventaire_id, stock_theorique, stock_reel, perte) VALUES (?, ?, ?, ?, ?)");
+
+            // Update Table GERE (Stock bar)
+            $stmtUpdateGere = $this->getBdd()->prepare("UPDATE gere SET stock_asso = ? WHERE association_id = ? AND produit_id = ?");
+
+            // Update Table PRODUIT (Stock global utilisé par afficherFormulaireInventaire)
+            $stmtUpdateGlobal = $this->getBdd()->prepare("UPDATE produit SET quantiteActuelle = ? WHERE id = ?");
+
+            foreach ($donneesStocks as $idProduit => $stockReel) {
+                // On récupère le stock actuel pour calculer l'écart
+                $sqlT = "SELECT stock_asso FROM gere WHERE association_id = ? AND produit_id = ?";
+                $st = $this->getBdd()->prepare($sqlT);
+                $st->execute([$idAssociation, $idProduit]);
+                $stockTheorique = $st->fetchColumn() ?: 0;
+
+                $perte = $stockTheorique - $stockReel;
+
+                // Enregistrer l'écart dans concerne
+                $stmtDetail->execute([$idProduit, $idInventaire, $stockTheorique, $stockReel, $perte]);
+
+                // ON MET À JOUR LES DEUX TABLES POUR ACTUALISER L'AFFICHAGE
+                $stmtUpdateGere->execute([$stockReel, $idAssociation, $idProduit]);
+                $stmtUpdateGlobal->execute([$stockReel, $idProduit]);
+            }
+
+            $this->getBdd()->commit();
+            return true;
+        } catch (Exception $e) {
+            if ($this->getBdd()->inTransaction()) $this->getBdd()->rollBack();
+            error_log("Erreur Inventaire : " . $e->getMessage());
+            return false;
+        }
     }
 
     public function creerCommandeFournisseur($idGestionnaire, $idFournisseur, $idAssociation, $notes = '')
@@ -410,18 +443,16 @@ class ModeleGestionnaire extends ModeleStaff
     public function getDetailsCommande($idCommande)
     {
         try {
-            $sql = "SELECT c.*, f.nom as nom_fournisseur, f.email as email_fournisseur,
-                f.telephone as tel_fournisseur, a.nom as nom_association,
-                g.prenom as prenom_gestionnaire, g.nom as nom_gestionnaire
-                FROM commandes_fournisseur c
-                JOIN fournisseurs f ON c.id_fournisseur = f.id
-                JOIN associations a ON c.id_association = a.id
-JOIN compte g ON c.id_gestionnaire = g.id                WHERE c.id = :id_commande";
+            $sql = "SELECT c.*, f.nom AS nom_fournisseur, a.nom AS nom_association 
+                    FROM commande_fournisseur c
+                    JOIN fournisseur f ON c.id_fournisseur = f.id
+                    JOIN association a ON c.id_association = a.id
+                    WHERE c.id = ?";
             $stmt = self::getBdd()->prepare($sql);
-            $stmt->execute([':id_commande' => $idCommande]);
+            $stmt->execute([$idCommande]);
             return $stmt->fetch(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
-            error_log("Erreur getDetailCommande: " . $e->getMessage());
+            error_log("Erreur getDetailsCommande: " . $e->getMessage());
             return false;
         }
     }
@@ -488,11 +519,25 @@ JOIN compte g ON c.id_gestionnaire = g.id                WHERE c.id = :id_comman
     public function annulerCommande($idCommande)
     {
         try {
-            $sql = "UPDATE commandes_fournisseur SET statut = 'annulee' WHERE id = :id AND statut = 'en_attente'";
+            $sql = "UPDATE commande_fournisseur SET statut = 'annulee' WHERE id = :id";
             $stmt = self::getBdd()->prepare($sql);
             return $stmt->execute([':id' => $idCommande]);
         } catch (PDOException $e) {
             error_log("Erreur annulerCommande: " . $e->getMessage());
+            return false;
+        }
+    }
+    public function rembourserAssociation($idAsso, $montant)
+    {
+        try {
+            $sql = "UPDATE association SET solde = solde + :montant WHERE id = :id";
+            $stmt = self::getBdd()->prepare($sql);
+            return $stmt->execute([
+                ':montant' => $montant,
+                ':id' => $idAsso
+            ]);
+        } catch (PDOException $e) {
+            error_log("Erreur remboursement: " . $e->getMessage());
             return false;
         }
     }

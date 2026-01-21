@@ -190,10 +190,7 @@ class VueStaff extends VueCommun
 
     public function afficherFormulaireEnvoi($destinataires, $sujetPredefini = "", $idCible = null)
     {
-        // 1. Charger la navigation
         $this->afficherNav();
-
-        // 2. Charger les dépendances manquantes AVANT le HTML du formulaire
         echo '
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -203,7 +200,6 @@ class VueStaff extends VueCommun
         .custom-font, .custom-font input, .custom-font select, .custom-font textarea, .custom-font button {
             font-family: "Inter", sans-serif !important;
         }
-        /* Forcer l affichage des icônes si un style parent les cache */
         .fa-solid {
             display: inline-block !important;
         }
@@ -479,6 +475,115 @@ class VueStaff extends VueCommun
         </div>
         <?php
     }
+
+    public function afficherDetailsCommande($commande, $produits)
+    {
+        $this->afficherNav();
+        ?>
+        <style>
+            .details-container {
+                background: #020617;
+                min-height: 100vh;
+                padding: 4rem 2rem;
+                color: white;
+                font-family: 'Montserrat', sans-serif;
+            }
+            .info-card {
+                background: rgba(255, 255, 255, 0.03);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                border-radius: 24px;
+                padding: 2rem;
+            }
+            .product-row {
+                border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+                padding: 1rem 0;
+            }
+            .status-badge {
+                padding: 8px 16px;
+                border-radius: 12px;
+                font-weight: 900;
+                text-transform: uppercase;
+                font-size: 12px;
+            }
+            .status-payee { background: rgba(34, 197, 94, 0.1); color: #22c55e; border: 1px solid #22c55e; }
+            .status-en_attente { background: rgba(59, 130, 246, 0.1); color: #3b82f6; border: 1px solid #3b82f6; }
+            .cancel-btn {
+                background: #dc2626;
+                color: white;
+                padding: 0.5rem 1rem;
+                font-weight: 900;
+                border-radius: 12px;
+                text-transform: uppercase;
+                font-size: 12px;
+                transition: background 0.3s;
+            }
+            .cancel-btn:hover { background: #b91c1c; }
+        </style>
+
+        <div class="details-container">
+            <div class="max-w-4xl mx-auto">
+                <a href="index.php?module=gestionnaire&action=mesCommandes" class="text-slate-400 hover:text-amber-500 transition-all text-xs font-bold uppercase mb-8 inline-block">
+                    <i class="fa-solid fa-arrow-left mr-2"></i> Retour à l'historique
+                </a>
+
+                <div class="flex justify-between items-start mb-8">
+                    <div>
+                        <h1 class="text-4xl font-black italic uppercase">Commande #<?= str_pad($commande['id'], 5, '0', STR_PAD_LEFT) ?></h1>
+                        <p class="text-slate-400 mt-2">Passée le <?= date('d/m/Y H:i', strtotime($commande['date_commande'])) ?></p>
+                    </div>
+                    <div class="status-badge status-<?= str_replace(['é','è'], 'e', $commande['statut']) ?>">
+                        <?= strtoupper($commande['statut']) ?>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-6 mb-8">
+                    <div class="info-card">
+                        <p class="text-amber-500 font-black text-[10px] uppercase mb-4">Fournisseur</p>
+                        <p class="text-xl font-bold"><?= htmlspecialchars($commande['nom_fournisseur']) ?></p>
+                    </div>
+                    <div class="info-card">
+                        <p class="text-amber-500 font-black text-[10px] uppercase mb-4">Association</p>
+                        <p class="text-xl font-bold"><?= htmlspecialchars($commande['nom_association']) ?></p>
+                    </div>
+                </div>
+
+                <div class="info-card">
+                    <h3 class="text-amber-500 font-black text-[10px] uppercase mb-6">Détails des articles</h3>
+                    <div class="space-y-2">
+                        <?php foreach ($produits as $p): ?>
+                            <div class="product-row flex justify-between items-center">
+                                <div>
+                                    <p class="font-bold"><?= htmlspecialchars($p['nom_produit']) ?></p>
+                                    <p class="text-xs text-slate-500 italic"><?= $p['type_produit'] ?></p>
+                                </div>
+                                <div class="text-right">
+                                    <p class="font-black"><?= $p['quantite'] ?> x <?= number_format($p['prix_unitaire'], 2) ?> €</p>
+                                    <p class="text-amber-500 font-bold text-sm"><?= number_format($p['quantite'] * $p['prix_unitaire'], 2) ?> €</p>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+
+                    <div class="mt-8 pt-6 border-t border-white/10 flex justify-between items-center">
+                        <span class="text-2xl font-black italic">TOTAL HT</span>
+                        <span class="text-3xl font-black text-amber-500"><?= number_format($commande['montant_total'], 2, ',', ' ') ?> €</span>
+                    </div>
+
+                    <?php if ($commande['statut'] === 'payee'): ?>
+                        <div class="mt-6 text-right">
+                            <a href="index.php?action=annulerCommande&id=<?= $commande['id'] ?>"
+                               class="cancel-btn"
+                               onclick="return confirm('Voulez-vous vraiment annuler cette commande ?')">
+                                Annuler la commande
+                            </a>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
+        <?php
+    }
+
     public function afficherProduits($produits, $associations, $titre = "Stock")
     {
         $this->afficherNav();
@@ -785,6 +890,8 @@ class VueStaff extends VueCommun
         $this->afficherNav();
         ?>
         <style>
+            @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
+
             body {
                 background: #020617 radial-gradient(circle at 50% -20%, #251a05 0%, #020617 80%) no-repeat fixed;
                 color: #f8fafc;
@@ -808,7 +915,7 @@ class VueStaff extends VueCommun
             .input-orange:focus {
                 outline: none;
                 border-color: #f97316;
-                box-shadow: 0 0 15px rgba(249, 115, 22, 0.2);
+                box-shadow: 0 0 20px rgba(249, 115, 22, 0.2);
                 background: rgba(249, 115, 22, 0.05);
             }
 
@@ -818,8 +925,7 @@ class VueStaff extends VueCommun
             }
         </style>
 
-        <div class="max-w-5xl mx-auto p-12 anim-fade">
-
+        <div class="max-w-5xl mx-auto p-12">
             <div class="mb-10">
                 <div class="flex items-center gap-2 mb-2">
                     <span class="w-8 h-[2px] bg-orange-500"></span>
@@ -828,42 +934,44 @@ class VueStaff extends VueCommun
                 <h1 class="text-5xl font-black tracking-tighter text-white uppercase italic">
                     Saisie <span class="text-orange-500">Inventaire</span>
                 </h1>
-                <p class="text-slate-500 font-medium mt-2">Ajustez les stocks physiques pour corriger les écarts de
-                    vente.</p>
+                <p class="text-slate-500 font-medium mt-2">Ajustez les stocks physiques pour corriger les écarts de vente.</p>
             </div>
 
             <div class="glass-card overflow-hidden shadow-2xl">
-                <form action="index.php?action=enregistrerInventaire" method="POST" class="p-10">
-                    <input type="hidden" name="association_id" value="<?= $id_assos ?>">
+                <form action="index.php?module=gestionnaire&action=enregistrerInventaire" method="POST" class="p-10">
+                    <input type="hidden" name="association_id" value="<?= htmlspecialchars($id_assos) ?>">
 
                     <table class="w-full">
                         <thead>
                         <tr class="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] border-b border-white/5">
                             <th class="pb-6 text-left">Produit</th>
-                            <th class="pb-6 text-center">Théorique (Logiciel)</th>
+                            <th class="pb-6 text-center">Théorique (Bar)</th>
                             <th class="pb-6 text-right">Réel (Physique)</th>
                         </tr>
                         </thead>
                         <tbody class="divide-y divide-white/5">
-                        <?php foreach ($produits as $p): ?>
+                        <?php foreach ($produits as $p):
+                            $stockTheorique = isset($p['stock_asso']) ? $p['stock_asso'] : $p['quantiteActuelle'];
+                            ?>
                             <tr class="group hover:bg-white/[0.02] transition-colors">
                                 <td class="py-6">
                                     <div class="flex items-center gap-4">
                                         <div class="w-2 h-2 rounded-full bg-orange-500 shadow-[0_0_8px_#f97316]"></div>
                                         <div>
                                             <p class="font-black text-slate-200 uppercase tracking-tight"><?= htmlspecialchars($p['nom']) ?></p>
-                                            <p class="text-[10px] text-slate-600 font-bold uppercase"><?= htmlspecialchars($p['type']) ?></p>
+                                            <p class="text-[10px] text-slate-600 font-bold uppercase"><?= htmlspecialchars($p['type'] ?? 'Produit') ?></p>
                                         </div>
                                     </div>
                                 </td>
                                 <td class="py-6 text-center">
-                                    <span class="font-mono text-lg text-slate-400"><?= $p['quantiteActuelle'] ?></span>
+                                    <span class="font-mono text-lg text-slate-400"><?= $stockTheorique ?></span>
                                 </td>
                                 <td class="py-6 text-right">
-                                    <input type="number" name="stock_reel[<?= $p['id'] ?>]"
-                                           value="<?= $p['quantiteActuelle'] ?>"
+                                    <input type="number"
+                                           name="stock_reel[<?= $p['id'] ?>]"
+                                           value="<?= $stockTheorique ?>"
                                            class="w-32 py-3 px-4 rounded-xl input-orange font-black text-center text-lg"
-                                           required>
+                                           required min="0">
                                 </td>
                             </tr>
                         <?php endforeach; ?>
@@ -872,7 +980,7 @@ class VueStaff extends VueCommun
 
                     <div class="mt-12 flex justify-between items-center">
                         <div class="text-slate-500 text-[10px] font-bold uppercase tracking-widest italic">
-                            <i class="fa-solid fa-circle-info mr-2"></i> Les stocks seront mis à jour dès validation
+                            <i class="fa-solid fa-circle-info mr-2"></i> La validation écrasera le stock théorique actuel.
                         </div>
                         <button type="submit"
                                 class="bg-orange-600 hover:bg-orange-500 text-white px-10 py-4 rounded-2xl font-black uppercase tracking-tighter italic transition-all shadow-[0_10px_30px_rgba(234,88,12,0.3)] hover:shadow-[0_15px_40px_rgba(234,88,12,0.5)] active:scale-95">

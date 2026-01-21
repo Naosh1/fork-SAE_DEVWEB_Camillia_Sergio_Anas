@@ -54,9 +54,15 @@ class ModeleStaff extends ModeleCommun
 
     public function getProduitsParAssociation($id_assos)
     {
-        $req = $this->getBdd()->prepare("SELECT * FROM produit WHERE association_id = ?");
-        $req->execute([$id_assos]);
-        return $req->fetchAll(PDO::FETCH_ASSOC);
+        $sql = "SELECT p.*, g.stock_asso 
+            FROM produit p
+            INNER JOIN gere g ON p.id = g.produit_id
+            WHERE g.association_id = ?";
+
+        $stmt = self::getBdd()->prepare($sql);
+        $stmt->execute([$id_assos]);
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function getNbProduits($associationId = null)

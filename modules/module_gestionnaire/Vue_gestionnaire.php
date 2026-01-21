@@ -1638,7 +1638,7 @@ class VueGestionnaire extends VueStaff
 
         <div id="cyber-overlay">
             <div class="cyber-spinner"></div>
-            <p class="loading-text">Liaison au serveur...</p>
+            <p class="loading-text">Ajout du client...</p>
         </div>
 
         <?php if ($success): ?>
@@ -2622,7 +2622,8 @@ class VueGestionnaire extends VueStaff
                 border: 1px solid rgba(245, 158, 11, 0.2);
             }
 
-            .status-livree {
+            /* --- MODIFICATION ICI : PAYEE ET LIVREE EN VERT --- */
+            .status-payee, .status-payée, .status-livree {
                 background: rgba(34, 197, 94, 0.1);
                 color: #22c55e;
                 border: 1px solid rgba(34, 197, 94, 0.2);
@@ -2691,8 +2692,15 @@ class VueGestionnaire extends VueStaff
                 <?php else: ?>
                     <div class="space-y-4">
                         <?php foreach ($commandes as $c):
-                            $statut = $c['statut'] ?? 'en_attente';
-                            $icon = ($statut == 'en_attente') ? 'fa-clock' : (($statut == 'livree') ? 'fa-check-circle' : 'fa-xmark-circle');
+                            $statut = $c['statut'] ?? 'payée';
+                            $icon = 'fa-clock';
+                            if ($statut == 'livree' || $statut == 'payée' || $statut == 'payee') {
+                                $icon = 'fa-check-circle';
+                            } elseif ($statut == 'annulee') {
+                                $icon = 'fa-xmark-circle';
+                            }
+
+                            $statusClass = str_replace(['é', 'è'], 'e', $statut);
                             ?>
                             <div class="order-card">
                                 <div>
@@ -2709,10 +2717,10 @@ class VueGestionnaire extends VueStaff
 
                                 <div class="text-center">
                                     <p class="label-text">État actuel</p>
-                                    <span class="status-pill status-<?= $statut ?>">
-                                    <i class="fa-solid <?= $icon ?>"></i>
-                                    <?= str_replace('_', ' ', $statut) ?>
-                                </span>
+                                    <span class="status-pill status-<?= $statusClass ?>">
+                                <i class="fa-solid <?= $icon ?>"></i>
+                                <?= str_replace('_', ' ', $statut) ?>
+                            </span>
                                 </div>
 
                                 <div class="text-right pr-8">
@@ -2739,6 +2747,9 @@ class VueGestionnaire extends VueStaff
     public function afficherAffectationStock($associations, $reserve, $commandesFournisseurs, $historiqueAchats, $historiqueInventaires = [])
     {
         $this->afficherNav();
+        $totalCmd = count($commandesFournisseurs);
+        $totalEntrees = array_sum(array_column($historiqueAchats, 'quantite'));
+        $alertes = count(array_filter($historiqueInventaires, function($i) { return $i['quantite_trouvee'] != $i['quantite_theorique']; }));
         ?>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
@@ -2746,232 +2757,219 @@ class VueGestionnaire extends VueStaff
             @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
 
             body {
-                background: #020617 radial-gradient(circle at 50% -20%, #1e1b4b 0%, #020617 80%) no-repeat fixed;
+                background: #020617;
                 font-family: 'Plus Jakarta Sans', sans-serif;
                 color: #f8fafc;
+                overflow: hidden;
             }
 
             .main-container {
-                max-width: 1100px;
+                height: 100vh;
+                display: flex;
+                flex-direction: column;
+                padding: 20px 40px;
+                max-width: 1600px;
                 margin: 0 auto;
-                padding: 40px 20px;
             }
 
-            /* Navigation par onglets */
-            .tabs-nav {
-                display: flex;
-                justify-content: center;
-                gap: 12px;
-                margin-bottom: 40px;
-                background: rgba(255, 255, 255, 0.03);
-                padding: 8px;
-                border-radius: 20px;
-                width: fit-content;
-                margin-left: auto;
-                margin-right: auto;
-                border: 1px solid rgba(255, 255, 255, 0.05);
+            /* --- DASHBOARD HEADER --- */
+            .stat-grid {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 20px;
+                margin-bottom: 20px;
             }
+
+            .stat-card {
+                background: rgba(255, 255, 255, 0.03);
+                border: 1px solid rgba(255, 255, 255, 0.05);
+                padding: 15px 25px;
+                border-radius: 20px;
+                display: flex;
+                align-items: center;
+                gap: 20px;
+            }
+
+            .stat-icon {
+                width: 45px;
+                height: 45px;
+                border-radius: 14px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 18px;
+            }
+
+            /* --- CONTENT AREA --- */
+            .content-box {
+                flex: 1;
+                background: rgba(15, 23, 42, 0.6);
+                border: 1px solid rgba(255, 255, 255, 0.08);
+                border-radius: 30px;
+                padding: 30px;
+                overflow: hidden;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .scroll-area {
+                flex: 1;
+                overflow-y: auto;
+                padding-right: 10px;
+            }
+
+            /* Scrollbar stylisée hyper fine */
+            .scroll-area::-webkit-scrollbar { width: 4px; }
+            .scroll-area::-webkit-scrollbar-track { background: transparent; }
+            .scroll-area::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
 
             .tab-btn {
-                padding: 12px 28px;
-                border-radius: 14px;
+                padding: 10px 24px;
+                border-radius: 12px;
                 font-size: 11px;
                 font-weight: 800;
                 text-transform: uppercase;
-                letter-spacing: 1px;
                 cursor: pointer;
-                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                transition: 0.3s;
                 color: #64748b;
             }
 
             .tab-btn.active {
-                background: #f8fafc;
-                color: #020617;
-                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+                background: rgba(37, 99, 235, 0.1);
+                color: #3b82f6;
+                border: 1px solid rgba(37, 99, 235, 0.2);
             }
 
-            .tab-content {
-                display: none;
-                animation: slideUp 0.4s ease-out;
-            }
-
-            .tab-content.active {
-                display: block;
-            }
-
-            @keyframes slideUp {
-                from {
-                    opacity: 0;
-                    transform: translateY(20px);
-                }
-                to {
-                    opacity: 1;
-                    transform: translateY(0);
-                }
-            }
-
-            .glass-card {
-                background: rgba(15, 23, 42, 0.6);
-                border: 1px solid rgba(255, 255, 255, 0.08);
-                backdrop-filter: blur(20px);
-                border-radius: 32px;
-                padding: 40px;
-            }
-
-            .item-card {
-                background: rgba(255, 255, 255, 0.03);
-                border: 1px solid rgba(255, 255, 255, 0.05);
-                border-radius: 18px;
-                padding: 20px;
-                transition: all 0.2s;
-            }
-
-            .filter-input {
-                background: rgba(0, 0, 0, 0.3);
-                border: 1px solid rgba(255, 255, 255, 0.1);
-                color: white;
+            /* Cartes ultra-plates */
+            .row-item {
+                background: rgba(255,255,255,0.02);
+                border-radius: 16px;
                 padding: 12px 20px;
-                border-radius: 14px;
-                width: 100%;
-                max-width: 400px;
-                outline: none;
+                margin-bottom: 8px;
+                display: grid;
+                grid-template-columns: 2fr 1fr 1fr 1fr;
+                align-items: center;
+                transition: 0.2s;
+                border: 1px solid transparent;
             }
 
-            .status-badge {
+            .row-item:hover {
+                background: rgba(255,255,255,0.05);
+                border-color: rgba(255,255,255,0.1);
+            }
+
+            .badge-lite {
                 font-size: 9px;
-                font-weight: 900;
-                padding: 5px 12px;
-                border-radius: 10px;
+                font-weight: 800;
+                padding: 4px 10px;
+                border-radius: 8px;
                 text-transform: uppercase;
-            }
-
-            .status-livré {
-                background: rgba(16, 185, 129, 0.15);
-                color: #10b981;
-            }
-
-            .status-en_attente {
-                background: rgba(245, 158, 11, 0.15);
-                color: #f59e0b;
+                width: fit-content;
             }
         </style>
 
         <div class="main-container">
-            <div class="text-center mb-12">
-                <h1 class="text-6xl font-black italic uppercase tracking-tighter leading-none mb-4">
-                    Flux <span class="text-blue-500">Logistique</span>
+            <div class="flex justify-between items-center mb-6">
+                <h1 class="text-2xl font-black italic tracking-tighter uppercase">
+                    Stock<span class="text-blue-500">Terminal</span>
                 </h1>
-                <p class="text-slate-500 font-bold uppercase tracking-[0.4em] text-[10px] mb-8">Contrôle des stocks &
-                    flux entrants</p>
+
+                <div class="flex gap-2 bg-black/40 p-1.5 rounded-xl border border-white/5">
+                    <button class="tab-btn active" onclick="switchTab(event, 'tab-commandes')">Flux Achat</button>
+                    <button class="tab-btn" onclick="switchTab(event, 'tab-entrees')">Arrivages</button>
+                    <button class="tab-btn" onclick="switchTab(event, 'tab-inventaires')">Contrôle</button>
+                </div>
 
                 <?php if (!empty($associations)): ?>
                     <a href="index.php?action=faireInventaire&id=<?= htmlspecialchars($associations['id']) ?>"
-                       class="inline-flex items-center gap-3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 px-10 py-5 rounded-2xl font-black text-xs uppercase transition-all shadow-xl shadow-emerald-500/20">
-                        <i class="fa-solid fa-clipboard-check text-lg"></i>
-                        Lancer un inventaire
+                       class="bg-blue-600 text-white px-6 py-2 rounded-xl font-bold text-[10px] uppercase hover:bg-blue-500 transition-all shadow-lg shadow-blue-500/20">
+                        Nouveau Scan <i class="fa-solid fa-qrcode ml-2"></i>
                     </a>
-                <?php else: ?>
-                    <div class="inline-block bg-red-500/10 border border-red-500/20 text-red-400 px-6 py-3 rounded-xl text-xs font-bold uppercase">
-                        <i class="fa-solid fa-triangle-exclamation mr-2"></i>
-                        Aucune association liée à votre compte
-                    </div>
                 <?php endif; ?>
             </div>
 
-            <div class="tabs-nav">
-                <div class="tab-btn active" onclick="switchTab(event, 'tab-commandes')">Commandes</div>
-                <div class="tab-btn" onclick="switchTab(event, 'tab-entrees')">Entrées</div>
-                <div class="tab-btn" onclick="switchTab(event, 'tab-inventaires')">Inventaires</div>
+            <div class="stat-grid">
+                <div class="stat-card">
+                    <div class="stat-icon bg-blue-500/10 text-blue-500"><i class="fa-solid fa-cart-shopping"></i></div>
+                    <div>
+                        <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Commandes</p>
+                        <p class="text-xl font-black"><?= $totalCmd ?></p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon bg-emerald-500/10 text-emerald-500"><i class="fa-solid fa-box"></i></div>
+                    <div>
+                        <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Articles Entrants</p>
+                        <p class="text-xl font-black"><?= $totalEntrees ?></p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon bg-amber-500/10 text-amber-500"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                    <div>
+                        <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Écarts Inventaire</p>
+                        <p class="text-xl font-black"><?= $alertes ?></p>
+                    </div>
+                </div>
             </div>
 
-            <div class="glass-card">
-                <div id="tab-commandes" class="tab-content active">
-                    <div class="flex flex-col items-center mb-10">
-                        <h2 class="text-sm font-black uppercase tracking-widest text-amber-500 mb-6 italic">Suivi des
-                            achats fournisseurs</h2>
-                        <input type="text" id="searchCmd" onkeyup="filterLocal('searchCmd', 'card-cmd', 'data-info')"
-                               placeholder="Rechercher un fournisseur..." class="filter-input text-center">
+            <div class="content-box">
+                <div id="tab-commandes" class="tab-content h-full flex flex-col">
+                    <div class="flex justify-between mb-4 items-center">
+                        <h2 class="text-xs font-black uppercase text-slate-400">Commandes en cours</h2>
+                        <input type="text" id="searchCmd" onkeyup="filterLocal('searchCmd', 'row-cmd', 'data-info')" placeholder="Filtrer..." class="bg-white/5 border border-white/10 rounded-lg px-4 py-1.5 text-xs outline-none focus:border-blue-500 w-64">
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="scroll-area">
                         <?php foreach ($commandesFournisseurs as $cmd): ?>
-                            <div class="card-cmd item-card" data-info="<?= strtolower($cmd['nom_fournisseur']) ?>">
-                                <div class="flex justify-between items-start mb-4">
-                                    <span class="text-[9px] font-black text-slate-500 tracking-widest uppercase">Réf #<?= $cmd['id'] ?></span>
-                                    <span class="status-badge status-<?= str_replace(' ', '_', strtolower($cmd['statut'])) ?>"><?= $cmd['statut'] ?></span>
-                                </div>
-                                <p class="text-lg font-black uppercase text-white"><?= htmlspecialchars($cmd['nom_fournisseur']) ?></p>
-                                <div class="flex justify-between items-end mt-6 border-t border-white/5 pt-4">
-                                    <span class="text-[11px] text-slate-500 font-bold"><?= date('d/m/Y', strtotime($cmd['date_commande'])) ?></span>
-                                    <span class="text-xl font-black text-white"><?= number_format($cmd['montant_total'], 2) ?> €</span>
-                                </div>
-                            </div>
-                        <?php endforeach; ?>
-                    </div>
-                </div>
-
-                <div id="tab-entrees" class="tab-content">
-                    <div class="flex flex-col items-center mb-10">
-                        <h2 class="text-sm font-black uppercase tracking-widest text-blue-400 mb-6 italic">Historique
-                            des arrivages</h2>
-                        <input type="text" id="searchHist" onkeyup="filterLocal('searchHist', 'card-hist', 'data-info')"
-                               placeholder="Filtrer par produit..." class="filter-input text-center">
-                    </div>
-                    <div class="max-w-2xl mx-auto space-y-3">
-                        <?php foreach ($historiqueAchats as $h): ?>
-                            <div class="card-hist item-card flex justify-between items-center"
-                                 data-info="<?= strtolower($h['produit']) ?>">
+                            <div class="row-cmd row-item" data-info="<?= strtolower($cmd['nom_fournisseur']) ?>">
                                 <div class="flex items-center gap-4">
-                                    <div class="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-500">
-                                        <i class="fa-solid fa-plus-circle"></i>
-                                    </div>
-                                    <div>
-                                        <p class="font-black uppercase text-sm text-white"><?= htmlspecialchars($h['produit']) ?></p>
-                                        <p class="text-[9px] text-slate-500 font-bold uppercase"><?= htmlspecialchars($h['fournisseur']) ?></p>
-                                    </div>
+                                    <span class="text-[10px] font-bold text-slate-600">#<?= $cmd['id'] ?></span>
+                                    <span class="font-bold text-sm"><?= htmlspecialchars($cmd['nom_fournisseur']) ?></span>
                                 </div>
-                                <div class="text-right">
-                                    <p class="text-lg font-black text-emerald-500">+<?= $h['quantite'] ?></p>
-                                    <p class="text-[9px] text-slate-600 font-bold uppercase italic"><?= date('d/m H:i', strtotime($h['date'])) ?></p>
-                                </div>
+                                <div class="badge-lite bg-blue-500/10 text-blue-400 border border-blue-500/20"><?= $cmd['statut'] ?></div>
+                                <div class="text-[11px] font-bold text-slate-500"><?= date('d M Y', strtotime($cmd['date_commande'])) ?></div>
+                                <div class="text-right font-black text-white"><?= number_format($cmd['montant_total'], 2) ?> €</div>
                             </div>
                         <?php endforeach; ?>
                     </div>
                 </div>
 
-                <div id="tab-inventaires" class="tab-content">
-                    <div class="text-center mb-10">
-                        <h2 class="text-sm font-black uppercase tracking-widest text-emerald-400 italic">Rapports
-                            d'inventaire</h2>
+                <div id="tab-entrees" class="tab-content h-full flex flex-col hidden">
+                    <div class="flex justify-between mb-4 items-center">
+                        <h2 class="text-xs font-black uppercase text-slate-400">Flux de réception</h2>
                     </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <?php if (empty($historiqueInventaires)): ?>
-                            <div class="col-span-full text-center py-20 opacity-30">
-                                <i class="fa-solid fa-folder-open text-4xl mb-4"></i>
-                                <p class="uppercase font-black text-xs tracking-widest">Aucune donnée enregistrée</p>
-                            </div>
-                        <?php else: ?>
-                            <?php foreach ($historiqueInventaires as $inv):
-                                $diff = $inv['quantite_trouvee'] - $inv['quantite_theorique'];
-                                ?>
-                                <div class="item-card border-l-4 <?= $diff < 0 ? 'border-red-500' : 'border-emerald-500' ?>">
-                                    <div class="flex justify-between items-start mb-4">
-                                        <p class="font-black uppercase text-sm"><?= htmlspecialchars($inv['produit']) ?></p>
-                                        <span class="text-[9px] font-bold text-slate-600"><?= date('d/m/Y', strtotime($inv['date'])) ?></span>
-                                    </div>
-                                    <div class="grid grid-cols-3 gap-2 text-center bg-black/30 rounded-xl p-4">
-                                        <div><p class="text-[7px] font-black text-slate-500 mb-1">LOGICIEL</p>
-                                            <p class="text-sm font-bold"><?= $inv['quantite_theorique'] ?></p></div>
-                                        <div><p class="text-[7px] font-black text-slate-500 mb-1">RÉEL</p>
-                                            <p class="text-sm font-bold text-white"><?= $inv['quantite_trouvee'] ?></p>
-                                        </div>
-                                        <div><p class="text-[7px] font-black text-slate-500 mb-1">ÉCART</p>
-                                            <p class="text-sm font-black <?= $diff < 0 ? 'text-red-500' : 'text-emerald-400' ?>"><?= ($diff > 0 ? '+' : '') . $diff ?></p>
-                                        </div>
-                                    </div>
+                    <div class="scroll-area">
+                        <?php foreach ($historiqueAchats as $h): ?>
+                            <div class="row-item">
+                                <div class="flex flex-col">
+                                    <span class="font-bold text-sm text-white"><?= htmlspecialchars($h['produit']) ?></span>
+                                    <span class="text-[9px] text-slate-600 uppercase font-black"><?= htmlspecialchars($h['fournisseur']) ?></span>
                                 </div>
-                            <?php endforeach; ?>
-                        <?php endif; ?>
+                                <div class="text-emerald-500 font-black">+ <?= $h['quantite'] ?> units</div>
+                                <div class="text-[11px] text-slate-500"><?= date('d/m H:i', strtotime($h['date'])) ?></div>
+                                <div class="text-right"><i class="fa-solid fa-circle-check text-emerald-500/20"></i></div>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+
+                <div id="tab-inventaires" class="tab-content h-full flex flex-col hidden">
+                    <div class="flex justify-between mb-4 items-center">
+                        <h2 class="text-xs font-black uppercase text-slate-400">Rapports d'écarts</h2>
+                    </div>
+                    <div class="scroll-area">
+                        <?php foreach ($historiqueInventaires as $inv):
+                            $diff = $inv['quantite_trouvee'] - $inv['quantite_theorique'];
+                            ?>
+                            <div class="row-item">
+                                <div class="font-bold text-sm"><?= htmlspecialchars($inv['produit']) ?></div>
+                                <div class="text-[10px] font-bold text-slate-400">Log: <?= $inv['quantite_theorique'] ?> / Réel: <?= $inv['quantite_trouvee'] ?></div>
+                                <div class="font-black <?= $diff < 0 ? 'text-rose-500' : 'text-emerald-500' ?>">
+                                    <?= ($diff > 0 ? '+' : '') . $diff ?>
+                                </div>
+                                <div class="text-right text-[10px] text-slate-600 font-bold"><?= date('d/m/y', strtotime($inv['date'])) ?></div>
+                            </div>
+                        <?php endforeach; ?>
                     </div>
                 </div>
             </div>
@@ -2979,16 +2977,16 @@ class VueGestionnaire extends VueStaff
 
         <script>
             function switchTab(evt, tabName) {
-                document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
                 document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-                document.getElementById(tabName).classList.add('active');
+                document.getElementById(tabName).classList.remove('hidden');
                 evt.currentTarget.classList.add('active');
             }
 
             function filterLocal(inputId, className, attr) {
                 const val = document.getElementById(inputId).value.toLowerCase();
                 document.querySelectorAll('.' + className).forEach(el => {
-                    el.style.display = el.getAttribute(attr).includes(val) ? '' : 'none';
+                    el.style.display = el.getAttribute(attr).includes(val) ? 'grid' : 'none';
                 });
             }
         </script>
