@@ -8,9 +8,7 @@ include_once 'connexion/Connexion.php';
 Connexion::initConnexion();
 $bdd = Connexion::getBdd();
 
-/* =======================
-   SÉCURITÉ & LOGOUT
-======================= */
+
 if (!isset($_SESSION['id'])) {
     header('Location: templates/connexion.php');
     exit();
@@ -28,9 +26,6 @@ if (isset($_GET['action']) && $_GET['action'] === 'deconnexion') {
     exit();
 }
 
-/* =======================
-   REJOINDRE UNE ASSO
-======================= */
 if (isset($_POST['rejoindre_asso'])) {
     $assoId = (int) $_POST['rejoindre_asso'];
     $check = $bdd->prepare("SELECT 1 FROM appartient WHERE compte_id = ? AND association_id = ?");
@@ -43,9 +38,7 @@ if (isset($_POST['rejoindre_asso'])) {
     exit("JOINED");
 }
 
-/* =======================
-   ENTRER DANS UNE ASSO
-======================= */
+
 if (isset($_POST['choisir_asso'])) {
     $assoId = (int) $_POST['choisir_asso'];
     $stmt = $bdd->prepare("SELECT 1 FROM gestionne WHERE compte_id = ? AND association_id = ?");
@@ -108,15 +101,11 @@ if (isset($_GET['search'])) {
     exit;
 }
 
-/* =======================
-   INFOS UTILISATEUR
-======================= */
 $stmt = $bdd->prepare("SELECT prenom FROM compte WHERE id = ?");
 $stmt->execute([$_SESSION['id']]);
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 if (!$user) { session_destroy(); header('Location: templates/connexion.php'); exit(); }
 
-// Redirection si asso déjà choisie
 if (isset($_SESSION['asso_choisi'])) {
     if ($_SESSION['role_effectif'] === 'gestionnaire') { include_once 'modules/module_gestionnaire/Mod_gestionnaire.php'; new Mod_gestionnaire(); include_once 'templates/template_gestionnaire.php'; }
     elseif ($_SESSION['role_effectif'] === 'barman') { include_once 'modules/module_barman/Mod_barman.php'; new Mod_barman(); include_once 'templates/template_barman.php'; }
