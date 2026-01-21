@@ -98,7 +98,48 @@ class ModeleStaff extends ModeleCommun
         $stmt->execute([$idAsso]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+    public function getVentesParHeure($idAsso) {
+        $sql = "SELECT HOUR(date_vente) as heure, SUM(montant_total) as total 
+            FROM vente 
+            WHERE association_id = ? 
+            GROUP BY HOUR(date_vente) 
+            ORDER BY heure ASC";
+        $stmt = self::getBdd()->prepare($sql);
+        $stmt->execute([$idAsso]);
+        $ventes = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
 
+        $complet = array_fill(0, 24, 0);
+        foreach ($ventes as $heure => $total) {
+            $complet[(int)$heure] = (float)$total;
+        }
+        return $complet;
+    }
+    public function getTopClients($idAsso) {
+        $sql = "SELECT c.nom, c.prenom, SUM(v.montant_total) as depense_totale 
+            FROM compte c 
+            JOIN vente v ON v.compte_id = c.id 
+            WHERE v.association_id = ? 
+            GROUP BY c.id 
+            ORDER BY depense_totale DESC LIMIT 5";
+        $stmt = self::getBdd()->prepare($sql);
+        $stmt->execute([$idAsso]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    public function getRentabiliteProduits($idAsso) {
+        $sql = "SELECT p.nom, 
+            SUM(c.quantite) as total_vendu,
+            SUM(c.quantite * (p.prix - fp.prix_achat)) as benefice_reel
+            FROM contient c
+            JOIN produit p ON c.produit_id = p.id
+            JOIN vente v ON c.vente_id = v.id
+            JOIN fournisseur_produit fp ON p.id = fp.id_produit
+            WHERE v.association_id = ?
+            GROUP BY p.id
+            ORDER BY benefice_reel DESC";
+        $stmt = self::getBdd()->prepare($sql);
+        $stmt->execute([$idAsso]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
     public function getStatsEvolutionSeptJoursParAsso($idAsso) {
         $dates = [];
         $recettes = [];
@@ -106,14 +147,14 @@ class ModeleStaff extends ModeleCommun
         $benefices = [];
 
         for ($i = 6; $i >= 0; $i--) {
-            $date = date('Y-m-d', strtotime("-$i days"));
-            $dates[] = date('d/m', strtotime($date));
+            $dateSQL = date('Y-m-d', strtotime("-$i days"));
+            $dates[] = date('d/m', strtotime($dateSQL));
 
             $sqlR = "SELECT SUM(montant_total) FROM vente WHERE association_id = ? AND DATE(date_vente) = ?";
             $stmtR = self::getBdd()->prepare($sqlR);
-            $stmtR->execute([$idAsso, $date]);
-            $r = $stmtR->fetchColumn() ?: 0;
-            $recettes[] = (float)$r;
+            $stmtR->execute([$idAsso, $dateSQL]);
+            $r = (float)($stmtR->fetchColumn() ?: 0);
+            $recettes[] = $r;
 
             $sqlP = "SELECT SUM(c.perte * p.prix) 
                  FROM concerne c 
@@ -121,9 +162,9 @@ class ModeleStaff extends ModeleCommun
                  JOIN produit p ON c.produit_id = p.id
                  WHERE i.association_id = ? AND DATE(i.date_inventaire) = ?";
             $stmtP = self::getBdd()->prepare($sqlP);
-            $stmtP->execute([$idAsso, $date]);
-            $p = $stmtP->fetchColumn() ?: 0;
-            $pertes[] = (float)$p;
+            $stmtP->execute([$idAsso, $dateSQL]);
+            $p = (float)($stmtP->fetchColumn() ?: 0);
+            $pertes[] = $p;
 
             $benefices[] = $r - $p;
         }
@@ -146,6 +187,7 @@ class ModeleStaff extends ModeleCommun
             $stmt = self::getBdd()->prepare($sql);
             $stmt->execute([$idAsso]);
             return $stmt->fetchColumn() ?: 0;
+        } catch (PDOException $e) {
         } catch (PDOException $e) {
             return 0;
         }

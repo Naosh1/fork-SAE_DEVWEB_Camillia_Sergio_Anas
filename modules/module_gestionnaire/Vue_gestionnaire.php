@@ -64,12 +64,15 @@ class VueGestionnaire extends VueStaff
             <div class="reappro-wrapper">
                 <header class="hero-header">
                     <div class="header-content">
-                        <a href="index.php?module=gestionnaire&action=fournisseurs" class="back-link" style="color:#94a3b8; text-decoration:none; font-weight:bold; font-size:12px; text-transform:uppercase;">
+                        <a href="index.php?module=gestionnaire&action=fournisseurs" class="back-link"
+                           style="color:#94a3b8; text-decoration:none; font-weight:bold; font-size:12px; text-transform:uppercase;">
                             <i class="fa-solid fa-arrow-left"></i> Retour
                         </a>
-                        <span class="pre-title" style="display:block; color:#f59e0b; font-weight:800; letter-spacing:2px; font-size:11px; text-transform:uppercase; margin-top:10px;">Espace Logistique</span>
+                        <span class="pre-title"
+                              style="display:block; color:#f59e0b; font-weight:800; letter-spacing:2px; font-size:11px; text-transform:uppercase; margin-top:10px;">Espace Logistique</span>
                         <h1 class="main-asso-display"><?= htmlspecialchars($nomAsso) ?></h1>
-                        <div class="supplier-pill" style="background:rgba(245,158,11,0.1); padding:8px 16px; border-radius:50px; display:inline-flex; align-items:center; gap:10px; color:#f59e0b; border:1px solid rgba(245,158,11,0.2);">
+                        <div class="supplier-pill"
+                             style="background:rgba(245,158,11,0.1); padding:8px 16px; border-radius:50px; display:inline-flex; align-items:center; gap:10px; color:#f59e0b; border:1px solid rgba(245,158,11,0.2);">
                             <i class="fa-solid fa-truck-fast"></i>
                             <span>Fournisseur : <strong><?= htmlspecialchars($nomFournisseur) ?></strong></span>
                         </div>
@@ -79,13 +82,15 @@ class VueGestionnaire extends VueStaff
                 <div class="reappro-grid">
                     <div class="catalog-side">
                         <div style="position:relative; margin-bottom:30px;">
-                            <i class="fa-solid fa-magnifying-glass" style="position:absolute; left:20px; top:50%; transform:translateY(-50%); color:#f59e0b;"></i>
+                            <i class="fa-solid fa-magnifying-glass"
+                               style="position:absolute; left:20px; top:50%; transform:translateY(-50%); color:#f59e0b;"></i>
                             <input type="text" id="searchBar" onkeyup="filterCatalogue()"
                                    placeholder="Rechercher un produit..."
                                    style="width:100%; padding:15px 15px 15px 50px; background:#0f172a; border:1px solid rgba(255,255,255,0.1); border-radius:15px; color:white; font-size:1rem; outline:none;">
                         </div>
 
-                        <form id="mainOrderForm" action="index.php?module=gestionnaire&action=validerReappro" method="POST">
+                        <form id="mainOrderForm" action="index.php?module=gestionnaire&action=validerReappro"
+                              method="POST">
                             <input type="hidden" name="id_fournisseur" value="<?= $idFournisseur ?>">
                             <input type="hidden" name="id_association" value="<?= $idAsso ?>">
 
@@ -98,10 +103,16 @@ class VueGestionnaire extends VueStaff
                                                 <span style="color:#f59e0b; font-weight:700;"><?= number_format($p['prix_achat'], 2) ?>€</span>
                                             </div>
                                             <div class="qty-selector">
-                                                <button type="button" class="q-btn" onclick="updateQty(this, -1)" style="width:35px; height:35px; background:#1e293b; color:white; border:none; border-radius:8px; cursor:pointer; font-weight:bold;">-</button>
+                                                <button type="button" class="q-btn" onclick="updateQty(this, -1)"
+                                                        style="width:35px; height:35px; background:#1e293b; color:white; border:none; border-radius:8px; cursor:pointer; font-weight:bold;">
+                                                    -
+                                                </button>
                                                 <input type="number" name="produits[<?= $p['id'] ?>][quantite]"
                                                        class="qty-input" value="0" readonly>
-                                                <button type="button" class="q-btn" onclick="updateQty(this, 1)" style="width:35px; height:35px; background:#1e293b; color:white; border:none; border-radius:8px; cursor:pointer; font-weight:bold;">+</button>
+                                                <button type="button" class="q-btn" onclick="updateQty(this, 1)"
+                                                        style="width:35px; height:35px; background:#1e293b; color:white; border:none; border-radius:8px; cursor:pointer; font-weight:bold;">
+                                                    +
+                                                </button>
                                             </div>
                                         </div>
                                     <?php endforeach; ?>
@@ -116,10 +127,14 @@ class VueGestionnaire extends VueStaff
                         <div class="glass-cart">
                             <div style="display:flex; align-items:center; gap:10px; margin-bottom:20px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:15px;">
                                 <i class="fa-solid fa-basket-shopping" style="color:#f59e0b;"></i>
-                                <h2 style="margin:0; font-size:1rem; font-weight:800; letter-spacing:1px;">VOTRE PANIER</h2>
+                                <h2 style="margin:0; font-size:1rem; font-weight:800; letter-spacing:1px;">VOTRE
+                                    PANIER</h2>
                             </div>
 
-                            <div id="error-message" style="display:none; color:#ef4444; background:rgba(239,68,68,0.1); padding:10px; border-radius:10px; text-align:center; font-weight:bold; margin-bottom:15px;">Panier vide !</div>
+                            <div id="error-message"
+                                 style="display:none; color:#ef4444; background:rgba(239,68,68,0.1); padding:10px; border-radius:10px; text-align:center; font-weight:bold; margin-bottom:15px;">
+                                Panier vide !
+                            </div>
 
                             <div id="cartSummaryList" class="cart-items-list">
                                 <p class="empty-msg">Aucun article sélectionné</p>
@@ -132,7 +147,8 @@ class VueGestionnaire extends VueStaff
                                 </div>
                                 <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid rgba(255,255,255,0.1); padding-top:15px; margin-top:10px;">
                                     <span style="color:white; font-weight:bold;">TOTAL HT</span>
-                                    <span style="font-size:2rem; font-weight:900; color:#f59e0b;"><span id="totalPriceSum">0.00</span>€</span>
+                                    <span style="font-size:2rem; font-weight:900; color:#f59e0b;"><span
+                                                id="totalPriceSum">0.00</span>€</span>
                                 </div>
                                 <button type="button" onclick="validerPanier()"
                                         style="width:100%; padding:18px; background:#f59e0b; border:none; border-radius:15px; font-weight:900; text-transform:uppercase; margin-top:20px; cursor:pointer; transition:0.3s;">
@@ -148,6 +164,7 @@ class VueGestionnaire extends VueStaff
         <script src="js/reappro.js?v=<?= time() ?>"></script>
         <?php
     }
+
     public function afficherSuccesCommande()
     {
         $this->afficherNav();
@@ -189,33 +206,34 @@ class VueGestionnaire extends VueStaff
     }
 
     public function afficherProfilBarman($barmans)
-{
-    $this->afficherNav();
-    if (!$barmans) {
-        echo '<div class="text-white p-10 text-center font-black uppercase italic opacity-50">Aucune donnée trouvée pour ce profil.</div>';
-        return;
-    }
+    {
+        $this->afficherNav();
+        if (!$barmans) {
+            echo '<div class="text-white p-10 text-center font-black uppercase italic opacity-50">Aucune donnée trouvée pour ce profil.</div>';
+            return;
+        }
 
-    $prenom = htmlspecialchars($barmans['prenom']);
-    $nom = htmlspecialchars($barmans['nom']);
-    $email_dest = htmlspecialchars($barmans['email']);
-    $id_barman = $barmans['id'];
+        $prenom = htmlspecialchars($barmans['prenom']);
+        $nom = htmlspecialchars($barmans['nom']);
+        $email_dest = htmlspecialchars($barmans['email']);
+        $id_barman = $barmans['id'];
 
-    $estActif = isset($barmans['actif']) && ($barmans['actif'] == 1 || $barmans['actif'] === true);
+        $estActif = isset($barmans['actif']) && ($barmans['actif'] == 1 || $barmans['actif'] === true);
 
-    $photoBarman = !empty($barmans['photo']) ? $barmans['photo'] : null;
-    $cheminPhoto = !empty($photoBarman) ? "uploads/profiles/" . $photoBarman : null;
-    ?>
+        $photoBarman = !empty($barmans['photo']) ? $barmans['photo'] : null;
+        $cheminPhoto = !empty($photoBarman) ? "uploads/profiles/" . $photoBarman : null;
+        ?>
 
-    <div class="w-full h-full px-6 md:px-12 py-10">
+        <div class="w-full h-full px-6 md:px-12 py-10">
 
-        <div class="mb-8 flex justify-between items-center">
-            <a href="index.php?action=barmans"
-               class="group text-slate-500 hover:text-emerald-500 transition-all text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
-                <i class="fa-solid fa-chevron-left transition-transform group-hover:-translate-x-1"></i> Retour à la liste
-            </a>
+            <div class="mb-8 flex justify-between items-center">
+                <a href="index.php?action=barmans"
+                   class="group text-slate-500 hover:text-emerald-500 transition-all text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
+                    <i class="fa-solid fa-chevron-left transition-transform group-hover:-translate-x-1"></i> Retour à la
+                    liste
+                </a>
 
-            <div class="flex items-center gap-2 px-4 py-2 bg-white/5 rounded-full border border-white/5">
+                <div class="flex items-center gap-2 px-4 py-2 bg-white/5 rounded-full border border-white/5">
                 <span class="relative flex h-2 w-2">
                     <?php if ($estActif): ?>
                         <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
@@ -224,144 +242,154 @@ class VueGestionnaire extends VueStaff
                         <span class="relative inline-flex rounded-full h-2 w-2 bg-slate-500"></span>
                     <?php endif; ?>
                 </span>
-                <span class="text-[9px] font-black uppercase tracking-widest <?= $estActif ? 'text-emerald-500' : 'text-slate-500' ?>">
+                    <span class="text-[9px] font-black uppercase tracking-widest <?= $estActif ? 'text-emerald-500' : 'text-slate-500' ?>">
                     <?= $estActif ? 'Opérationnel' : 'Accès Suspendu' ?>
                 </span>
-            </div>
-        </div>
-
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-
-            <div class="lg:col-span-4 space-y-6">
-
-                <div class="bg-white/5 border border-white/5 rounded-[3rem] p-8 text-center shadow-2xl relative overflow-hidden group">
-                    <div class="w-32 h-32 mx-auto rounded-[2rem] bg-gradient-to-tr from-emerald-600 to-emerald-400 p-1 mb-6 shadow-xl shadow-emerald-900/20">
-                        <div class="w-full h-full rounded-[1.8rem] bg-[#020617] flex items-center justify-center overflow-hidden">
-                            <?php if ($cheminPhoto && file_exists($cheminPhoto)): ?>
-                                <img src="<?= $cheminPhoto ?>" class="w-full h-full object-cover">
-                            <?php else: ?>
-                                <span class="text-4xl font-black text-white"><?= strtoupper(substr($prenom, 0, 1)) ?></span>
-                            <?php endif; ?>
-                        </div>
-                    </div>
-                    <h2 class="text-2xl font-black text-white uppercase italic"><?= $prenom ?> <span class="text-emerald-500"><?= $nom ?></span></h2>
-                    <p class="text-slate-500 font-bold text-[9px] tracking-widest uppercase mt-1">Matricule #<?= str_pad($id_barman, 3, '0', STR_PAD_LEFT) ?></p>
-                </div>
-
-                <div class="bg-white/5 border border-white/5 rounded-[2.5rem] p-6">
-                    <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
-                        <i class="fa-solid fa-address-book text-emerald-500"></i> Coordonnées
-                    </p>
-                    <div class="space-y-3 text-xs text-slate-300 italic">
-                        <p class="flex items-center gap-3"><i class="fa-solid fa-envelope text-emerald-500 w-4"></i> <?= $email_dest ?></p>
-                        <p class="flex items-center gap-3"><i class="fa-solid fa-phone text-emerald-500 w-4"></i> <?= htmlspecialchars($barmans['tel'] ?? 'N/A') ?></p>
-                    </div>
-                </div>
-
-                <div class="bg-white/5 border border-white/5 rounded-[2.5rem] p-6 space-y-3">
-                    <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
-                        <i class="fa-solid fa-shield-halved text-emerald-500"></i> Administration
-                    </p>
-
-                    <?php if ($estActif): ?>
-                        <a href="index.php?action=toggleBarman&id=<?= $id_barman ?>"
-                           class="flex items-center justify-center w-full py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border border-amber-500/20 bg-amber-500/5 text-amber-500 hover:bg-amber-500 hover:text-white">
-                            <i class="fa-solid fa-user-slash mr-2"></i> Désactiver l'accès
-                        </a>
-                    <?php else: ?>
-                        <a href="index.php?action=toggleBarman&id=<?= $id_barman ?>"
-                           class="flex items-center justify-center w-full py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border border-emerald-500/20 bg-emerald-500/5 text-emerald-500 hover:bg-emerald-500 hover:text-white">
-                            <i class="fa-solid fa-user-check mr-2"></i> Réactiver l'accès
-                        </a>
-                    <?php endif; ?>
-
-                    <button onclick="openModal('index.php?action=retrograderBarman&id=<?= $id_barman ?>')"
-                       class="w-full py-4 bg-red-500/5 border border-red-500/20 hover:bg-red-500 text-red-500 hover:text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all">
-                        <i class="fa-solid fa-user-minus mr-2"></i> Révoquer du Staff
-                    </button>
                 </div>
             </div>
 
-            <div class="lg:col-span-8">
-                <div class="bg-white/5 border border-white/5 rounded-[3rem] p-10 shadow-2xl">
-                    <h3 class="text-lg font-black text-white uppercase italic tracking-tighter mb-8 border-b border-white/5 pb-4">
-                        Envoyer un <span class="text-emerald-500">Message Direct</span>
-                    </h3>
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
 
-                    <form action="index.php?action=envoyerEmailBarman" method="POST" class="space-y-6">
-                        <input type="hidden" name="email_destinataire" value="<?= $email_dest ?>">
-                        <input type="hidden" name="id_barman" value="<?= $id_barman ?>">
+                <div class="lg:col-span-4 space-y-6">
 
-                        <div>
-                            <label class="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-4 mb-2 block">Objet</label>
-                            <input type="text" name="objet" required placeholder="Ex: Briefing de service"
-                                   class="w-full bg-[#020617] border border-white/10 rounded-2xl px-6 py-4 text-white font-bold focus:ring-2 focus:ring-emerald-600/50 outline-none transition-all">
+                    <div class="bg-white/5 border border-white/5 rounded-[3rem] p-8 text-center shadow-2xl relative overflow-hidden group">
+                        <div class="w-32 h-32 mx-auto rounded-[2rem] bg-gradient-to-tr from-emerald-600 to-emerald-400 p-1 mb-6 shadow-xl shadow-emerald-900/20">
+                            <div class="w-full h-full rounded-[1.8rem] bg-[#020617] flex items-center justify-center overflow-hidden">
+                                <?php if ($cheminPhoto && file_exists($cheminPhoto)): ?>
+                                    <img src="<?= $cheminPhoto ?>" class="w-full h-full object-cover">
+                                <?php else: ?>
+                                    <span class="text-4xl font-black text-white"><?= strtoupper(substr($prenom, 0, 1)) ?></span>
+                                <?php endif; ?>
+                            </div>
                         </div>
+                        <h2 class="text-2xl font-black text-white uppercase italic"><?= $prenom ?> <span
+                                    class="text-emerald-500"><?= $nom ?></span></h2>
+                        <p class="text-slate-500 font-bold text-[9px] tracking-widest uppercase mt-1">Matricule
+                            #<?= str_pad($id_barman, 3, '0', STR_PAD_LEFT) ?></p>
+                    </div>
 
-                        <div>
-                            <label class="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-4 mb-2 block">Message</label>
-                            <textarea name="message" required rows="6" placeholder="Écrivez vos instructions..."
-                                      class="w-full bg-[#020617] border border-white/10 rounded-2xl px-6 py-4 text-white font-bold focus:ring-2 focus:ring-emerald-600/50 outline-none transition-all resize-none"></textarea>
+                    <div class="bg-white/5 border border-white/5 rounded-[2.5rem] p-6">
+                        <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+                            <i class="fa-solid fa-address-book text-emerald-500"></i> Coordonnées
+                        </p>
+                        <div class="space-y-3 text-xs text-slate-300 italic">
+                            <p class="flex items-center gap-3"><i
+                                        class="fa-solid fa-envelope text-emerald-500 w-4"></i> <?= $email_dest ?></p>
+                            <p class="flex items-center gap-3"><i
+                                        class="fa-solid fa-phone text-emerald-500 w-4"></i> <?= htmlspecialchars($barmans['tel'] ?? 'N/A') ?>
+                            </p>
                         </div>
+                    </div>
 
-                        <button type="submit"
-                                class="w-full bg-emerald-500 hover:bg-emerald-400 text-[#020617] font-black uppercase text-xs tracking-[0.2em] py-5 rounded-2xl transition-all shadow-xl shadow-emerald-900/40">
-                            <i class="fa-solid fa-paper-plane mr-2"></i> Transmettre le message
+                    <div class="bg-white/5 border border-white/5 rounded-[2.5rem] p-6 space-y-3">
+                        <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+                            <i class="fa-solid fa-shield-halved text-emerald-500"></i> Administration
+                        </p>
+
+                        <?php if ($estActif): ?>
+                            <a href="index.php?action=toggleBarman&id=<?= $id_barman ?>"
+                               class="flex items-center justify-center w-full py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border border-amber-500/20 bg-amber-500/5 text-amber-500 hover:bg-amber-500 hover:text-white">
+                                <i class="fa-solid fa-user-slash mr-2"></i> Désactiver l'accès
+                            </a>
+                        <?php else: ?>
+                            <a href="index.php?action=toggleBarman&id=<?= $id_barman ?>"
+                               class="flex items-center justify-center w-full py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border border-emerald-500/20 bg-emerald-500/5 text-emerald-500 hover:bg-emerald-500 hover:text-white">
+                                <i class="fa-solid fa-user-check mr-2"></i> Réactiver l'accès
+                            </a>
+                        <?php endif; ?>
+
+                        <button onclick="openModal('index.php?action=retrograderBarman&id=<?= $id_barman ?>')"
+                                class="w-full py-4 bg-red-500/5 border border-red-500/20 hover:bg-red-500 text-red-500 hover:text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all">
+                            <i class="fa-solid fa-user-minus mr-2"></i> Révoquer du Staff
                         </button>
-                    </form>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-8">
+                    <div class="bg-white/5 border border-white/5 rounded-[3rem] p-10 shadow-2xl">
+                        <h3 class="text-lg font-black text-white uppercase italic tracking-tighter mb-8 border-b border-white/5 pb-4">
+                            Envoyer un <span class="text-emerald-500">Message Direct</span>
+                        </h3>
+
+                        <form action="index.php?action=envoyerEmailBarman" method="POST" class="space-y-6">
+                            <input type="hidden" name="email_destinataire" value="<?= $email_dest ?>">
+                            <input type="hidden" name="id_barman" value="<?= $id_barman ?>">
+
+                            <div>
+                                <label class="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-4 mb-2 block">Objet</label>
+                                <input type="text" name="objet" required placeholder="Ex: Briefing de service"
+                                       class="w-full bg-[#020617] border border-white/10 rounded-2xl px-6 py-4 text-white font-bold focus:ring-2 focus:ring-emerald-600/50 outline-none transition-all">
+                            </div>
+
+                            <div>
+                                <label class="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-4 mb-2 block">Message</label>
+                                <textarea name="message" required rows="6" placeholder="Écrivez vos instructions..."
+                                          class="w-full bg-[#020617] border border-white/10 rounded-2xl px-6 py-4 text-white font-bold focus:ring-2 focus:ring-emerald-600/50 outline-none transition-all resize-none"></textarea>
+                            </div>
+
+                            <button type="submit"
+                                    class="w-full bg-emerald-500 hover:bg-emerald-400 text-[#020617] font-black uppercase text-xs tracking-[0.2em] py-5 rounded-2xl transition-all shadow-xl shadow-emerald-900/40">
+                                <i class="fa-solid fa-paper-plane mr-2"></i> Transmettre le message
+                            </button>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <div id="customAlertModal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm transition-all">
-        <div class="bg-[#020617] border border-white/10 w-full max-w-md rounded-[2.5rem] p-8 shadow-2xl transform scale-95 transition-transform duration-300">
-            <div class="w-16 h-16 bg-red-500/10 text-red-500 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-red-500/20">
-                <i class="fa-solid fa-triangle-exclamation text-2xl"></i>
-            </div>
+        <div id="customAlertModal"
+             class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm transition-all">
+            <div class="bg-[#020617] border border-white/10 w-full max-w-md rounded-[2.5rem] p-8 shadow-2xl transform scale-95 transition-transform duration-300">
+                <div class="w-16 h-16 bg-red-500/10 text-red-500 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-red-500/20">
+                    <i class="fa-solid fa-triangle-exclamation text-2xl"></i>
+                </div>
 
-            <h3 class="text-xl font-black text-white text-center uppercase italic mb-2">Attention</h3>
-            <p class="text-slate-400 text-center text-sm font-medium leading-relaxed mb-8">
-                Voulez-vous vraiment révoquer les droits de barman ? L'utilisateur redeviendra simple client et perdra ses accès au staff.
-            </p>
+                <h3 class="text-xl font-black text-white text-center uppercase italic mb-2">Attention</h3>
+                <p class="text-slate-400 text-center text-sm font-medium leading-relaxed mb-8">
+                    Voulez-vous vraiment révoquer les droits de barman ? L'utilisateur redeviendra simple client et
+                    perdra ses accès au staff.
+                </p>
 
-            <div class="flex gap-3">
-                <button onclick="closeModal()" class="flex-1 py-4 bg-white/5 hover:bg-white/10 text-slate-400 text-[10px] font-black uppercase tracking-widest rounded-2xl transition-all border border-white/5">
-                    Annuler
-                </button>
-                <a id="confirmActionBtn" href="#" class="flex-1 py-4 bg-red-500 hover:bg-red-600 text-white text-[10px] font-black uppercase tracking-widest rounded-2xl text-center shadow-lg shadow-red-500/20 transition-all">
-                    Confirmer
-                </a>
+                <div class="flex gap-3">
+                    <button onclick="closeModal()"
+                            class="flex-1 py-4 bg-white/5 hover:bg-white/10 text-slate-400 text-[10px] font-black uppercase tracking-widest rounded-2xl transition-all border border-white/5">
+                        Annuler
+                    </button>
+                    <a id="confirmActionBtn" href="#"
+                       class="flex-1 py-4 bg-red-500 hover:bg-red-600 text-white text-[10px] font-black uppercase tracking-widest rounded-2xl text-center shadow-lg shadow-red-500/20 transition-all">
+                        Confirmer
+                    </a>
+                </div>
             </div>
         </div>
-    </div>
 
-    <script>
-        function openModal(url) {
-            const modal = document.getElementById('customAlertModal');
-            const confirmBtn = document.getElementById('confirmActionBtn');
-            confirmBtn.href = url;
+        <script>
+            function openModal(url) {
+                const modal = document.getElementById('customAlertModal');
+                const confirmBtn = document.getElementById('confirmActionBtn');
+                confirmBtn.href = url;
 
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-            setTimeout(() => {
-                modal.querySelector('div').classList.remove('scale-95');
-                modal.querySelector('div').classList.add('scale-100');
-            }, 10);
-        }
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+                setTimeout(() => {
+                    modal.querySelector('div').classList.remove('scale-95');
+                    modal.querySelector('div').classList.add('scale-100');
+                }, 10);
+            }
 
-        function closeModal() {
-            const modal = document.getElementById('customAlertModal');
-            modal.querySelector('div').classList.remove('scale-100');
-            modal.querySelector('div').classList.add('scale-95');
-            setTimeout(() => {
-                modal.classList.add('hidden');
-                modal.classList.remove('flex');
-            }, 200);
-        }
-    </script>
-    <?php
-}
+            function closeModal() {
+                const modal = document.getElementById('customAlertModal');
+                modal.querySelector('div').classList.remove('scale-100');
+                modal.querySelector('div').classList.add('scale-95');
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+                    modal.classList.remove('flex');
+                }, 200);
+            }
+        </script>
+        <?php
+    }
+
     public function afficherFormulaireSolde($personne)
     {
         echo '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">';
@@ -655,7 +683,12 @@ class VueGestionnaire extends VueStaff
            <a href="index.php?reset=1" class="flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all duration-300 ' . $inactiveClass . '">
     <i class="fa-solid fa-right-left text-lg"></i>
     <span class="font-bold text-sm tracking-tight">Changer Association</span>
-</a>
+</a><li class="flex items-center gap-3">
+    <a href="index.php?module=gestionnaire&action=statistiques" class="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all hover:bg-amber-500/10 hover:text-amber-500">
+        <i class="fa-solid fa-chart-pie"></i>
+        <span>Stats</span>
+    </a>
+</li>
             <a href="index.php?action=barmans" class="flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all duration-300 ' . ($actionActuelle == 'barmans' ? $activeClass : $inactiveClass) . '">
                 <i class="fa-solid fa-user-group text-lg"></i>
                 <span class="font-bold text-sm tracking-tight">Équipe Barmans</span>
@@ -1153,7 +1186,10 @@ class VueGestionnaire extends VueStaff
                 box-sizing: border-box;
             }
 
-            .fixed-top-section { flex-shrink: 0; margin-bottom: 1rem; }
+            .fixed-top-section {
+                flex-shrink: 0;
+                margin-bottom: 1rem;
+            }
 
             .page-header {
                 display: flex;
@@ -1230,20 +1266,37 @@ class VueGestionnaire extends VueStaff
                 font-size: 10px;
                 padding: 4px 10px;
                 color: #475569;
-                background: rgba(255,255,255,0.05);
+                background: rgba(255, 255, 255, 0.05);
                 border-radius: 8px;
             }
 
             .avatar-box {
-                width: 45px; height: 45px; border-radius: 14px;
+                width: 45px;
+                height: 45px;
+                border-radius: 14px;
                 background: linear-gradient(135deg, #064e3b 0%, #020617 100%);
-                display: flex; align-items: center; justify-content: center;
-                font-weight: 900; color: #10b981;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: 900;
+                color: #10b981;
             }
 
-            .dot { width: 8px; height: 8px; border-radius: 50%; }
-            .dot-online { background: #10b981; box-shadow: 0 0 12px #10b981; }
-            .dot-offline { background: #ef4444; box-shadow: 0 0 10px rgba(239, 68, 68, 0.5); }
+            .dot {
+                width: 8px;
+                height: 8px;
+                border-radius: 50%;
+            }
+
+            .dot-online {
+                background: #10b981;
+                box-shadow: 0 0 12px #10b981;
+            }
+
+            .dot-offline {
+                background: #ef4444;
+                box-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
+            }
 
             .btn-view {
                 background: #10b981;
@@ -1256,8 +1309,14 @@ class VueGestionnaire extends VueStaff
                 transition: 0.4s;
             }
 
-            #barmanList::-webkit-scrollbar { width: 6px; }
-            #barmanList::-webkit-scrollbar-thumb { background: rgba(16, 185, 129, 0.2); border-radius: 10px; }
+            #barmanList::-webkit-scrollbar {
+                width: 6px;
+            }
+
+            #barmanList::-webkit-scrollbar-thumb {
+                background: rgba(16, 185, 129, 0.2);
+                border-radius: 10px;
+            }
         </style>
 
         <div class="page-container">
@@ -1288,7 +1347,7 @@ class VueGestionnaire extends VueStaff
                     <select id="filterAsso"
                             class="bg-transparent text-white border-none outline-none font-black text-[10px] uppercase tracking-widest cursor-pointer hover:text-emerald-500 transition-colors">
                         <option value="all">Toutes les associations</option>
-                        <?php if(is_array($associations)): foreach ($associations as $asso): ?>
+                        <?php if (is_array($associations)): foreach ($associations as $asso): ?>
                             <option value="<?= htmlspecialchars($asso['nom']) ?>">
                                 <?= htmlspecialchars($asso['nom']) ?>
                             </option>
@@ -1398,7 +1457,7 @@ class VueGestionnaire extends VueStaff
                 }
 
                 tabBtns.forEach(btn => {
-                    btn.addEventListener('click', function() {
+                    btn.addEventListener('click', function () {
                         tabBtns.forEach(b => b.classList.remove('active'));
                         this.classList.add('active');
                         filterTable();
@@ -1411,6 +1470,7 @@ class VueGestionnaire extends VueStaff
         </script>
         <?php
     }
+
     public function afficherSuccesPromotion()
     {
         $this->afficherNav();
@@ -1647,7 +1707,6 @@ class VueGestionnaire extends VueStaff
         </div>
         <?php
     }
-
 
 
     public function afficherFormulaireAjoutClient($associations, $clients, $erreur = null)
@@ -2310,18 +2369,115 @@ class VueGestionnaire extends VueStaff
     }
 
 
-    public function afficherStatistiques($stats)
-    {
-        echo '<h2>Statistiques</h2>';
-        echo '<div style="border: 1px solid #ccc; padding: 10px;">';
-        echo 'Total ventes : ' . $stats['totalVentes'] . '€<br>';
-        echo 'Nombre de produits : ' . $stats['nbProduits'] . '<br>';
-        echo 'Nombre d\'utilisateurs : ' . $stats['nbUtilisateurs'] . '<br>';
-        echo 'Nombre d\'associations : ' . $stats['nbAssociations'] . '<br>';
-        echo '</div>';
+    public function afficherStatsDetails($evolution, $topProduits, $pertesTotales, $nomAsso, $topClients, $statsHoraires) {
+        $this->afficherNav();
+        echo '<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&display=swap" rel="stylesheet">';
+        $heuresCompletes = [];
+        for ($h = 10; $h <= 23; $h++) {
+            $heuresCompletes[$h] = $statsHoraires[$h] ?? 0;
+        }
+
+        $maxVentesHeure = max($heuresCompletes) ?: 1;
+        $maxRecette = !empty($evolution['recettes']) ? max($evolution['recettes']) : 1;
+        ?>
+
+        <main class="h-screen overflow-hidden bg-[#020617] text-slate-300 p-6 flex flex-col stats-global-wrapper">
+
+            <div class="max-w-7xl w-full mx-auto mb-6 flex justify-between items-center bg-white/5 p-10 rounded-[3rem] border border-white/5 shadow-2xl relative">
+                <div class="relative z-10">
+                    <div class="flex items-center gap-3 mb-2">
+                        <span class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                        <p class="text-slate-500 font-black text-[10px] uppercase tracking-[0.4em]">Dashboard Logistique</p>
+                    </div>
+                    <h1 class="text-6xl font-black text-white italic uppercase tracking-tighter">
+                        <?= htmlspecialchars($nomAsso) ?><span class="text-emerald-500">.</span>STATS
+                    </h1>
+                </div>
+
+                <div class="relative z-10 text-right bg-rose-500/10 border border-rose-500/20 px-10 py-6 rounded-[2.5rem]">
+                    <p class="text-[10px] font-black text-rose-500 uppercase tracking-widest mb-1">Pertes Inventaire</p>
+                    <div class="text-4xl font-black text-white italic tracking-tighter">
+                        -<?= number_format($pertesTotales, 2, ',', ' ') ?> €
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex-1 grid grid-cols-12 gap-6 max-h-[calc(100vh-280px)] max-w-7xl w-full mx-auto">
+
+                <div class="col-span-12 lg:col-span-8 bg-white/5 border border-white/5 rounded-[2.5rem] p-8 flex flex-col">
+                    <h2 class="text-xs font-black text-white uppercase italic tracking-widest mb-8 flex items-center gap-3">
+                        <i class="fa-solid fa-chart-line text-emerald-500"></i> Performance Hebdomadaire
+                    </h2>
+                    <div class="flex-1 flex items-end justify-between gap-4 px-2 pb-2">
+                        <?php foreach($evolution['dates'] as $i => $date):
+                            $val = $evolution['recettes'][$i] ?? 0;
+                            $h_bar = ($val / $maxRecette) * 100;
+                            ?>
+                            <div class="flex-1 flex flex-col items-center gap-4 h-full justify-end group/bar relative">
+                                <div class="absolute -top-10 bg-emerald-500 text-[#020617] text-[10px] font-black px-2 py-1 rounded-lg opacity-0 group-hover/bar:opacity-100 transition-all">
+                                    <?= round($val) ?>€
+                                </div>
+                                <div class="chart-bar-flux w-full max-w-[45px] bg-emerald-500/20 border-t-2 border-emerald-500/40 rounded-t-xl transition-all duration-700 group-hover/bar:bg-emerald-500"
+                                     style="height: <?= max($h_bar, 5) ?>%;"></div>
+                                <span class="text-[9px] font-black text-slate-600 uppercase italic"><?= $date ?></span>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+
+                <div class="col-span-12 lg:col-span-4 bg-white/5 border border-white/5 rounded-[2.5rem] p-8 flex flex-col shadow-2xl">
+                    <h2 class="text-xs font-black text-white uppercase italic tracking-widest mb-8 flex items-center gap-3">
+                        <i class="fa-solid fa-bolt text-emerald-500"></i> Affluence Live
+                    </h2>
+                    <div class="flex-1 flex items-end justify-between gap-1 px-1">
+                        <?php foreach($heuresCompletes as $h_idx => $valeur):
+                            $hauteur = ($valeur / $maxVentesHeure) * 100;
+                            ?>
+                            <div class="flex-1 flex flex-col items-center gap-3 h-full justify-end group/h relative">
+                                <div class="absolute -top-8 bg-white text-black text-[8px] font-black px-1.5 py-0.5 rounded opacity-0 group-hover/h:opacity-100 transition-all">
+                                    <?= round($valeur) ?>€
+                                </div>
+                                <div class="w-2 bg-white/10 rounded-full h-full flex items-end overflow-hidden">
+                                    <div class="w-full bg-emerald-500 rounded-full shadow-[0_0_15px_rgba(16,185,129,0.4)] transition-all duration-1000"
+                                         style="height: <?= max($hauteur, 3) ?>%;"></div>
+                                </div>
+                                <span class="text-[8px] font-black text-slate-600"><?= $h_idx ?>H</span>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+
+                <div class="col-span-6 bg-white/5 border border-white/5 rounded-[2.5rem] p-6 shadow-2xl">
+                    <h2 class="text-[11px] font-black text-white uppercase italic mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-fire text-emerald-500"></i> Top Ventes
+                    </h2>
+                    <div class="space-y-2">
+                        <?php foreach(array_slice($topProduits, 0, 3) as $p): ?>
+                            <div class="flex items-center justify-between p-3 bg-black/20 border border-white/5 rounded-2xl hover:border-emerald-500/30 transition-all">
+                                <span class="text-xs font-bold text-slate-200"><?= htmlspecialchars($p['nom']) ?></span>
+                                <span class="text-emerald-500 font-black text-[10px]"><?= $p['total'] ?> UNITÉS</span>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+
+                <div class="col-span-6 bg-white/5 border border-white/5 rounded-[2.5rem] p-6 shadow-2xl">
+                    <h2 class="text-[11px] font-black text-white uppercase italic mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-crown text-emerald-500"></i> Élite Clients
+                    </h2>
+                    <div class="space-y-2">
+                        <?php foreach(array_slice($topClients, 0, 3) as $c): ?>
+                            <div class="flex items-center justify-between p-3 bg-black/20 border border-white/5 rounded-2xl hover:border-emerald-500/30 transition-all">
+                                <span class="text-xs font-bold text-white"><?= htmlspecialchars($c['prenom'].' '.$c['nom']) ?></span>
+                                <span class="text-emerald-500 font-black italic text-sm"><?= number_format($c['depense_totale'], 2) ?>€</span>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+            </div>
+        </main>
+        <?php
     }
-
-
     public function afficherAssociationsValidees($associations)
     {
         $this->afficherNav();
@@ -2477,14 +2633,16 @@ class VueGestionnaire extends VueStaff
 
                         <div class="card-bottom">
                             <?php if ($currentAssoId): ?>
-                                <a href="index.php?module=gestionnaire&action=voirFournisseur&id=<?= $f['id'] ?>" class="btn-main">
+                                <a href="index.php?module=gestionnaire&action=voirFournisseur&id=<?= $f['id'] ?>"
+                                   class="btn-main">
                                     <i class="fa-solid fa-box-open"></i> Catalogue
                                 </a>
                             <?php else: ?>
                                 <a href="index.php" class="btn-main lock">Choisir une association</a>
                             <?php endif; ?>
 
-                            <a href="index.php?module=gestionnaire&action=contacterFournisseur&id=<?= $f['id'] ?>" class="btn-side" title="Contacter">
+                            <a href="index.php?module=gestionnaire&action=contacterFournisseur&id=<?= $f['id'] ?>"
+                               class="btn-side" title="Contacter">
                                 <i class="fa-solid fa-paper-plane"></i>
                             </a>
                         </div>
@@ -2533,7 +2691,8 @@ class VueGestionnaire extends VueStaff
                     <h1 class="text-4xl md:text-6xl font-black italic uppercase tracking-tighter">
                         COMPARATEUR
                     </h1>
-                    <p class="text-slate-500 font-bold text-xs uppercase tracking-[0.3em] mt-2">Analysez les tarifs en temps réel</p>
+                    <p class="text-slate-500 font-bold text-xs uppercase tracking-[0.3em] mt-2">Analysez les tarifs en
+                        temps réel</p>
                 </header>
 
                 <form id="searchForm" action="index.php" method="GET" class="mb-4">
@@ -2574,16 +2733,20 @@ class VueGestionnaire extends VueStaff
                 <div id="resultsContainer" class="max-w-5xl mx-auto">
 
                     <?php if (empty($recherche)): ?>
-                        <div class="text-center p-20 mt-10" style="background: rgba(255,255,255,0.02); border: 2px dashed rgba(255,255,255,0.05); border-radius: 40px;">
+                        <div class="text-center p-20 mt-10"
+                             style="background: rgba(255,255,255,0.02); border: 2px dashed rgba(255,255,255,0.05); border-radius: 40px;">
                             <i class="fa-solid fa-keyboard text-5xl text-slate-800 mb-6"></i>
-                            <h3 class="text-xl font-bold text-slate-400 uppercase tracking-widest">En attente de recherche</h3>
-                            <p class="text-slate-600 mt-2">Utilisez la barre ci-dessus pour comparer les prix de vos fournisseurs.</p>
+                            <h3 class="text-xl font-bold text-slate-400 uppercase tracking-widest">En attente de
+                                recherche</h3>
+                            <p class="text-slate-600 mt-2">Utilisez la barre ci-dessus pour comparer les prix de vos
+                                fournisseurs.</p>
                         </div>
 
                     <?php elseif (empty($resultats)): ?>
                         <div class="text-center p-20 bg-slate-900/30 rounded-3xl border border-dashed border-white/10 mt-10">
                             <i class="fa-solid fa-triangle-exclamation text-5xl text-amber-500/20 mb-6"></i>
-                            <p class="text-slate-400 font-bold uppercase tracking-widest">Aucune offre trouvée pour "<?= htmlspecialchars($recherche) ?>"</p>
+                            <p class="text-slate-400 font-bold uppercase tracking-widest">Aucune offre trouvée pour
+                                "<?= htmlspecialchars($recherche) ?>"</p>
                         </div>
 
                     <?php else: ?>
@@ -2602,7 +2765,8 @@ class VueGestionnaire extends VueStaff
                                             <?= htmlspecialchars($res['produit_nom']) ?>
                                         </h4>
                                         <p class="text-slate-400 text-sm">
-                                            Vendu par : <span class="text-slate-200 font-semibold italic"><?= htmlspecialchars($res['fournisseur_nom']) ?></span>
+                                            Vendu par : <span
+                                                    class="text-slate-200 font-semibold italic"><?= htmlspecialchars($res['fournisseur_nom']) ?></span>
                                         </p>
                                     </div>
 
@@ -2627,6 +2791,7 @@ class VueGestionnaire extends VueStaff
         <script src="js/comparateur.js"></script>
         <?php
     }
+
     public function afficherListeCommandes($commandes)
     {
         $this->afficherNav();
@@ -2810,7 +2975,8 @@ class VueGestionnaire extends VueStaff
                                 </div>
 
                                 <div class="flex justify-end">
-                                    <a href="index.php?module=gestionnaire&action=detailsCommande&id=<?= $c['id'] ?>" class="view-btn" title="Voir les détails">
+                                    <a href="index.php?module=gestionnaire&action=detailsCommande&id=<?= $c['id'] ?>"
+                                       class="view-btn" title="Voir les détails">
                                         <i class="fa-solid fa-plus text-lg"></i>
                                     </a>
                                 </div>
@@ -2823,206 +2989,286 @@ class VueGestionnaire extends VueStaff
         <?php
     }
 
- public function afficherAffectationStock($associations, $reserve, $commandesFournisseurs, $historiqueAchats, $historiqueInventaires = [])
-{
-    $this->afficherNav();
-    ?>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    public function afficherAffectationStock($associations, $reserve, $commandesFournisseurs, $historiqueAchats, $historiqueInventaires = [])
+    {
+        $this->afficherNav();
+        ?>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
+        <style>
+            @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
 
-        body {
-            background: #020617 radial-gradient(circle at 50% -20%, #1e1b4b 0%, #020617 80%) no-repeat fixed;
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            color: #f8fafc;
-        }
+            body {
+                background: #020617 radial-gradient(circle at 50% -20%, #1e1b4b 0%, #020617 80%) no-repeat fixed;
+                font-family: 'Plus Jakarta Sans', sans-serif;
+                color: #f8fafc;
+            }
 
-        .main-container { max-width: 1100px; margin: 0 auto; padding: 40px 20px; }
+            .main-container {
+                max-width: 1100px;
+                margin: 0 auto;
+                padding: 40px 20px;
+            }
 
-        /* Navigation par onglets */
-        .tabs-nav {
-            display: flex; justify-content: center; gap: 12px; margin-bottom: 40px;
-            background: rgba(255, 255, 255, 0.03); padding: 8px; border-radius: 20px;
-            width: fit-content; margin-left: auto; margin-right: auto;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
+            /* Navigation par onglets */
+            .tabs-nav {
+                display: flex;
+                justify-content: center;
+                gap: 12px;
+                margin-bottom: 40px;
+                background: rgba(255, 255, 255, 0.03);
+                padding: 8px;
+                border-radius: 20px;
+                width: fit-content;
+                margin-left: auto;
+                margin-right: auto;
+                border: 1px solid rgba(255, 255, 255, 0.05);
+            }
 
-        .tab-btn {
-            padding: 12px 28px; border-radius: 14px; font-size: 11px; font-weight: 800;
-            text-transform: uppercase; letter-spacing: 1px; cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); color: #64748b;
-        }
+            .tab-btn {
+                padding: 12px 28px;
+                border-radius: 14px;
+                font-size: 11px;
+                font-weight: 800;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                cursor: pointer;
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                color: #64748b;
+            }
 
-        .tab-btn.active { background: #f8fafc; color: #020617; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3); }
+            .tab-btn.active {
+                background: #f8fafc;
+                color: #020617;
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+            }
 
-        .tab-content { display: none; animation: slideUp 0.4s ease-out; }
-        .tab-content.active { display: block; }
+            .tab-content {
+                display: none;
+                animation: slideUp 0.4s ease-out;
+            }
 
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+            .tab-content.active {
+                display: block;
+            }
 
-        .glass-card {
-            background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(20px); border-radius: 32px; padding: 40px;
-        }
+            @keyframes slideUp {
+                from {
+                    opacity: 0;
+                    transform: translateY(20px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
 
-        .item-card {
-            background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 18px; padding: 20px; transition: all 0.2s;
-        }
+            .glass-card {
+                background: rgba(15, 23, 42, 0.6);
+                border: 1px solid rgba(255, 255, 255, 0.08);
+                backdrop-filter: blur(20px);
+                border-radius: 32px;
+                padding: 40px;
+            }
 
-        .filter-input {
-            background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.1);
-            color: white; padding: 12px 20px; border-radius: 14px; width: 100%; max-width: 400px; outline: none;
-        }
+            .item-card {
+                background: rgba(255, 255, 255, 0.03);
+                border: 1px solid rgba(255, 255, 255, 0.05);
+                border-radius: 18px;
+                padding: 20px;
+                transition: all 0.2s;
+            }
 
-        .status-badge { font-size: 9px; font-weight: 900; padding: 5px 12px; border-radius: 10px; text-transform: uppercase; }
-        .status-livré { background: rgba(16, 185, 129, 0.15); color: #10b981; }
-        .status-en_attente { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
-    </style>
+            .filter-input {
+                background: rgba(0, 0, 0, 0.3);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                color: white;
+                padding: 12px 20px;
+                border-radius: 14px;
+                width: 100%;
+                max-width: 400px;
+                outline: none;
+            }
 
-    <div class="main-container">
-        <div class="text-center mb-12">
-            <h1 class="text-6xl font-black italic uppercase tracking-tighter leading-none mb-4">
-                Flux <span class="text-blue-500">Logistique</span>
-            </h1>
-            <p class="text-slate-500 font-bold uppercase tracking-[0.4em] text-[10px] mb-8">Contrôle des stocks & flux entrants</p>
+            .status-badge {
+                font-size: 9px;
+                font-weight: 900;
+                padding: 5px 12px;
+                border-radius: 10px;
+                text-transform: uppercase;
+            }
 
-            <?php if (!empty($associations)): ?>
-                <a href="index.php?action=faireInventaire&id=<?= htmlspecialchars($associations['id']) ?>"
-                   class="inline-flex items-center gap-3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 px-10 py-5 rounded-2xl font-black text-xs uppercase transition-all shadow-xl shadow-emerald-500/20">
-                    <i class="fa-solid fa-clipboard-check text-lg"></i>
-                    Lancer un inventaire
-                </a>
-            <?php else: ?>
-                <div class="inline-block bg-red-500/10 border border-red-500/20 text-red-400 px-6 py-3 rounded-xl text-xs font-bold uppercase">
-                    <i class="fa-solid fa-triangle-exclamation mr-2"></i>
-                    Aucune association liée à votre compte
-                </div>
-            <?php endif; ?>
-        </div>
+            .status-livré {
+                background: rgba(16, 185, 129, 0.15);
+                color: #10b981;
+            }
 
-        <div class="tabs-nav">
-            <div class="tab-btn active" onclick="switchTab(event, 'tab-commandes')">Commandes</div>
-            <div class="tab-btn" onclick="switchTab(event, 'tab-entrees')">Entrées</div>
-            <div class="tab-btn" onclick="switchTab(event, 'tab-inventaires')">Inventaires</div>
-        </div>
+            .status-en_attente {
+                background: rgba(245, 158, 11, 0.15);
+                color: #f59e0b;
+            }
+        </style>
 
-        <div class="glass-card">
-            <div id="tab-commandes" class="tab-content active">
-                <div class="flex flex-col items-center mb-10">
-                    <h2 class="text-sm font-black uppercase tracking-widest text-amber-500 mb-6 italic">Suivi des achats fournisseurs</h2>
-                    <input type="text" id="searchCmd" onkeyup="filterLocal('searchCmd', 'card-cmd', 'data-info')"
-                           placeholder="Rechercher un fournisseur..." class="filter-input text-center">
-                </div>
+        <div class="main-container">
+            <div class="text-center mb-12">
+                <h1 class="text-6xl font-black italic uppercase tracking-tighter leading-none mb-4">
+                    Flux <span class="text-blue-500">Logistique</span>
+                </h1>
+                <p class="text-slate-500 font-bold uppercase tracking-[0.4em] text-[10px] mb-8">Contrôle des stocks &
+                    flux entrants</p>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <?php foreach ($commandesFournisseurs as $cmd): ?>
-                        <div class="card-cmd item-card" data-info="<?= strtolower($cmd['nom_fournisseur']) ?>">
-                            <div class="flex justify-between items-start mb-4">
-                                <span class="text-[9px] font-black text-slate-500 tracking-widest uppercase">Réf #<?= $cmd['id'] ?></span>
-                                <span class="status-badge status-<?= str_replace(' ', '_', strtolower($cmd['statut'])) ?>"><?= $cmd['statut'] ?></span>
-                            </div>
-                            <p class="text-lg font-black uppercase text-white"><?= htmlspecialchars($cmd['nom_fournisseur']) ?></p>
-                            <div class="flex justify-between items-end mt-6 border-t border-white/5 pt-4">
-                                <span class="text-[11px] text-slate-500 font-bold"><?= date('d/m/Y', strtotime($cmd['date_commande'])) ?></span>
-                                <span class="text-xl font-black text-white"><?= number_format($cmd['montant_total'], 2) ?> €</span>
-                            </div>
-                        </div>
-                    <?php endforeach; ?>
-                </div>
+                <?php if (!empty($associations)): ?>
+                    <a href="index.php?action=faireInventaire&id=<?= htmlspecialchars($associations['id']) ?>"
+                       class="inline-flex items-center gap-3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 px-10 py-5 rounded-2xl font-black text-xs uppercase transition-all shadow-xl shadow-emerald-500/20">
+                        <i class="fa-solid fa-clipboard-check text-lg"></i>
+                        Lancer un inventaire
+                    </a>
+                <?php else: ?>
+                    <div class="inline-block bg-red-500/10 border border-red-500/20 text-red-400 px-6 py-3 rounded-xl text-xs font-bold uppercase">
+                        <i class="fa-solid fa-triangle-exclamation mr-2"></i>
+                        Aucune association liée à votre compte
+                    </div>
+                <?php endif; ?>
             </div>
 
-            <div id="tab-entrees" class="tab-content">
-                <div class="flex flex-col items-center mb-10">
-                    <h2 class="text-sm font-black uppercase tracking-widest text-blue-400 mb-6 italic">Historique des arrivages</h2>
-                    <input type="text" id="searchHist" onkeyup="filterLocal('searchHist', 'card-hist', 'data-info')"
-                           placeholder="Filtrer par produit..." class="filter-input text-center">
-                </div>
-                <div class="max-w-2xl mx-auto space-y-3">
-                    <?php foreach ($historiqueAchats as $h): ?>
-                        <div class="card-hist item-card flex justify-between items-center" data-info="<?= strtolower($h['produit']) ?>">
-                            <div class="flex items-center gap-4">
-                                <div class="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-500">
-                                    <i class="fa-solid fa-plus-circle"></i>
-                                </div>
-                                <div>
-                                    <p class="font-black uppercase text-sm text-white"><?= htmlspecialchars($h['produit']) ?></p>
-                                    <p class="text-[9px] text-slate-500 font-bold uppercase"><?= htmlspecialchars($h['fournisseur']) ?></p>
-                                </div>
-                            </div>
-                            <div class="text-right">
-                                <p class="text-lg font-black text-emerald-500">+<?= $h['quantite'] ?></p>
-                                <p class="text-[9px] text-slate-600 font-bold uppercase italic"><?= date('d/m H:i', strtotime($h['date'])) ?></p>
-                            </div>
-                        </div>
-                    <?php endforeach; ?>
-                </div>
+            <div class="tabs-nav">
+                <div class="tab-btn active" onclick="switchTab(event, 'tab-commandes')">Commandes</div>
+                <div class="tab-btn" onclick="switchTab(event, 'tab-entrees')">Entrées</div>
+                <div class="tab-btn" onclick="switchTab(event, 'tab-inventaires')">Inventaires</div>
             </div>
 
-            <div id="tab-inventaires" class="tab-content">
-                <div class="text-center mb-10">
-                    <h2 class="text-sm font-black uppercase tracking-widest text-emerald-400 italic">Rapports d'inventaire</h2>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <?php if(empty($historiqueInventaires)): ?>
-                        <div class="col-span-full text-center py-20 opacity-30">
-                            <i class="fa-solid fa-folder-open text-4xl mb-4"></i>
-                            <p class="uppercase font-black text-xs tracking-widest">Aucune donnée enregistrée</p>
-                        </div>
-                    <?php else: ?>
-                        <?php foreach ($historiqueInventaires as $inv):
-                            $diff = $inv['quantite_trouvee'] - $inv['quantite_theorique'];
-                        ?>
-                            <div class="item-card border-l-4 <?= $diff < 0 ? 'border-red-500' : 'border-emerald-500' ?>">
+            <div class="glass-card">
+                <div id="tab-commandes" class="tab-content active">
+                    <div class="flex flex-col items-center mb-10">
+                        <h2 class="text-sm font-black uppercase tracking-widest text-amber-500 mb-6 italic">Suivi des
+                            achats fournisseurs</h2>
+                        <input type="text" id="searchCmd" onkeyup="filterLocal('searchCmd', 'card-cmd', 'data-info')"
+                               placeholder="Rechercher un fournisseur..." class="filter-input text-center">
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <?php foreach ($commandesFournisseurs as $cmd): ?>
+                            <div class="card-cmd item-card" data-info="<?= strtolower($cmd['nom_fournisseur']) ?>">
                                 <div class="flex justify-between items-start mb-4">
-                                    <p class="font-black uppercase text-sm"><?= htmlspecialchars($inv['produit']) ?></p>
-                                    <span class="text-[9px] font-bold text-slate-600"><?= date('d/m/Y', strtotime($inv['date'])) ?></span>
+                                    <span class="text-[9px] font-black text-slate-500 tracking-widest uppercase">Réf #<?= $cmd['id'] ?></span>
+                                    <span class="status-badge status-<?= str_replace(' ', '_', strtolower($cmd['statut'])) ?>"><?= $cmd['statut'] ?></span>
                                 </div>
-                                <div class="grid grid-cols-3 gap-2 text-center bg-black/30 rounded-xl p-4">
-                                    <div><p class="text-[7px] font-black text-slate-500 mb-1">LOGICIEL</p><p class="text-sm font-bold"><?= $inv['quantite_theorique'] ?></p></div>
-                                    <div><p class="text-[7px] font-black text-slate-500 mb-1">RÉEL</p><p class="text-sm font-bold text-white"><?= $inv['quantite_trouvee'] ?></p></div>
-                                    <div><p class="text-[7px] font-black text-slate-500 mb-1">ÉCART</p><p class="text-sm font-black <?= $diff < 0 ? 'text-red-500' : 'text-emerald-400' ?>"><?= ($diff > 0 ? '+' : '') . $diff ?></p></div>
+                                <p class="text-lg font-black uppercase text-white"><?= htmlspecialchars($cmd['nom_fournisseur']) ?></p>
+                                <div class="flex justify-between items-end mt-6 border-t border-white/5 pt-4">
+                                    <span class="text-[11px] text-slate-500 font-bold"><?= date('d/m/Y', strtotime($cmd['date_commande'])) ?></span>
+                                    <span class="text-xl font-black text-white"><?= number_format($cmd['montant_total'], 2) ?> €</span>
                                 </div>
                             </div>
                         <?php endforeach; ?>
-                    <?php endif; ?>
+                    </div>
+                </div>
+
+                <div id="tab-entrees" class="tab-content">
+                    <div class="flex flex-col items-center mb-10">
+                        <h2 class="text-sm font-black uppercase tracking-widest text-blue-400 mb-6 italic">Historique
+                            des arrivages</h2>
+                        <input type="text" id="searchHist" onkeyup="filterLocal('searchHist', 'card-hist', 'data-info')"
+                               placeholder="Filtrer par produit..." class="filter-input text-center">
+                    </div>
+                    <div class="max-w-2xl mx-auto space-y-3">
+                        <?php foreach ($historiqueAchats as $h): ?>
+                            <div class="card-hist item-card flex justify-between items-center"
+                                 data-info="<?= strtolower($h['produit']) ?>">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-500">
+                                        <i class="fa-solid fa-plus-circle"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-black uppercase text-sm text-white"><?= htmlspecialchars($h['produit']) ?></p>
+                                        <p class="text-[9px] text-slate-500 font-bold uppercase"><?= htmlspecialchars($h['fournisseur']) ?></p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-lg font-black text-emerald-500">+<?= $h['quantite'] ?></p>
+                                    <p class="text-[9px] text-slate-600 font-bold uppercase italic"><?= date('d/m H:i', strtotime($h['date'])) ?></p>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+
+                <div id="tab-inventaires" class="tab-content">
+                    <div class="text-center mb-10">
+                        <h2 class="text-sm font-black uppercase tracking-widest text-emerald-400 italic">Rapports
+                            d'inventaire</h2>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <?php if (empty($historiqueInventaires)): ?>
+                            <div class="col-span-full text-center py-20 opacity-30">
+                                <i class="fa-solid fa-folder-open text-4xl mb-4"></i>
+                                <p class="uppercase font-black text-xs tracking-widest">Aucune donnée enregistrée</p>
+                            </div>
+                        <?php else: ?>
+                            <?php foreach ($historiqueInventaires as $inv):
+                                $diff = $inv['quantite_trouvee'] - $inv['quantite_theorique'];
+                                ?>
+                                <div class="item-card border-l-4 <?= $diff < 0 ? 'border-red-500' : 'border-emerald-500' ?>">
+                                    <div class="flex justify-between items-start mb-4">
+                                        <p class="font-black uppercase text-sm"><?= htmlspecialchars($inv['produit']) ?></p>
+                                        <span class="text-[9px] font-bold text-slate-600"><?= date('d/m/Y', strtotime($inv['date'])) ?></span>
+                                    </div>
+                                    <div class="grid grid-cols-3 gap-2 text-center bg-black/30 rounded-xl p-4">
+                                        <div><p class="text-[7px] font-black text-slate-500 mb-1">LOGICIEL</p>
+                                            <p class="text-sm font-bold"><?= $inv['quantite_theorique'] ?></p></div>
+                                        <div><p class="text-[7px] font-black text-slate-500 mb-1">RÉEL</p>
+                                            <p class="text-sm font-bold text-white"><?= $inv['quantite_trouvee'] ?></p>
+                                        </div>
+                                        <div><p class="text-[7px] font-black text-slate-500 mb-1">ÉCART</p>
+                                            <p class="text-sm font-black <?= $diff < 0 ? 'text-red-500' : 'text-emerald-400' ?>"><?= ($diff > 0 ? '+' : '') . $diff ?></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <script>
-        function switchTab(evt, tabName) {
-            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            document.getElementById(tabName).classList.add('active');
-            evt.currentTarget.classList.add('active');
-        }
+        <script>
+            function switchTab(evt, tabName) {
+                document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+                document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+                document.getElementById(tabName).classList.add('active');
+                evt.currentTarget.classList.add('active');
+            }
 
-        function filterLocal(inputId, className, attr) {
-            const val = document.getElementById(inputId).value.toLowerCase();
-            document.querySelectorAll('.' + className).forEach(el => {
-                el.style.display = el.getAttribute(attr).includes(val) ? '' : 'none';
-            });
-        }
-    </script>
-    <?php
-}
+            function filterLocal(inputId, className, attr) {
+                const val = document.getElementById(inputId).value.toLowerCase();
+                document.querySelectorAll('.' + className).forEach(el => {
+                    el.style.display = el.getAttribute(attr).includes(val) ? '' : 'none';
+                });
+            }
+        </script>
+        <?php
+    }
+
     public function afficherDetailsAssos($assos)
     {
         $this->afficherNav();
         ?>
         <style>
             @keyframes fadeInScale {
-                from { opacity: 0; transform: scale(0.95); filter: blur(10px); }
-                to { opacity: 1; transform: scale(1); filter: blur(0); }
+                from {
+                    opacity: 0;
+                    transform: scale(0.95);
+                    filter: blur(10px);
+                }
+                to {
+                    opacity: 1;
+                    transform: scale(1);
+                    filter: blur(0);
+                }
             }
 
-            .anim-focus { animation: fadeInScale 0.7s cubic-bezier(0.19, 1, 0.22, 1) forwards; }
+            .anim-focus {
+                animation: fadeInScale 0.7s cubic-bezier(0.19, 1, 0.22, 1) forwards;
+            }
 
             .glass-panel {
                 background: rgba(255, 255, 255, 0.02);
@@ -3066,7 +3312,8 @@ class VueGestionnaire extends VueStaff
                         </div>
                     </div>
                     <div class="bg-black/40 border border-white/5 p-7 rounded-[2.2rem] text-right min-w-[240px] shadow-inner">
-                        <p class="text-slate-500 text-[10px] font-black uppercase tracking-[0.3em] mb-2">Trésorerie Actuelle</p>
+                        <p class="text-slate-500 text-[10px] font-black uppercase tracking-[0.3em] mb-2">Trésorerie
+                            Actuelle</p>
                         <p class="text-3xl font-black <?= ($assos['solde'] ?? 0) >= 0 ? 'text-amber-400' : 'text-rose-500' ?> tracking-tighter">
                             <?= number_format($assos['solde'] ?? 0, 2, ',', ' ') ?> <span class="text-sm">€</span>
                         </p>
@@ -3081,16 +3328,20 @@ class VueGestionnaire extends VueStaff
                         <h2 class="text-xl font-black text-white uppercase tracking-tighter flex items-center gap-3">
                             <i class="fa-solid fa-layer-group text-amber-500"></i> Stock Produits
                         </h2>
-                        <a href="index.php?action=voirProduits&id=<?= $assos['id'] ?>" class="amber-tag px-4 py-2 rounded-xl text-[10px] font-black uppercase hover:bg-amber-500 hover:text-black transition-all">Inventaire Complet</a>
+                        <a href="index.php?action=voirProduits&id=<?= $assos['id'] ?>"
+                           class="amber-tag px-4 py-2 rounded-xl text-[10px] font-black uppercase hover:bg-amber-500 hover:text-black transition-all">Inventaire
+                            Complet</a>
                     </div>
                     <div class="overflow-x-auto">
                         <table class="w-full text-left">
                             <tbody class="divide-y divide-white/5">
-                            <?php if(!empty($assos['produits'])): ?>
+                            <?php if (!empty($assos['produits'])): ?>
                                 <?php foreach (array_slice($assos['produits'], 0, 5) as $p): ?>
                                     <tr class="group hover:bg-white/[0.02] transition-colors">
                                         <td class="py-4 font-bold text-white text-sm"><?= htmlspecialchars($p['nom']) ?></td>
-                                        <td class="py-4 text-slate-400 text-xs font-bold"><?= number_format($p['prix'] ?? 0, 2, ',', ' ') ?> €</td>
+                                        <td class="py-4 text-slate-400 text-xs font-bold"><?= number_format($p['prix'] ?? 0, 2, ',', ' ') ?>
+                                            €
+                                        </td>
                                         <td class="py-4 text-right">
                                         <span class="px-3 py-1 rounded-lg text-[10px] font-black <?= ($p['quantiteActuelle'] ?? 0) < 5 ? 'bg-rose-500/10 text-rose-500' : 'bg-amber-500/5 text-amber-500' ?>">
                                             <?= $p['quantiteActuelle'] ?? 0 ?> UNITÉS
@@ -3099,7 +3350,12 @@ class VueGestionnaire extends VueStaff
                                     </tr>
                                 <?php endforeach; ?>
                             <?php else: ?>
-                                <tr><td colspan="3" class="py-10 text-center text-slate-500 text-[10px] font-black uppercase">Aucun produit</td></tr>
+                                <tr>
+                                    <td colspan="3"
+                                        class="py-10 text-center text-slate-500 text-[10px] font-black uppercase">Aucun
+                                        produit
+                                    </td>
+                                </tr>
                             <?php endif; ?>
                             </tbody>
                         </table>
@@ -3111,12 +3367,12 @@ class VueGestionnaire extends VueStaff
                         <h2 class="text-xl font-black text-white uppercase tracking-tighter flex items-center gap-3">
                             <i class="fa-solid fa-bolt text-amber-500"></i> Équipe Staff
                         </h2>
-                        <a href="index.php?action=voirBarmans&id=<?= $assos['id'] ?>" class="amber-tag px-4 py-2 rounded-xl text-[10px] font-black uppercase hover:bg-amber-500 hover:text-black transition-all">Gérer</a>
+                        <a href="index.php?action=voirBarmans&id=<?= $assos['id'] ?>"
+                           class="amber-tag px-4 py-2 rounded-xl text-[10px] font-black uppercase hover:bg-amber-500 hover:text-black transition-all">Gérer</a>
                     </div>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <?php if(!empty($assos['barmans'])): ?>
+                        <?php if (!empty($assos['barmans'])): ?>
                             <?php foreach (array_slice($assos['barmans'], 0, 4) as $b):
-                                // CORRECTION : On utilise 'actif' comme dans l'autre vue et on force le type Int
                                 $actifVal = isset($b['actif']) ? (int)$b['actif'] : 0;
                                 $isActif = ($actifVal === 1);
                                 ?>
@@ -3133,7 +3389,8 @@ class VueGestionnaire extends VueStaff
                                 </div>
                             <?php endforeach; ?>
                         <?php else: ?>
-                            <p class="col-span-2 text-center py-10 text-slate-500 text-[10px] font-black uppercase">Aucun staff membre</p>
+                            <p class="col-span-2 text-center py-10 text-slate-500 text-[10px] font-black uppercase">
+                                Aucun staff membre</p>
                         <?php endif; ?>
                     </div>
                 </div>
@@ -3143,10 +3400,11 @@ class VueGestionnaire extends VueStaff
                         <h2 class="text-xl font-black text-white uppercase tracking-tighter flex items-center gap-3">
                             <i class="fa-solid fa-address-book text-amber-500"></i> Base Clients
                         </h2>
-                        <a href="index.php?action=voirListeClients&id=<?= $assos['id'] ?>" class="amber-tag px-4 py-2 rounded-xl text-[10px] font-black uppercase hover:bg-amber-500 hover:text-black transition-all">Répertoire</a>
+                        <a href="index.php?action=voirListeClients&id=<?= $assos['id'] ?>"
+                           class="amber-tag px-4 py-2 rounded-xl text-[10px] font-black uppercase hover:bg-amber-500 hover:text-black transition-all">Répertoire</a>
                     </div>
                     <div class="space-y-2">
-                        <?php if(!empty($assos['clients'])): ?>
+                        <?php if (!empty($assos['clients'])): ?>
                             <?php foreach (array_slice($assos['clients'], 0, 5) as $c): ?>
                                 <div class="flex items-center justify-between p-4 bg-black/20 hover:bg-amber-500/5 rounded-2xl transition-all border border-transparent hover:border-amber-500/20 group">
                                     <span class="font-bold text-white text-sm group-hover:text-amber-400"><?= htmlspecialchars(($c['prenom'] ?? '') . ' ' . ($c['nom'] ?? '')) ?></span>

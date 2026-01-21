@@ -558,7 +558,6 @@ JOIN compte g ON c.id_gestionnaire = g.id                WHERE c.id = :id_comman
 
     public function ajouterClientCommeBarman($clientId, $assoId) {
         try {
-            // INSERT IGNORE ou ON DUPLICATE KEY car le client est peut-être déjà lié à l'asso
             $sql = "INSERT INTO appartient (compte_id, association_id, role) 
                 VALUES (?, ?, 'barman') 
                 ON DUPLICATE KEY UPDATE role = 'barman'";
@@ -654,13 +653,14 @@ JOIN compte g ON c.id_gestionnaire = g.id                WHERE c.id = :id_comman
             return false;
         }
     }
+
     public function getBarmansParAssociation($id_association) {
         $sql = "SELECT c.id, c.nom, c.prenom, c.email, c.actif, a.role, asso.nom AS nom_association
             FROM compte c
             JOIN appartient a ON c.id = a.compte_id
             JOIN association asso ON a.association_id = asso.id
             WHERE a.association_id = ? 
-            AND a.role = 'barman'"; // On ne filtre PAS sur c.actif ici
+            AND a.role = 'barman'";
 
         $stmt = self::getBdd()->prepare($sql);
         $stmt->execute([$id_association]);
