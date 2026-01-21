@@ -1167,6 +1167,6 @@ private
 function afficherErreurAction()
 {
     $message = "L'action demandée n'existe pas.";
-    include 'templates/vue_erreur.php';
+    include 'templates/template_erreur.php';
 }
 }
