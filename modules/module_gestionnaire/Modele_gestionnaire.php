@@ -638,12 +638,12 @@ class ModeleGestionnaire extends ModeleStaff
     }
 
     public function getBarmansParAssociation($id_association) {
-        $sql = "SELECT c.id, c.nom, c.prenom, c.email, c.actif, c.role, asso.nom AS nom_association
+        $sql = "SELECT c.id, c.nom, c.prenom, c.email, c.actif, a.role, asso.nom AS nom_association
             FROM compte c
             JOIN appartient a ON c.id = a.compte_id
             JOIN association asso ON a.association_id = asso.id
             WHERE a.association_id = ? 
-            AND c.role = 'barman'";
+            AND a.role = 'barman'";
 
         $stmt = self::getBdd()->prepare($sql);
         $stmt->execute([$id_association]);

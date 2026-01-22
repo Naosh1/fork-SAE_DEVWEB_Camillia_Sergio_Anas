@@ -13,7 +13,7 @@ if (!isset($_SESSION['id'])) {
     exit();
 }
 
-$stmt = $bdd->prepare("SELECT prenom, role FROM compte WHERE id = ?");
+$stmt = $bdd->prepare("SELECT prenom, role FROM compte INNER JOIN appartient WHERE id = ?");
 $stmt->execute([$_SESSION['id']]);
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 

@@ -43,10 +43,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!$erreurs) {
         $mdp_hash = password_hash($mdp, PASSWORD_DEFAULT);
         $insert = $bdd->prepare("
-            INSERT INTO compte (nom, prenom, date_naissance, email, mdp, solde, role)
-            VALUES (?,?,?,?,?,0.00,?)
+            INSERT INTO compte (nom, prenom, date_naissance, email, mdp, solde)
+            VALUES (?,?,?,?,?,0.00)
         ");
-        if ($insert->execute([$nom, $prenom, $date_naissance, $email, $mdp_hash, $role])) {
+        if ($insert->execute([$nom, $prenom, $date_naissance, $email, $mdp_hash])) {
             session_regenerate_id(true);
             $_SESSION['id'] = $bdd->lastInsertId();
             $_SESSION['prenom'] = $prenom;

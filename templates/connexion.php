@@ -16,7 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (!empty($email) && !empty($mdp)) {
         $bdd = Connexion::getBdd();
-        $requete = $bdd->prepare("SELECT id, prenom, nom, email, mdp, role FROM compte WHERE email = ?");
+        $requete = $bdd->prepare("SELECT id, prenom, nom, email, mdp, role FROM compte INNER JOIN appartient WHERE email = ?");
         $requete->execute([$email]);
         $user = $requete->fetch(PDO::FETCH_ASSOC);
 

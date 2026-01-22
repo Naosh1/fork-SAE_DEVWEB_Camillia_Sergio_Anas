@@ -397,7 +397,7 @@ class ModeleStaff extends ModeleCommun
         function rechercherClients($q = '')
         {
             try {
-                $sql = "SELECT id, nom, prenom, email FROM compte WHERE role = 'client'";
+                $sql = "SELECT id, nom, prenom, email FROM compte INNER JOIN appartient ON id = compte_id WHERE role = 'client'";
                 if ($q) {
                     $sql .= " AND (nom LIKE :q OR prenom LIKE :q OR email LIKE :q)";
                     $sql .= " ORDER BY nom, prenom";
