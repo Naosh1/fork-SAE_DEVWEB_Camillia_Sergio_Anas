@@ -486,7 +486,7 @@ class ModeleStaff extends ModeleCommun
         function getToutStaff()
         {
             $sql = "SELECT id, nom, prenom, email, role 
-            FROM compte 
+            FROM compte INNER JOIN appartient ON id = compte_id
             WHERE role = 'barman' OR role = 'gestionnaire'
             ORDER BY role DESC, nom ASC";
 

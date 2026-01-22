@@ -532,15 +532,7 @@ private function afficherHeader($titre = "Gestionnaire de buvette")
                         </ul>
                     </div>
 
-                    <div class="bg-gradient-to-br from-blue-600 to-blue-800 p-6 rounded-[2rem] shadow-xl shadow-blue-900/20">
-                        <p class="text-white font-black text-sm mb-4 italic leading-tight">Encaisser plus vite ?</p>
-                        <p class="text-blue-100 text-[10px] font-bold opacity-80 mb-4">Utilisez le raccourci <span
-                                    class="bg-black/20 px-1 rounded font-mono">CTRL + N</span> pour une nouvelle vente.
-                        </p>
-                        <a href="index.php?module=barman&action=creerTransaction"
-                           class="block w-full bg-white text-blue-600 text-center py-3 rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-transform">Nouveau
-                            Ticket</a>
-                    </div>
+
                 </div>
 
             </div>
