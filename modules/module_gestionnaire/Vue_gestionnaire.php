@@ -2231,13 +2231,18 @@ class VueGestionnaire extends VueStaff
         $this->afficherNav();
         echo '<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&display=swap" rel="stylesheet">';
 
+        // 1. Initialisation des heures
         $heuresCompletes = [];
         for ($h = 8; $h <= 23; $h++) {
             $heuresCompletes[$h] = $statsHoraires[$h] ?? 0;
         }
 
-        $maxVentesHeure = max($heuresCompletes) ?: 1;
-        $maxRecette = !empty($evolution['recettes']) ? max($evolution['recettes']) : 1;
+        // 2. SÉCURISATION DES DIVISEURS (Empêche le DivisionByZeroError)
+        $maxVentesHeure = max($heuresCompletes);
+        $maxVentesHeure = ($maxVentesHeure > 0) ? $maxVentesHeure : 1;
+
+        $maxRecette = (!empty($evolution['recettes'])) ? max($evolution['recettes']) : 0;
+        $maxRecette = ($maxRecette > 0) ? $maxRecette : 1;
         ?>
 
         <main class="h-screen overflow-hidden bg-[#020617] text-slate-300 p-6 flex flex-col stats-global-wrapper">
@@ -2268,19 +2273,23 @@ class VueGestionnaire extends VueStaff
                         <i class="fa-solid fa-chart-line text-blue-500"></i> Performance Hebdomadaire
                     </h2>
                     <div class="flex-1 flex items-end justify-between gap-4 px-2 pb-2">
-                        <?php foreach($evolution['dates'] as $i => $date):
-                            $val = $evolution['recettes'][$i] ?? 0;
-                            $h_bar = ($val / $maxRecette) * 100;
-                            ?>
-                            <div class="flex-1 flex flex-col items-center gap-4 h-full justify-end group/bar relative">
-                                <div class="absolute -top-10 bg-blue-600 text-white text-[10px] font-black px-2 py-1 rounded-lg opacity-0 group-hover/bar:opacity-100 transition-all">
-                                    <?= round($val) ?>€
+                        <?php
+                        if (!empty($evolution['dates'])):
+                            foreach($evolution['dates'] as $i => $date):
+                                $val = $evolution['recettes'][$i] ?? 0;
+                                // Utilisation du maxRecette sécurisé
+                                $h_bar = ($val / $maxRecette) * 100;
+                                ?>
+                                <div class="flex-1 flex flex-col items-center gap-4 h-full justify-end group/bar relative">
+                                    <div class="absolute -top-10 bg-blue-600 text-white text-[10px] font-black px-2 py-1 rounded-lg opacity-0 group-hover/bar:opacity-100 transition-all">
+                                        <?= round($val) ?>€
+                                    </div>
+                                    <div class="chart-bar-flux w-full max-w-[45px] bg-blue-500/10 border-t-2 border-blue-500/40 rounded-t-xl transition-all duration-700 group-hover/bar:bg-blue-600 group-hover/bar:shadow-[0_0_20px_rgba(37,99,235,0.3)]"
+                                         style="height: <?= max($h_bar, 5) ?>%;"></div>
+                                    <span class="text-[9px] font-black text-slate-600 uppercase italic"><?= $date ?></span>
                                 </div>
-                                <div class="chart-bar-flux w-full max-w-[45px] bg-blue-500/10 border-t-2 border-blue-500/40 rounded-t-xl transition-all duration-700 group-hover/bar:bg-blue-600 group-hover/bar:shadow-[0_0_20px_rgba(37,99,235,0.3)]"
-                                     style="height: <?= max($h_bar, 5) ?>%;"></div>
-                                <span class="text-[9px] font-black text-slate-600 uppercase italic"><?= $date ?></span>
-                            </div>
-                        <?php endforeach; ?>
+                            <?php endforeach;
+                        endif; ?>
                     </div>
                 </div>
 
@@ -2290,6 +2299,7 @@ class VueGestionnaire extends VueStaff
                     </h2>
                     <div class="flex-1 flex items-end justify-between gap-1 px-1">
                         <?php foreach($heuresCompletes as $h_idx => $valeur):
+                            // Utilisation du maxVentesHeure sécurisé
                             $hauteur = ($valeur / $maxVentesHeure) * 100;
                             ?>
                             <div class="flex-1 flex flex-col items-center gap-3 h-full justify-end group/h relative">
@@ -2314,12 +2324,16 @@ class VueGestionnaire extends VueStaff
                         <a href="index.php?module=gestionnaire&action=detailsProduitsStats" class="text-[9px] bg-blue-500/10 text-blue-400 border border-blue-500/20 px-3 py-1 rounded-full hover:bg-blue-600 hover:text-white transition-all font-black uppercase">Détails</a>
                     </div>
                     <div class="space-y-2">
-                        <?php foreach(array_slice($topProduits, 0, 3) as $p): ?>
-                            <div class="flex items-center justify-between p-3 bg-black/20 border border-white/5 rounded-2xl hover:border-blue-500/30 transition-all">
-                                <span class="text-xs font-bold text-slate-200"><?= htmlspecialchars($p['nom']) ?></span>
-                                <span class="text-blue-500 font-black text-[10px]"><?= $p['total'] ?> UNITÉS</span>
-                            </div>
-                        <?php endforeach; ?>
+                        <?php if(!empty($topProduits)): ?>
+                            <?php foreach(array_slice($topProduits, 0, 3) as $p): ?>
+                                <div class="flex items-center justify-between p-3 bg-black/20 border border-white/5 rounded-2xl hover:border-blue-500/30 transition-all">
+                                    <span class="text-xs font-bold text-slate-200"><?= htmlspecialchars($p['nom']) ?></span>
+                                    <span class="text-blue-500 font-black text-[10px]"><?= $p['total'] ?> UNITÉS</span>
+                                </div>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <p class="text-[10px] italic text-slate-600">Aucune vente enregistrée.</p>
+                        <?php endif; ?>
                     </div>
                 </div>
 
@@ -2331,15 +2345,19 @@ class VueGestionnaire extends VueStaff
                         <a href="index.php?module=gestionnaire&action=detailsClientsStats" class="text-[9px] bg-blue-500/10 text-blue-400 border border-blue-500/20 px-3 py-1 rounded-full hover:bg-blue-600 hover:text-white transition-all font-black uppercase">Voir Tout</a>
                     </div>
                     <div class="space-y-2">
-                        <?php foreach(array_slice($topClients, 0, 3) as $c): ?>
-                            <div class="flex items-center justify-between p-3 bg-black/20 border border-white/5 rounded-2xl hover:border-blue-500/30 transition-all">
-                                <div class="flex flex-col">
-                                    <span class="text-xs font-bold text-white"><?= htmlspecialchars($c['prenom'].' '.$c['nom']) ?></span>
-                                    <span class="text-[9px] text-slate-500 font-black uppercase"><?= $c['nb_commandes'] ?? 0 ?> Commandes</span>
+                        <?php if(!empty($topClients)): ?>
+                            <?php foreach(array_slice($topClients, 0, 3) as $c): ?>
+                                <div class="flex items-center justify-between p-3 bg-black/20 border border-white/5 rounded-2xl hover:border-blue-500/30 transition-all">
+                                    <div class="flex flex-col">
+                                        <span class="text-xs font-bold text-white"><?= htmlspecialchars($c['prenom'].' '.$c['nom']) ?></span>
+                                        <span class="text-[9px] text-slate-500 font-black uppercase"><?= $c['nb_commandes'] ?? 0 ?> Commandes</span>
+                                    </div>
+                                    <span class="text-blue-500 font-black italic text-sm"><?= number_format($c['depense_totale'], 2) ?>€</span>
                                 </div>
-                                <span class="text-blue-500 font-black italic text-sm"><?= number_format($c['depense_totale'], 2) ?>€</span>
-                            </div>
-                        <?php endforeach; ?>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <p class="text-[10px] italic text-slate-600">Aucun client actif.</p>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>

@@ -24,7 +24,6 @@ class Vue_client extends VueCommun
         $photo = $_SESSION['photo'] ?? null;
         $actionActuelle = $_GET['action'] ?? 'espace';
 
-        // Styles sans effets au survol (hover)
         $activeClass = "bg-blue-600/15 text-blue-400 border-r-4 border-blue-600 shadow-[0_0_20px_rgba(37,99,235,0.1)]";
         $inactiveClass = "text-slate-500 border-r-4 border-transparent";
 

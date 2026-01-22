@@ -115,10 +115,10 @@ class ModeleGestionnaire extends ModeleStaff
     public function getCommandesFournisseursRecentes($idGest)
     {
         $sql = "SELECT cf.id, f.nom as nom_fournisseur, cf.montant_total, cf.date_commande, cf.statut,
-            (SELECT COUNT(*) FROM detail_commande_fournisseur WHERE id_commande = cf.id) as nb_articles
-            FROM commande_fournisseur cf
-            JOIN fournisseur f ON cf.fournisseur_id = f.id
-            ORDER BY cf.date_commande DESC LIMIT 10";
+        (SELECT COUNT(*) FROM detail_commande_fournisseur WHERE id_commande = cf.id) as nb_articles
+        FROM commande_fournisseur cf
+        JOIN fournisseur f ON cf.id_fournisseur = f.id -- Correction ici : id_fournisseur
+        ORDER BY cf.date_commande DESC LIMIT 10";
 
         return $this->getBdd()->query($sql)->fetchAll();
     }
@@ -126,11 +126,11 @@ class ModeleGestionnaire extends ModeleStaff
     public function getHistoriqueAchatsComplet($idGest)
     {
         $sql = "SELECT p.nom as produit, dcf.quantite, f.nom as fournisseur, cf.date_commande as date
-            FROM detail_commande_fournisseur dcf
-            JOIN commande_fournisseur cf ON dcf.id_commande = cf.id
-            JOIN produit p ON dcf.id_produit = p.id
-            JOIN fournisseur f ON cf.fournisseur_id = f.id
-            ORDER BY cf.date_commande DESC LIMIT 15";
+        FROM detail_commande_fournisseur dcf
+        JOIN commande_fournisseur cf ON dcf.id_commande = cf.id
+        JOIN produit p ON dcf.id_produit = p.id
+        JOIN fournisseur f ON cf.id_fournisseur = f.id -- Correction ici : id_fournisseur
+        ORDER BY cf.date_commande DESC LIMIT 15";
 
         return $this->getBdd()->query($sql)->fetchAll();
     }
@@ -313,17 +313,13 @@ class ModeleGestionnaire extends ModeleStaff
     public function getHistoriqueInventairesComplet($idGest)
     {
         try {
-            $sql = "SELECT c.stock_theorique as quantite_theorique, 
-                       c.stock_reel as quantite_trouvee, 
-                       i.date_inventaire as date, 
-                       p.nom as produit 
-                FROM concerne c
-                JOIN inventaire i ON c.inventaire_id = i.id 
-                JOIN produit p ON c.produit_id = p.id 
-                JOIN association a ON i.association_id = a.id
-                WHERE a.id IN (SELECT association_id FROM gestionne WHERE compte_id = ?)
-                ORDER BY i.date_inventaire DESC 
-                LIMIT 30";
+            $sql = "SELECT c.*, f.nom as nom_fournisseur 
+        FROM commande_fournisseur c
+        JOIN fournisseur f ON c.id_fournisseur = f.id -- Correction ici : id_fournisseur
+        JOIN association a ON c.id_association = a.id -- Correction ici : id_association
+        JOIN gestionne g ON a.id = g.association_id
+        WHERE g.compte_id = :id_gest
+        ORDER BY c.date_commande DESC";
             $req = self::getBdd()->prepare($sql);
             $req->execute([$idGest]);
             return $req->fetchAll(PDO::FETCH_ASSOC);

@@ -177,10 +177,10 @@ class ModeleStaff extends ModeleCommun
             $recettes[] = $r;
 
             $sqlP = "SELECT SUM(c.perte * p.prix) 
-                 FROM ligne_inventaire c
-                 JOIN inventaire i ON c.inventaire_id = i.id 
-                 JOIN produit p ON c.produit_id = p.id
-                 WHERE i.association_id = ? AND DATE(i.date_inventaire) = ?";
+         FROM ligne_inventaire c 
+         JOIN inventaire i ON c.inventaire_id = i.id 
+         JOIN produit p ON c.produit_id = p.id
+         WHERE i.association_id = ? AND DATE(i.date_inventaire) = ?";
             $stmtP = self::getBdd()->prepare($sqlP);
             $stmtP->execute([$idAsso, $dateSQL]);
             $p = (float)($stmtP->fetchColumn() ?: 0);
@@ -200,10 +200,10 @@ class ModeleStaff extends ModeleCommun
     public function getTotalPertesParAsso($idAsso) {
         try {
             $sql = "SELECT SUM(c.perte * p.prix) 
-                FROM ligne_inventaire c
-                JOIN inventaire i ON c.inventaire_id = i.id 
-                JOIN produit p ON c.produit_id = p.id
-                WHERE i.association_id = ?";
+        FROM ligne_inventaire c
+        JOIN inventaire i ON c.inventaire_id = i.id 
+        JOIN produit p ON c.produit_id = p.id
+        WHERE i.association_id = ?";
             $stmt = self::getBdd()->prepare($sql);
             $stmt->execute([$idAsso]);
             return $stmt->fetchColumn() ?: 0;
