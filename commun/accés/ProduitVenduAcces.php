@@ -14,7 +14,7 @@
             }
 
             // Sécurité : utilisateur connecté + panier non vide
-            if (!isset($_SESSION['id']) || empty($_SESSION['panier'])) {
+            if (!isset($_SESSION['id']) || empty($_SESSION['panier']) || !isset($_SESSION['asso_choisi'])) {
                 return;
             }
 
@@ -33,13 +33,14 @@
             }
 
             $stmt = $this->bdd->prepare(
-                "INSERT INTO vente (compte_id, date_vente, montant_total)
-                 VALUES (:compte_id, NOW(), :montant_total)"
+                "INSERT INTO vente (compte_id, date_vente, montant_total, association_id)
+                 VALUES (:compte_id, NOW(), :montant_total, :association_id)"
             );
 
             $stmt->execute([
                 ':compte_id'     => $_SESSION['id'],
-                ':montant_total' => $montantTotal
+                ':montant_total' => $montantTotal,
+                ':association_id' => $_SESSION['asso_choisi']
             ]);
 
             $venteId = $this->bdd->lastInsertId();
@@ -131,13 +132,14 @@
         public function getStatutCommandesClient($idCompte)
         {
             $stmt = $this->bdd->prepare(
-                "SELECT vente_id,
+                "SELECT vente_id, a.nom AS nom_association,
                  CASE 
                     WHEN SUM(statut = 'en attente') > 0 THEN 'en attente'
                     ELSE 'validée'
                  END AS statut
                  FROM ligne_vente
                  JOIN vente ON vente.id = ligne_vente.vente_id
+                 JOIN association a ON vente.association_id = a.id
                  WHERE vente.compte_id = :id
                  GROUP BY vente_id"
             );
@@ -150,13 +152,15 @@
         {
             $stmt = $this->bdd->prepare(
                 "SELECT 
-                    v.id AS vente_id,
-                    v.date_vente AS dateVente,
-                    v.montant_total AS montant,
-                    l.produit_id,
-                    p.nom AS nom_produit,
-                    l.quantite AS quantite
+                     v.id AS vente_id,
+                     v.date_vente AS dateVente,
+                     v.montant_total AS montant,
+                     a.nom AS nomAssociation,
+                     l.produit_id,
+                     p.nom AS nom_produit,
+                     l.quantite AS quantite
                  FROM vente v
+                 JOIN association a ON a.id = v.association_id
                  JOIN ligne_vente l ON l.vente_id = v.id
                  JOIN produit p ON p.id = l.produit_id
                  WHERE v.compte_id = :idCompte
