@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Hôte : localhost
--- Généré le : jeu. 22 jan. 2026 à 12:38
+-- Généré le : jeu. 22 jan. 2026 à 15:46
 -- Version du serveur : 8.0.42-0ubuntu0.20.04.1
 -- Version de PHP : 7.4.3-4ubuntu2.29
 
@@ -309,7 +309,7 @@ CREATE TABLE `rechargement` (
 
 CREATE TABLE `role` (
   `id` bigint UNSIGNED NOT NULL,
-  `nom` varchar(50) COLLATE utf8mb4_general_ci NOT NULL
+  `nom` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -323,7 +323,7 @@ CREATE TABLE `vente` (
   `date_vente` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `montant_total` decimal(10,0) NOT NULL,
   `compte_id` bigint UNSIGNED NOT NULL,
-  `association_id` bigint UNSIGNED DEFAULT NULL
+  `association_id` bigint UNSIGNED NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -479,8 +479,8 @@ ALTER TABLE `role`
 --
 ALTER TABLE `vente`
   ADD UNIQUE KEY `id` (`id`),
-  ADD KEY `FK vente` (`compte_id`),
-  ADD KEY `fk_vente_association` (`association_id`);
+  ADD KEY `FK vente compte` (`compte_id`),
+  ADD KEY `FK association` (`association_id`);
 
 --
 -- AUTO_INCREMENT pour les tables déchargées
@@ -603,6 +603,7 @@ ALTER TABLE `rechargement`
 -- Contraintes pour la table `vente`
 --
 ALTER TABLE `vente`
+  ADD CONSTRAINT `FK association` FOREIGN KEY (`association_id`) REFERENCES `association` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
   ADD CONSTRAINT `FK vente` FOREIGN KEY (`compte_id`) REFERENCES `compte` (`id`);
 COMMIT;
 

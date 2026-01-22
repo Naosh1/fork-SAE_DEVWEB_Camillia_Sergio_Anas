@@ -21,156 +21,77 @@ class Vue_client extends VueCommun {
     public function afficherNav() {
         ob_start();
         ?>
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+        <link rel="stylesheet" href="style.css">
 
-        <style>
-            .cyber-nav {
-                background: rgba(2, 6, 23, 0.9);
-                backdrop-filter: blur(15px);
-                border-bottom: 1px solid rgba(245, 158, 11, 0.2);
-                padding: 1rem 2rem;
-                position: sticky;
-                top: 0;
-                z-index: 9999;
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-            }
+        <header>
+            <section class="section-white">
+                <div class="card">
+                    <h1><?= htmlspecialchars($_SESSION['nom_buvette'] ?? 'Buvette') ?></h1>
+                        <nav>
+                            <?php if (isset($_SESSION['id'])): ?>
 
-            .nav-brand {
-                font-size: 1.5rem;
-                font-weight: 900;
-                text-transform: uppercase;
-                font-style: italic;
-                color: #fff;
-                text-decoration: none;
-                letter-spacing: -1px;
-            }
+                                <?php if ($_SESSION['role'] === 'admin'): ?>
+                                    <a href="index.php?module=client&action=gestion">
+                                        Gestion
+                                    </a>
+                                <?php endif; ?>
 
-            .nav-brand span {
-                color: #f59e0b; /* Electric Orange / Amber */
-            }
+                                <?php if ($_SESSION['role'] === 'barman'): ?>
+                                    <a href="index.php?module=barman&action=creerTransaction">
+                                        Vendre
+                                    </a>
+                                    <a href="index.php?module=barman&action=commandesEnCours">
+                                        Commandes
+                                    </a>
+                                <?php endif; ?>
 
-            .nav-links {
-                display: flex;
-                gap: 1.5rem;
-                align-items: center;
-            }
+                                <a href="index.php?module=client&action=espace">
+                                    Mon Espace
+                                </a>
 
-            .nav-item {
-                color: #94a3b8;
-                text-decoration: none;
-                font-size: 0.75rem;
-                font-weight: 800;
-                text-transform: uppercase;
-                letter-spacing: 0.05em;
-                transition: all 0.3s ease;
-                display: flex;
-                align-items: center;
-                gap: 8px;
-            }
+                                <a href="index.php?module=client&action=form_rechargement_utilisateur">
+                                    Recharger
+                                </a>
 
-            .nav-item i {
-                font-size: 1rem;
-                color: rgba(245, 158, 11, 0.5);
-                transition: 0.3s;
-            }
+                                <a href="index.php?module=client&action=form_produits_utilisateur">
+                                    Produits
+                                </a>
 
-            .nav-item:hover {
-                color: #fff;
-            }
+                                <a href="index.php?module=client&action=form_historique_utilisateur">
+                                     Historique
+                                </a>
 
-            .nav-item:hover i {
-                color: #f59e0b;
-                transform: translateY(-2px);
-            }
+                                <a href="index.php?module=client&action=form_plus_utilisateur">
+                                      Plus
+                                </a>
 
-            /* Bouton spécial déconnexion ou profil */
-            .nav-btn {
-                background: rgba(245, 158, 11, 0.1);
-                color: #f59e0b;
-                padding: 0.6rem 1.2rem;
-                border-radius: 0.8rem;
-                border: 1px solid rgba(245, 158, 11, 0.3);
-            }
+                                <a href="?reset=1">
+                                    Changer d'association
+                                </a>
 
-            .nav-btn:hover {
-                background: #f59e0b;
-                color: #000;
-            }
-        </style>
+                                <a href="index.php?module=client&action=form_panier_utilisateur" class="panier">
+                                       Panier
+                                </a>
 
-        <div class="cyber-nav">
-            <a href="index.php" class="nav-brand">BUVETTE<span>OS</span></a>
+                                <a href="index.php?module=client&action=form_commande_statut_panier_utilisateur" class="panier">
+                                    Suivi Commandes
+                                </a>
 
-            <div class="nav-links">
-                <?php if (isset($_SESSION['id'])): ?>
-
-                    <?php if ($_SESSION['role'] === 'admin'): ?>
-                        <a href="index.php?module=client&action=gestion" class="nav-item">
-                            <i class="fa-solid fa-gauge-high"></i> Gestion
-                        </a>
-                    <?php endif; ?>
-
-                    <?php if ($_SESSION['role'] === 'barman'): ?>
-                        <a href="index.php?module=barman&action=creerTransaction" class="nav-item">
-                            <i class="fa-solid fa-cash-register"></i> Vendre
-                        </a>
-                        <a href="index.php?module=barman&action=commandesEnCours" class="nav-item">
-                            <i class="fa-solid fa-clock-rotate-left"></i> Commandes
-                        </a>
-                    <?php endif; ?>
-
-                    <a href="index.php?module=client&action=espace" class="nav-item">
-                        <i class="fa-solid fa-user-astronaut"></i> Mon Espace
-                    </a>
-
-                    <a href="index.php?module=client&action=form_rechargement_utilisateur" class="nav-item">
-                        <i class="fa-solid fa-wallet"></i> Recharger
-                    </a>
-
-                    <a href="index.php?module=client&action=form_produits_utilisateur" class="nav-item">
-                        <i class="fa-solid fa-wallet"></i> Produits
-                    </a>
-
-                    <a href="index.php?module=client&action=form_historique_utilisateur" class="nav-item">
-                        <i class="fa-solid fa-wallet"></i> Historique
-                    </a>
-
-                    <a href="index.php?module=client&action=form_panier_utilisateur" class="nav-item">
-                        <i class="fa-solid fa-wallet"></i> Panier
-                    </a>
-
-                    <a href="index.php?module=client&action=form_commande_statut_panier_utilisateur" class="nav-item">
-                       <i class="fa-solid fa-wallet"></i> Suivi Commandes
-                    </a>
-
-                    <a href="index.php?module=client&action=form_plus_utilisateur" class="nav-item">
-                       <i class="fa-solid fa-wallet"></i> Plus
-                    </a>
-
-                    <a href="?reset=1" class="nav-item nav-btn">
-                        <i class="fa-solid fa-key"></i> Changer d'association
-                    </a>
-
-                    <a href="index.php?module=connexion&action=deconnexion" class="nav-item nav-btn">
-                        <i class="fa-solid fa-power-off"></i> Quitter
-                    </a>
-
-                <?php else: ?>
-                    <a href="index.php?module=client&action=accueil" class="nav-item">
-                        <i class="fa-solid fa-house"></i> Accueil
-                    </a>
-                    <a href="index.php?module=client&action=form_inscription_utilisateur" class="nav-item">
-                        <i class="fa-solid fa-user-plus"></i> S'inscrire
-                    </a>
-                    <a href="index.php?module=client&action=form_connexion_utilisateur" class="nav-item nav-btn">
-                        <i class="fa-solid fa-key"></i> Connexion
-                    </a>
-
-                <?php endif; ?>
-            </div>
-        </div>
+                            <?php else: ?>
+                                <a href="index.php?module=client&action=accueil" class="nav-item">
+                                    <i class="fa-solid fa-house"></i> Accueil
+                                </a>
+                                <a href="index.php?module=client&action=form_inscription_utilisateur" class="nav-item">
+                                    <i class="fa-solid fa-user-plus"></i> S'inscrire
+                                </a>
+                                <a href="index.php?module=client&action=form_connexion_utilisateur" class="nav-item nav-btn">
+                                    <i class="fa-solid fa-key"></i> Connexion
+                                </a>
+                            <?php endif; ?>
+                        </nav>
+                    </div>
+            </section>
+        </header>
         <?php
         echo $this->afficherFooter();
         return ob_get_clean();
@@ -233,7 +154,7 @@ class Vue_client extends VueCommun {
         <nav class="nav-user">
             <ul>
                 <li> <a href='index.php?module=client&action=form_modification_utilisateur'> Modifier mes infos </a> </li>
-                <li> <a href='index.php?module=client&action=deconnexion'> Déconnexion </a> </li>
+                <li> <a href='index.php?module=client&action=deconnexion'> Se deconnecter </a> </li>
             </ul>
         </nav>
         <?php
@@ -416,6 +337,7 @@ class Vue_client extends VueCommun {
             <thead>
             <tr>
                 <th>Commande n°</th>
+                <th>Association</th>
                 <th>Statut</th>
             </tr>
             </thead>
@@ -423,6 +345,7 @@ class Vue_client extends VueCommun {
             <?php foreach ($commandes as $commande): ?>
                 <tr>
                     <td>#<?= (int)$commande['vente_id'] ?></td>
+                    <td><?= $commande['nom_association']?></td>
                     <td>
                         <?php if ($commande['statut'] === 'validée'): ?>
                             <span class="statut validee">Validée</span>
@@ -462,6 +385,7 @@ class Vue_client extends VueCommun {
             <thead>
             <tr>
                 <th>Commande n°</th>
+                <th>Association</th>
                 <th>Date</th>
                 <th>Montant</th>
                 <th>Produits</th>
@@ -471,6 +395,7 @@ class Vue_client extends VueCommun {
             <?php foreach ($commandes as $commande): ?>
                 <tr>
                     <td>#<?= $commande['vente_id'] ?></td>
+                    <td><?= $commande['nomAssociation']?></td>
                     <td><?= $commande['date'] ?></td>
                     <td><?= number_format($commande['montant'], 2) ?> €</td>
                     <td>

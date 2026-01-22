@@ -27,41 +27,64 @@
     }
 
     if (isset($_POST['rejoindre_asso'])) {
+
         $assoId = (int) $_POST['rejoindre_asso'];
-        $check = $bdd->prepare("SELECT 1 FROM appartient WHERE compte_id = ? AND association_id = ?");
+
+        $stmt = $bdd->prepare(
+            "SELECT id FROM association WHERE id = ?"
+        );
+        $stmt->execute([$assoId]);
+
+        if (!$stmt->fetch()) {
+            exit("INVALID_ASSO");
+        }
+
+        $check = $bdd->prepare(
+            "SELECT 1 FROM appartient WHERE compte_id = ? AND association_id = ?"
+        );
         $check->execute([$_SESSION['id'], $assoId]);
 
         if (!$check->fetch()) {
-            $insert = $bdd->prepare("INSERT INTO appartient (compte_id, association_id) VALUES (?, ?)");
+
+            $insert = $bdd->prepare(
+                "INSERT INTO appartient (compte_id, association_id)
+                 VALUES (?, ?)"
+            );
             $insert->execute([$_SESSION['id'], $assoId]);
         }
+
         exit("JOINED");
     }
 
-
     if (isset($_POST['choisir_asso'])) {
+
         $assoId = (int) $_POST['choisir_asso'];
-        $stmt = $bdd->prepare("SELECT 1 FROM gestionne WHERE compte_id = ? AND association_id = ?");
+
+        $stmt = $bdd->prepare(
+            "SELECT 1 FROM gestionne WHERE compte_id = ? AND association_id = ?"
+        );
         $stmt->execute([$_SESSION['id'], $assoId]);
 
         if ($stmt->fetch()) {
-            $_SESSION['asso_choisi'] = $assoId;
+            $_SESSION['asso_choisi']   = $assoId;
             $_SESSION['role_effectif'] = 'gestionnaire';
             exit("OK");
         }
 
-        $stmt = $bdd->prepare("SELECT c.role FROM compte c JOIN appartient a ON c.id = a.compte_id WHERE compte_id = ? AND association_id = ?");
+        $stmt = $bdd->prepare(
+            "SELECT c.role FROM appartient a JOIN compte c ON a.compte_id = c.id  WHERE compte_id = ? AND association_id = ?"
+        );
         $stmt->execute([$_SESSION['id'], $assoId]);
         $appartenance = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if ($appartenance) {
-            $_SESSION['asso_choisi'] = $assoId;
+            $_SESSION['asso_choisi']   = $assoId;
             $_SESSION['role_effectif'] = $appartenance['role'];
             exit("OK");
         }
+
         exit("NOT_MEMBER");
     }
-
 
     if (isset($_GET['search'])) {
         $stmt = $bdd->prepare("

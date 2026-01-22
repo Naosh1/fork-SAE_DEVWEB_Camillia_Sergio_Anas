@@ -197,6 +197,7 @@
                         'vente_id' => $id,
                         'date' => $ligne['dateVente'],
                         'montant' => $ligne['montant'],
+                        'nomAssociation' => $ligne['nomAssociation'],
                         'produits' => []
                     ];
                 }
