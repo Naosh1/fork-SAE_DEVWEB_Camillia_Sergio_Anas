@@ -25,8 +25,6 @@ class Controleur_barman
 
     public function gererAction($action)
     {
-        error_log("Controleur_barman->gererAction('$action')");
-
         switch ($action) {
             case 'accueil':
                 $this->afficherAccueil();

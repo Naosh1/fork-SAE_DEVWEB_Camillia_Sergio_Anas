@@ -1,495 +1,338 @@
 <?php
-    include_once 'vue_generique.php';
-    include "modules/module_commun/vue_commun.php";
-
-class Vue_client extends VueCommun {
-
-    public function __construct() {
-
+include_once 'modules/module_commun/vue_commun.php';
+class Vue_client extends VueCommun
+{
+    public function __construct()
+    {
     }
 
-    public function afficherFooter() {
-       ob_start();
-       ?>
-           <footer>
-              <p>Copyright Buvette du 93 &copy; Tous droits réservés</p>
-           </footer>
-       <?php
-       return ob_get_clean();
+    public function afficherFooter()
+    {
+        ?>
+        </main>
+        </div>
+
+        <footer style="background-color: #020617; color: white; text-align: center; padding: 20px; font-size: 0.8rem; border-top: 1px solid rgba(255,255,255,0.05);">
+            <p>Copyright Buvette du 93 &copy; Tous droits réservés</p>
+        </footer>
+        <?php
     }
 
-    public function afficherNav() {
-        ob_start();
+    public function afficherNav()
+    {
+        $prenom = $_SESSION['prenom'] ?? 'Client';
+        $photo = $_SESSION['photo'] ?? null;
+        $actionActuelle = $_GET['action'] ?? 'espace';
+
+        // Styles sans effets au survol (hover)
+        $activeClass = "bg-blue-600/15 text-blue-400 border-r-4 border-blue-600 shadow-[0_0_20px_rgba(37,99,235,0.1)]";
+        $inactiveClass = "text-slate-500 border-r-4 border-transparent";
+
+        $cheminPhoto = !empty($photo) ? "uploads/profiles/" . basename($photo) : null;
         ?>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+        <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;900&display=swap" rel="stylesheet">
+        <script src="https://cdn.tailwindcss.com"></script>
 
         <style>
-            .cyber-nav {
-                background: rgba(2, 6, 23, 0.9);
-                backdrop-filter: blur(15px);
-                border-bottom: 1px solid rgba(245, 158, 11, 0.2);
-                padding: 1rem 2rem;
-                position: sticky;
-                top: 0;
-                z-index: 9999;
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
+            .font-montserrat { font-family: "Montserrat", sans-serif; }
+            .glass-sidebar {
+                background: rgba(2, 6, 23, 0.95) !important;
+                backdrop-filter: blur(20px);
+                border-right: 1px solid rgba(255, 255, 255, 0.05);
             }
-
-            .nav-brand {
-                font-size: 1.5rem;
-                font-weight: 900;
-                text-transform: uppercase;
-                font-style: italic;
-                color: #fff;
-                text-decoration: none;
-                letter-spacing: -1px;
+            .bfor-card {
+                background: linear-gradient(145deg, rgba(30, 41, 59, 0.4), rgba(15, 23, 42, 0.6));
+                border: 1px solid rgba(255, 255, 255, 0.05);
+                border-radius: 20px; padding: 25px; margin-bottom: 20px;
             }
-
-            .nav-brand span {
-                color: #f59e0b; /* Electric Orange / Amber */
-            }
-
-            .nav-links {
-                display: flex;
-                gap: 1.5rem;
-                align-items: center;
-            }
-
-            .nav-item {
-                color: #94a3b8;
-                text-decoration: none;
-                font-size: 0.75rem;
-                font-weight: 800;
-                text-transform: uppercase;
-                letter-spacing: 0.05em;
-                transition: all 0.3s ease;
-                display: flex;
-                align-items: center;
-                gap: 8px;
-            }
-
-            .nav-item i {
-                font-size: 1rem;
-                color: rgba(245, 158, 11, 0.5);
-                transition: 0.3s;
-            }
-
-            .nav-item:hover {
-                color: #fff;
-            }
-
-            .nav-item:hover i {
-                color: #f59e0b;
-                transform: translateY(-2px);
-            }
-
-            /* Bouton spécial déconnexion ou profil */
-            .nav-btn {
-                background: rgba(245, 158, 11, 0.1);
-                color: #f59e0b;
-                padding: 0.6rem 1.2rem;
-                border-radius: 0.8rem;
-                border: 1px solid rgba(245, 158, 11, 0.3);
-            }
-
-            .nav-btn:hover {
-                background: #f59e0b;
-                color: #000;
-            }
+            .bfor-account h1 { font-size: 36px; font-weight: 900; color: white; }
+            table { width: 100%; color: white; border-collapse: collapse; margin-top: 15px; }
+            th, td { padding: 12px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.05); }
+            input[type="submit"], button { background: #2563eb; color: white; padding: 10px 20px; border-radius: 10px; font-weight: 700; cursor: pointer; }
         </style>
 
-        <div class="cyber-nav">
-            <a href="index.php" class="nav-brand">BUVETTE<span>OS</span></a>
-
-            <div class="nav-links">
-                <?php if (isset($_SESSION['id'])): ?>
-
-                    <?php if ($_SESSION['role'] === 'admin'): ?>
-                        <a href="index.php?module=client&action=gestion" class="nav-item">
-                            <i class="fa-solid fa-gauge-high"></i> Gestion
-                        </a>
-                    <?php endif; ?>
-
-                    <?php if ($_SESSION['role'] === 'barman'): ?>
-                        <a href="index.php?module=barman&action=creerTransaction" class="nav-item">
-                            <i class="fa-solid fa-cash-register"></i> Vendre
-                        </a>
-                        <a href="index.php?module=barman&action=commandesEnCours" class="nav-item">
-                            <i class="fa-solid fa-clock-rotate-left"></i> Commandes
-                        </a>
-                    <?php endif; ?>
-
-                    <a href="index.php?module=client&action=espace" class="nav-item">
-                        <i class="fa-solid fa-user-astronaut"></i> Mon Espace
-                    </a>
-
-                    <a href="index.php?module=client&action=form_rechargement_utilisateur" class="nav-item">
-                        <i class="fa-solid fa-wallet"></i> Recharger
-                    </a>
-
-                    <a href="index.php?module=client&action=form_produits_utilisateur" class="nav-item">
-                        <i class="fa-solid fa-wallet"></i> Produits
-                    </a>
-
-                    <a href="index.php?module=client&action=form_historique_utilisateur" class="nav-item">
-                        <i class="fa-solid fa-wallet"></i> Historique
-                    </a>
-
-                    <a href="index.php?module=client&action=form_panier_utilisateur" class="nav-item">
-                        <i class="fa-solid fa-wallet"></i> Panier
-                    </a>
-
-                    <a href="index.php?module=client&action=form_commande_statut_panier_utilisateur" class="nav-item">
-                       <i class="fa-solid fa-wallet"></i> Suivi Commandes
-                    </a>
-
-                    <a href="index.php?module=client&action=form_plus_utilisateur" class="nav-item">
-                       <i class="fa-solid fa-wallet"></i> Plus
-                    </a>
-
-                    <a href="?reset=1" class="nav-item nav-btn">
-                        <i class="fa-solid fa-key"></i> Changer d'association
-                    </a>
-
-                    <a href="index.php?module=connexion&action=deconnexion" class="nav-item nav-btn">
-                        <i class="fa-solid fa-power-off"></i> Quitter
-                    </a>
-
-                <?php else: ?>
-                    <a href="index.php?module=client&action=accueil" class="nav-item">
-                        <i class="fa-solid fa-house"></i> Accueil
-                    </a>
-                    <a href="index.php?module=client&action=form_inscription_utilisateur" class="nav-item">
-                        <i class="fa-solid fa-user-plus"></i> S'inscrire
-                    </a>
-                    <a href="index.php?module=client&action=form_connexion_utilisateur" class="nav-item nav-btn">
-                        <i class="fa-solid fa-key"></i> Connexion
-                    </a>
-
-                <?php endif; ?>
-            </div>
-        </div>
-        <?php
-        echo $this->afficherFooter();
-        return ob_get_clean();
-    }
-
-    public function form_modification() {
-        ob_start();
-        echo $this->afficherNav();
-
-        echo '<form method="post" action="index.php?module=client&action=verif_modification"> <br>';
-        echo    'Nouvelle Email : ' . '<input type="email" name="nvEmailUtilisateur" pattern="^[^@\s]+@[^@\s]+\.[^@\s]+$" title="Entrez une adresse email valide (ex : nom@gmail.com)" required> <br>';
-        echo    'Nouveau Mot de passe : ' . '<input type="password" name="nvMdpUtilisateur" pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9]).{8,}" title="Doit contenir au moins 8 caractères, une majuscule, une minuscule et un chiffre" required> <br>';
-        echo    'Confirmez le MDP : ' . '<input type="password" name="nvMdpUtilisateurConfirmation" required> <br>';
-        echo    '<input type="submit" name="bouton" value="Modifier"> <br>';
-        echo '</form>';
-
-        echo $this->afficherFooter();
-        return ob_get_clean();
-    }
-
-    public function form_modificationReussie() {
-        ob_start();
-
-        echo "Modification des infos réussie avec succés !" . "<br>";
-
-        echo $this->afficherFooter();
-        return ob_get_clean();
-    }
-
-    public function form_deconnexionReussie() {
-        ob_start();
-
-        echo 'Vous êtes déconnecter !';
-
-        echo $this->afficherFooter();
-        return ob_get_clean();
-    }
-
-    public function form_rechargement() {
-        ob_start();
-        echo $this->afficherNav();
-
-        echo '<form method="post" action="index.php?module=client&action=verif_rechargement"> <br>';
-        echo    'Montant à recharger : ' . '<input type="number" name="montant" min="1" max="40" step="1" required> <br>';
-        echo    'Nom du titulaire : ' . '<input type="text" inputmode="text" name="nomTitulaire" pattern="[A-Za-zÀ-ÖØ-öø-ÿ\s-]+" title="Uniquement des lettres" required><br>';
-        echo    'Numero de carte : ' . '<input type="text" inputmode="numeric" name="codeCarteUtilisateur" pattern="[0-9]{16}" maxlength="16" placeholder="XXXX-XXXX-XXXX-XXXX" title="Coordonnées numerique sans espace" required> <br>';
-        echo    'CVV : ' . '<input type="text" inputmode="numeric" name="cvvUtilisateur" pattern="[0-9]{3}" maxlength="3" placeholder="123" title="3 chiffres" required> <br>';
-        echo    'Date d\'expiration : ' . '<input type="text" inputmode="numeric" name="dateExpirationUtilisateur" pattern="(0[1-9]|1[0-2])\/[0-9]{2}" maxlength="5" placeholder="MM/AA" title="Entrez une date correcte" required> <br>';
-        echo    '<input type="submit" name="bouton" value="Payer"> <br>';
-        echo '</form>';
-
-        echo $this->afficherFooter();
-        return ob_get_clean();
-    }
-
-    public function form_plus() {
-        ob_start();
-        echo $this->afficherNav();
-        ?>
-        <nav class="nav-user">
-            <ul>
-                <li> <a href='index.php?module=client&action=form_modification_utilisateur'> Modifier mes infos </a> </li>
-                <li> <a href='index.php?module=client&action=deconnexion'> Déconnexion </a> </li>
-            </ul>
-        </nav>
-        <?php
-        echo $this->afficherFooter();
-        return ob_get_clean();
-    }
-
-    public function form_rechargementReussi() {
-        ob_start();
-
-        echo "Rechargement réussie !";
-
-        echo $this->afficherFooter();
-        return ob_get_clean();
-    }
-
-    public function form_espace($solde, $historique) {
-        ob_start();
-        echo $this->afficherNav();
-        ?>
-        <div class="bfor-card">
-            <div class="bfor-top">
-                <div class="bfor-bank">SOLDE</div>
-                <div class="bfor-badge">VIRTUELLE</div>
-            </div>
-
-            <div class="bfor-account">
-                <p>Mon compte</p>
-                <h1>
-                    <?php
-                    echo htmlspecialchars(number_format($solde,2));
-                    ?>
-                </h1>
-            </div>
-        </div>
-
-        <br>
-
-        <div class="bfor-card">
-            <div class="bfor-top">
-                <div class="bfor-bank">RECHARGEMENT</div>
-                <div class="bfor-badge">VIRTUELLE</div>
-            </div>
-
-            <div class="bfor-account">
-                <?php if (empty($historique)): ?>
-                    <br>
-                    <p>Aucun rechargement effectué.</p>
-                <?php else: ?>
-                    <table>
-                        <thead>
-                        <tr>
-                            <th>Date</th>
-                            <th>Montant</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <?php foreach ($historique as $r): ?>
-                            <tr>
-                                <td><?= htmlspecialchars($r['date_rechargement']) ?></td>
-                                <td><?= htmlspecialchars(number_format($r['valeur'], 2)) ?> €</td>
-                            </tr>
-                        <?php endforeach; ?>
-                        </tbody>
-                    </table>
-                <?php endif; ?>
-            </div>
-        </div>
-        <?php
-        echo $this->afficherFooter();
-        return ob_get_clean();
-    }
-
-    public function form_liste_produits($produits) {
-        ob_start();
-        echo $this->afficherNav();
-        ?>
-
-        <h2>Produits disponibles</h2>
-
-        <?php if (empty($produits)): ?>
-            <p>Aucun produit disponible pour le moment.</p>
-        <?php else: ?>
-            <table>
-                <thead>
-                <tr>
-                    <th>Nom</th>
-                    <th>Type</th>
-                    <th>Prix (€)</th>
-                    <th>Stock</th>
-                </tr>
-                </thead>
-                <tbody>
-                <?php foreach ($produits as $p): ?>
-                    <tr>
-                        <td><?= htmlspecialchars($p['nom']) ?></td>
-                        <td><?= htmlspecialchars($p['type']) ?></td>
-                        <td><?= number_format($p['prix'], 2) ?> €</td>
-                        <td><?= (int)$p['quantiteActuelle'] ?></td>
-                        <td>
-                            <form method="post" action="index.php?module=client&action=ajouter_panier">
-                                <input type="hidden" name="idProduit" value="<?= (int)$p['id'] ?>">
-                                <button type="submit"> Ajouter </button>
-                            </form>
-                        </td>
-                    </tr>
-                <?php endforeach; ?>
-                </tbody>
-            </table>
-        <?php endif; ?>
-
-        <?php
-        echo $this->afficherFooter();
-        return ob_get_clean();
-    }
-
-    public function form_panier_utilisateur($panier_details, $total_general) {
-        ob_start();
-        echo $this->afficherNav();
-        ?>
-        <main>
-            <h2> Votre Panier</h2>
-
-            <?php if (empty($panier_details)): ?>
-                <div class="card" style="text-align: center;">
-                    <p>Votre panier est vide.</p>
-                    <nav><a href="index.php?module=client&action=form_produits_utilisateur">Voir les produits</a></nav>
+        <div class="flex min-h-screen bg-[#020617] font-montserrat">
+            <aside class="w-72 glass-sidebar hidden md:flex flex-col sticky top-0 h-screen z-[1001]">
+                <div class="h-24 flex items-center px-8">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg transform -rotate-6">
+                            <i class="fa-solid fa-user-astronaut text-white text-lg rotate-6"></i>
+                        </div>
+                        <span class="text-xl font-[900] text-white uppercase italic">Buvette<span class="text-blue-600">OS</span></span>
+                    </div>
                 </div>
-            <?php else: ?>
-                <table>
-                    <thead>
-                    <tr>
-                        <th>Produit</th>
-                        <th>Prix</th>
-                        <th>Quantité</th>
-                        <th>Sous-total</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <?php foreach ($panier_details as $item): ?>
-                        <tr>
-                            <td><?= htmlspecialchars($item['nom']) ?></td>
-                            <td><?= number_format($item['prix'], 2) ?> €</td>
-                            <td>x <?= (int)$item['qte'] ?></td>
-                            <td><strong><?= number_format($item['sous_total'], 2) ?> €</strong></td>
-                        </tr>
-                    <?php endforeach; ?>
-                    </tbody>
-                </table>
 
-                <div class="bfor-card" style="margin-top: 30px;">
-                    <div class="bfor-account">
-                        <p>TOTAL À RÉGLER</p>
-                        <h1><?= number_format($total_general, 2) ?> €</h1>
+                <nav class="flex-1 px-4 py-4 space-y-1">
+                    <p class="text-[9px] font-black text-slate-600 uppercase tracking-[0.3em] px-4 mb-3">Principal</p>
+                    <a href="index.php?module=client&action=espace" class="flex items-center gap-4 px-4 py-3.5 rounded-xl <?= ($actionActuelle == 'espace' ? $activeClass : $inactiveClass) ?>">
+                        <i class="fa-solid fa-rocket text-lg"></i>
+                        <span class="font-bold text-sm">Mon Espace</span>
+                    </a>
+                    <a href="index.php?module=client&action=form_produits_utilisateur" class="flex items-center gap-4 px-4 py-3.5 rounded-xl <?= ($actionActuelle == 'form_produits_utilisateur' ? $activeClass : $inactiveClass) ?>">
+                        <i class="fa-solid fa-utensils text-lg"></i>
+                        <span class="font-bold text-sm">Carte & Produits</span>
+                    </a>
+                    <p class="text-[9px] font-black text-slate-600 uppercase tracking-[0.3em] px-4 mt-8 mb-3">Mes Commandes</p>
+                    <a href="index.php?module=client&action=form_panier_utilisateur" class="flex items-center gap-4 px-4 py-3.5 rounded-xl <?= ($actionActuelle == 'form_panier_utilisateur' ? $activeClass : $inactiveClass) ?>">
+                        <i class="fa-solid fa-cart-shopping text-lg"></i>
+                        <span class="font-bold text-sm">Mon Panier</span>
+                    </a>
+                    <a href="index.php?module=client&action=form_rechargement_utilisateur" class="flex items-center gap-4 px-4 py-3.5 rounded-xl <?= ($actionActuelle == 'form_rechargement_utilisateur' ? $activeClass : $inactiveClass) ?>">
+                        <i class="fa-solid fa-wallet text-lg text-emerald-500"></i>
+                        <span class="font-bold text-sm text-emerald-500">Recharger</span>
+                    </a>
+                </nav>
+
+                <div class="p-4 border-t border-white/5 space-y-3">
+                    <div class="flex items-center gap-3 px-4 py-3">
+                        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-blue-400 p-0.5 shadow-lg">
+                            <div class="w-full h-full rounded-[10px] bg-[#020617] overflow-hidden flex items-center justify-center text-white">
+                                <?= ($cheminPhoto && file_exists($cheminPhoto)) ? '<img src="'.$cheminPhoto.'" class="w-full h-full object-cover">' : strtoupper(substr($prenom, 0, 1)) ?>
+                            </div>
+                        </div>
+                        <div>
+                            <p class="text-sm font-bold text-white"><?= htmlspecialchars($prenom) ?></p>
+                            <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Client</p>
+                        </div>
+                    </div>
+                    <a href="index.php?module=connexion&action=deconnexion" class="flex items-center justify-center gap-3 px-4 py-3.5 rounded-xl text-red-500 bg-red-500/5 border border-red-500/10">
+                        <i class="fa-solid fa-power-off text-sm"></i>
+                        <span class="font-black text-[11px] uppercase">Déconnexion</span>
+                    </a>
+                </div>
+            </aside>
+            <main class="flex-1 p-8">
+        <?php
+    }
+public function form_rechargement() {
+        $this->afficherNav();
+        ?>
+        <div class="max-w-2xl mx-auto">
+            <div class="bfor-card">
+                <div class="flex items-center gap-4 mb-8">
+                    <div class="w-12 h-12 bg-emerald-500/20 rounded-xl flex items-center justify-center text-emerald-500">
+                        <i class="fa-solid fa-wallet text-2xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-bold text-white">Recharger mon compte</h2>
+                        <p class="text-slate-400 text-sm">Approvisionnez votre solde instantanément</p>
+                    </div>
+                </div>
+
+                <form method="post" action="index.php?module=client&action=verif_rechargement" class="space-y-6">
+                    <div>
+                        <label class="block text-slate-400 text-xs font-black uppercase tracking-widest mb-2">Montant à recharger (€)</label>
+                        <input type="number" name="montant" min="1" max="500" step="1"
+                               class="w-full bg-[#0f172a]/60 border border-white/10 rounded-xl p-4 text-white focus:border-blue-500 outline-none transition-all"
+                               placeholder="Ex: 20" required>
                     </div>
 
-                    <form method="post" action="index.php?module=client&action=valider_commande" style="background:none; border:none; padding:0; box-shadow:none;">
-                        <input type="submit" value="Valider la commande">
-                    </form>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-slate-400 text-xs font-black uppercase tracking-widest mb-2">Numéro de carte</label>
+                            <input type="text" name="codeCarte" placeholder="XXXX XXXX XXXX XXXX"
+                                   class="w-full bg-[#0f172a]/60 border border-white/10 rounded-xl p-4 text-white focus:border-blue-500 outline-none transition-all" required>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-slate-400 text-xs font-black uppercase tracking-widest mb-2">Expiration</label>
+                                <input type="text" name="exp" placeholder="MM/AA"
+                                       class="w-full bg-[#0f172a]/60 border border-white/10 rounded-xl p-4 text-white focus:border-blue-500 outline-none transition-all" required>
+                            </div>
+                            <div>
+                                <label class="block text-slate-400 text-xs font-black uppercase tracking-widest mb-2">CVV</label>
+                                <input type="text" name="cvv" placeholder="123"
+                                       class="w-full bg-[#0f172a]/60 border border-white/10 rounded-xl p-4 text-white focus:border-blue-500 outline-none transition-all" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-xl shadow-lg shadow-blue-600/20 transition-all flex items-center justify-center gap-3">
+                        <i class="fa-solid fa-shield-check"></i>
+                        Confirmer le rechargement
+                    </button>
+                </form>
+            </div>
+
+            <div class="mt-6 p-4 rounded-xl bg-blue-600/5 border border-blue-600/10 flex items-start gap-4">
+                <i class="fa-solid fa-circle-info text-blue-400 mt-1"></i>
+                <p class="text-xs text-slate-400 leading-relaxed">
+                    Le rechargement est limité à 500€ par transaction. Votre solde sera mis à jour immédiatement après la validation du paiement sécurisé.
+                </p>
+            </div>
+        </div>
+        <?php
+        $this->afficherFooter();
+    }
+    public function form_espace($solde, $historique)
+{
+    $this->afficherNav();
+    ?>
+    <div class="max-w-5xl mx-auto space-y-8">
+
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-3xl font-black text-white tracking-tight">Tableau de bord</h1>
+                <p class="text-slate-400 mt-1">Heureux de vous revoir, <?= htmlspecialchars($_SESSION['prenom']) ?>.</p>
+            </div>
+            <a href="index.php?module=client&action=form_rechargement_utilisateur"
+               class="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl font-bold text-sm transition-all flex items-center gap-2 shadow-lg shadow-blue-600/20">
+                <i class="fa-solid fa-plus-circle"></i>
+                Recharger
+            </a>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="bfor-card !mb-0 relative overflow-hidden group">
+                <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform">
+                    <i class="fa-solid fa-wallet text-6xl text-white"></i>
+                </div>
+                <p class="text-slate-400 text-xs font-black uppercase tracking-widest">Solde Actuel</p>
+                <h2 class="text-4xl font-black text-white mt-2"><?= number_format($solde, 2) ?> <span class="text-blue-500 text-2xl">€</span></h2>
+                <div class="mt-4 flex items-center gap-2 text-emerald-400 text-xs font-bold">
+                    <i class="fa-solid fa-shield-check"></i>
+                    Fonds sécurisés
+                </div>
+            </div>
+
+            <div class="bfor-card !mb-0 border-white/5">
+                <p class="text-slate-400 text-xs font-black uppercase tracking-widest">Statut Compte</p>
+                <div class="mt-3 flex items-center gap-3">
+                    <span class="w-3 h-3 bg-emerald-500 rounded-full animate-pulse"></span>
+                    <span class="text-white font-bold">Actif</span>
+                </div>
+                <p class="text-slate-500 text-xs mt-2">Prêt pour commande</p>
+            </div>
+
+            <div class="bfor-card !mb-0 border-white/5">
+                <p class="text-slate-400 text-xs font-black uppercase tracking-widest">Action Rapide</p>
+                <a href="index.php?module=client&action=form_produits_utilisateur" class="mt-3 block text-blue-400 hover:text-white font-bold text-sm transition-colors">
+                    <i class="fa-solid fa-utensils mr-2"></i> Consulter la carte →
+                </a>
+            </div>
+        </div>
+
+        <div class="bfor-card">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-xl font-bold text-white flex items-center gap-3">
+                    <i class="fa-solid fa-clock-rotate-left text-blue-500"></i>
+                    Derniers rechargements
+                </h2>
+                <span class="text-[10px] bg-white/5 text-slate-400 px-3 py-1 rounded-full border border-white/10 uppercase font-black">Historique</span>
+            </div>
+
+            <?php if (empty($historique)): ?>
+                <div class="py-12 text-center">
+                    <i class="fa-solid fa-receipt text-slate-700 text-4xl mb-4"></i>
+                    <p class="text-slate-500 italic">Aucun rechargement effectué pour le moment.</p>
+                </div>
+            <?php else: ?>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="text-left border-b border-white/5 text-slate-500 text-[10px] uppercase font-black tracking-widest">
+                                <th class="pb-4 px-2">Référence</th>
+                                <th class="pb-4">Date & Heure</th>
+                                <th class="pb-4">Méthode</th>
+                                <th class="pb-4 text-right">Montant</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-white/[0.02]">
+                            <?php foreach ($historique as $index => $r): ?>
+                                <tr class="group hover:bg-white/[0.01] transition-colors">
+                                    <td class="py-4 px-2 text-slate-500 text-xs">#<?= str_pad(count($historique) - $index, 3, '0', STR_PAD_LEFT) ?></td>
+                                    <td class="py-4">
+                                        <div class="text-white font-bold text-sm">
+                                            <?= date('d M Y', strtotime($r['date_rechargement'])) ?>
+                                        </div>
+                                        <div class="text-[10px] text-slate-500 italic">
+                                            <?= date('H:i', strtotime($r['date_rechargement'])) ?>
+                                        </div>
+                                    </td>
+                                    <td class="py-4">
+                                        <span class="text-[10px] text-slate-300 bg-white/5 px-2 py-1 rounded border border-white/5 uppercase font-bold tracking-tighter">
+                                            <i class="fa-solid fa-credit-card mr-1 text-blue-500"></i> Carte Bancaire
+                                        </span>
+                                    </td>
+                                    <td class="py-4 text-right">
+                                        <span class="text-emerald-400 font-black text-sm">
+                                            + <?= number_format($r['valeur'], 2) ?> €
+                                        </span>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
                 </div>
             <?php endif; ?>
-        </main>
+        </div>
+    </div>
+    <?php
+    $this->afficherFooter();
+}
+
+    public function form_liste_produits($produits)
+    {
+        $this->afficherNav();
+        ?>
+        <h2 class="text-2xl font-bold text-white mb-6">Produits disponibles</h2>
+        <div class="bfor-card">
+            <table>
+                <thead><tr><th>Produit</th><th>Prix</th><th>Stock</th><th>Action</th></tr></thead>
+                <tbody>
+                    <?php foreach ($produits as $p): ?>
+                        <tr>
+                            <td class="font-bold"><?= htmlspecialchars($p['nom']) ?></td>
+                            <td><?= number_format($p['prix'], 2) ?> €</td>
+                            <td><?= (int)$p['quantiteActuelle'] ?></td>
+                            <td>
+                                <form method="post" action="index.php?module=client&action=ajouter_panier">
+                                    <input type="hidden" name="idProduit" value="<?= (int)$p['id'] ?>">
+                                    <button type="submit">Prendre</button>
+                                </form>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
         <?php
-        echo $this->afficherFooter();
-        return ob_get_clean();
+        $this->afficherFooter();
     }
 
-    public function form_commande_statut_panier($commandes)
+    public function form_panier_utilisateur($panier_details, $total_general)
     {
-        ob_start();
-        echo $this->afficherNav();
+        $this->afficherNav();
         ?>
-
-        <h2>Statut de mes commandes</h2>
-
-        <?php if (empty($commandes)): ?>
-        <p>Aucune commande pour le moment.</p>
-    <?php else: ?>
-        <table class="table-commandes">
-            <thead>
-            <tr>
-                <th>Commande n°</th>
-                <th>Statut</th>
-            </tr>
-            </thead>
-            <tbody>
-            <?php foreach ($commandes as $commande): ?>
-                <tr>
-                    <td>#<?= (int)$commande['vente_id'] ?></td>
-                    <td>
-                        <?php if ($commande['statut'] === 'validée'): ?>
-                            <span class="statut validee">Validée</span>
-                        <?php else: ?>
-                            <span class="statut attente">En attente</span>
-                        <?php endif; ?>
-                    </td>
-                    <td>
-                        <form method="post" action="index.php?module=client&action=enlever_commande" style="background:none; border:none; padding:0; box-shadow:none;">
-                            <input type="hidden" name="vente_id" value="<?= (int)$commande['vente_id'] ?>">
-                            <input type="submit" value="Enlever">
-                        </form>
-                    </td>
-                </tr>
-            <?php endforeach; ?>
-            </tbody>
-        </table>
-    <?php endif; ?>
-
+        <h2 class="text-2xl font-bold text-white mb-6">Mon Panier</h2>
+        <?php if (empty($panier_details)): ?>
+            <p class="text-slate-500">Votre panier est vide.</p>
+        <?php else: ?>
+            <div class="bfor-card">
+                <table>
+                    <thead><tr><th>Produit</th><th>Prix</th><th>Qté</th><th>Total</th></tr></thead>
+                    <tbody>
+                        <?php foreach ($panier_details as $item): ?>
+                            <tr>
+                                <td><?= htmlspecialchars($item['nom']) ?></td>
+                                <td><?= number_format($item['prix'], 2) ?> €</td>
+                                <td>x<?= (int)$item['qte'] ?></td>
+                                <td class="font-bold text-blue-400"><?= number_format($item['sous_total'], 2) ?> €</td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+            <div class="bfor-card mt-8">
+                <p class="text-slate-400">Total à payer</p>
+                <h1><?= number_format($total_general, 2) ?> €</h1>
+                <form method="post" action="index.php?module=client&action=valider_commande" class="mt-4">
+                    <input type="submit" value="Confirmer la commande" style="width: 100%; background: #10b981;">
+                </form>
+            </div>
+        <?php endif; ?>
         <?php
-        echo $this->afficherFooter();
-        return ob_get_clean();
-    }
-
-    public function form_historique($commandes)
-    {
-        ob_start();
-        echo $this->afficherNav();
-        ?>
-
-        <h2>Mon historique</h2>
-
-        <?php if (empty($commandes)): ?>
-        <p>Pas de commandes faites !</p>
-    <?php else: ?>
-        <table class="table-commandes">
-            <thead>
-            <tr>
-                <th>Commande n°</th>
-                <th>Date</th>
-                <th>Montant</th>
-                <th>Produits</th>
-            </tr>
-            </thead>
-            <tbody>
-            <?php foreach ($commandes as $commande): ?>
-                <tr>
-                    <td>#<?= $commande['vente_id'] ?></td>
-                    <td><?= $commande['date'] ?></td>
-                    <td><?= number_format($commande['montant'], 2) ?> €</td>
-                    <td>
-                        <ul>
-                            <?php foreach ($commande['produits'] as $p): ?>
-                                <li>
-                                    <?= $p['nom'] ?> × <?= $p['quantite'] ?>
-                                </li>
-                            <?php endforeach; ?>
-                        </ul>
-                    </td>
-                </tr>
-            <?php endforeach; ?>
-            </tbody>
-        </table>
-    <?php endif; ?>
-
-        <?php
-        echo $this->afficherFooter();
-        return ob_get_clean();
+        $this->afficherFooter();
     }
 }

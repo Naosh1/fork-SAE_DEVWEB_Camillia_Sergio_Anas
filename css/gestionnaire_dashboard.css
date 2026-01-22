@@ -1,0 +1,97 @@
+/* public/css/admin_dashboard.css */
+
+.dashboard-container {
+    padding: 3rem;
+    max-width: 1600px;
+    margin: 0 auto;
+}
+
+.stat-card-ultra {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 2.5rem;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.stat-card-ultra:hover {
+    transform: translateY(-10px);
+    background: rgba(255, 255, 255, 0.07);
+    border-color: rgba(245, 158, 11, 0.4);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+}
+
+.glass-panel {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 3rem;
+    padding: 2.5rem;
+}
+
+.alert-badge-interactive {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: rgba(225, 29, 72, 0.1);
+    border: 1px solid rgba(225, 29, 72, 0.2);
+    padding: 0.75rem 1.5rem;
+    border-radius: 1.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+.alert-badge-interactive:hover {
+    background: rgba(225, 29, 72, 0.2);
+    border-color: #f43f5e;
+    transform: scale(1.05);
+}
+
+.icon-float {
+    position: absolute;
+    right: -15px;
+    top: -15px;
+    font-size: 5rem;
+    opacity: 0.04;
+    transform: rotate(-15deg);
+    transition: 0.5s ease;
+}
+
+.stat-value-new {
+    font-size: 2.8rem;
+    font-weight: 950;
+    letter-spacing: -2px;
+    line-height: 1;
+}
+
+.progress-track {
+    background: rgba(255, 255, 255, 0.05);
+    height: 8px;
+    border-radius: 20px;
+    margin-top: 8px;
+}
+
+.progress-bar {
+    height: 100%;
+    border-radius: 20px;
+    background: linear-gradient(90deg, #f59e0b, #fbbf24);
+    box-shadow: 0 0 20px rgba(245, 158, 11, 0.3);
+}
+
+.quick-action-card {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 2rem;
+    padding: 2rem;
+    text-align: center;
+    color: #f59e0b;
+    text-decoration: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.quick-action-card:hover {
+    background: #f59e0b;
+    color: #000;
+    transform: translateY(-5px);
+}
