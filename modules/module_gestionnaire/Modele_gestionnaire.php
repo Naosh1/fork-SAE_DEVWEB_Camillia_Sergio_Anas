@@ -117,7 +117,7 @@ class ModeleGestionnaire extends ModeleStaff
         $sql = "SELECT cf.id, f.nom as nom_fournisseur, cf.montant_total, cf.date_commande, cf.statut,
             (SELECT COUNT(*) FROM detail_commande_fournisseur WHERE id_commande = cf.id) as nb_articles
             FROM commande_fournisseur cf
-            JOIN fournisseur f ON cf.id_fournisseur = f.id
+            JOIN fournisseur f ON cf.fournisseur_id = f.id
             ORDER BY cf.date_commande DESC LIMIT 10";
 
         return $this->getBdd()->query($sql)->fetchAll();
@@ -129,7 +129,7 @@ class ModeleGestionnaire extends ModeleStaff
             FROM detail_commande_fournisseur dcf
             JOIN commande_fournisseur cf ON dcf.id_commande = cf.id
             JOIN produit p ON dcf.id_produit = p.id
-            JOIN fournisseur f ON cf.id_fournisseur = f.id
+            JOIN fournisseur f ON cf.fournisseur_id = f.id
             ORDER BY cf.date_commande DESC LIMIT 15";
 
         return $this->getBdd()->query($sql)->fetchAll();
@@ -642,12 +642,12 @@ class ModeleGestionnaire extends ModeleStaff
     }
 
     public function getBarmansParAssociation($id_association) {
-        $sql = "SELECT c.id, c.nom, c.prenom, c.email, c.actif, a.role, asso.nom AS nom_association
+        $sql = "SELECT c.id, c.nom, c.prenom, c.email, c.actif, c.role, asso.nom AS nom_association
             FROM compte c
             JOIN appartient a ON c.id = a.compte_id
             JOIN association asso ON a.association_id = asso.id
             WHERE a.association_id = ? 
-            AND a.role = 'barman'";
+            AND c.role = 'barman'";
 
         $stmt = self::getBdd()->prepare($sql);
         $stmt->execute([$id_association]);

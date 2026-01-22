@@ -7,7 +7,7 @@ class Mod_client {
 
     public function __construct() {
         $this->controleur = new Controleur_client();
-        $action = $_GET['action'] ?? 'accueil';
+        $action = $_GET['action'] ?? 'espace';
         $this->controleur->gererAction($action);
     }
 

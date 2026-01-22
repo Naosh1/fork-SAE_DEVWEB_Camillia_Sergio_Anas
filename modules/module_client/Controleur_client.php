@@ -23,10 +23,10 @@
         public function gererAction($action)
         {
             switch ($action) {
-                case "accueil" :
-                    $contenu = $this->vue->afficherNav();
-                    VueGenerique::setAffichage($contenu);
-                    break;
+                //case "accueil" :
+                //    $contenu = $this->vue->afficherNav();
+                //    VueGenerique::setAffichage($contenu);
+                //    break;
                 case "espace" :
                     $contenu = $this->getVue()->form_espace($this->soldeEspace(), $this->historiqueRechargements());
                     VueGenerique::setAffichage($contenu);

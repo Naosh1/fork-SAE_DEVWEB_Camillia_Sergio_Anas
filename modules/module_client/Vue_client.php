@@ -8,6 +8,16 @@ class Vue_client extends VueCommun {
 
     }
 
+    public function afficherFooter() {
+       ob_start();
+       ?>
+           <footer>
+              <p>Copyright Buvette du 93 &copy; Tous droits réservés</p>
+           </footer>
+       <?php
+       return ob_get_clean();
+    }
+
     public function afficherNav() {
         ob_start();
         ?>
@@ -114,8 +124,29 @@ class Vue_client extends VueCommun {
                     <a href="index.php?module=client&action=espace" class="nav-item">
                         <i class="fa-solid fa-user-astronaut"></i> Mon Espace
                     </a>
+
                     <a href="index.php?module=client&action=form_rechargement_utilisateur" class="nav-item">
                         <i class="fa-solid fa-wallet"></i> Recharger
+                    </a>
+
+                    <a href="index.php?module=client&action=form_produits_utilisateur" class="nav-item">
+                        <i class="fa-solid fa-wallet"></i> Produits
+                    </a>
+
+                    <a href="index.php?module=client&action=form_historique_utilisateur" class="nav-item">
+                        <i class="fa-solid fa-wallet"></i> Historique
+                    </a>
+
+                    <a href="index.php?module=client&action=form_panier_utilisateur" class="nav-item">
+                        <i class="fa-solid fa-wallet"></i> Panier
+                    </a>
+
+                    <a href="index.php?module=client&action=form_commande_statut_panier_utilisateur" class="nav-item">
+                       <i class="fa-solid fa-wallet"></i> Suivi Commandes
+                    </a>
+
+                    <a href="index.php?module=client&action=form_plus_utilisateur" class="nav-item">
+                       <i class="fa-solid fa-wallet"></i> Plus
                     </a>
 
                     <a href="?reset=1" class="nav-item nav-btn">
@@ -141,11 +172,13 @@ class Vue_client extends VueCommun {
             </div>
         </div>
         <?php
+        echo $this->afficherFooter();
         return ob_get_clean();
     }
 
     public function form_modification() {
         ob_start();
+        echo $this->afficherNav();
 
         echo '<form method="post" action="index.php?module=client&action=verif_modification"> <br>';
         echo    'Nouvelle Email : ' . '<input type="email" name="nvEmailUtilisateur" pattern="^[^@\s]+@[^@\s]+\.[^@\s]+$" title="Entrez une adresse email valide (ex : nom@gmail.com)" required> <br>';
@@ -154,6 +187,7 @@ class Vue_client extends VueCommun {
         echo    '<input type="submit" name="bouton" value="Modifier"> <br>';
         echo '</form>';
 
+        echo $this->afficherFooter();
         return ob_get_clean();
     }
 
@@ -162,6 +196,7 @@ class Vue_client extends VueCommun {
 
         echo "Modification des infos réussie avec succés !" . "<br>";
 
+        echo $this->afficherFooter();
         return ob_get_clean();
     }
 
@@ -170,11 +205,13 @@ class Vue_client extends VueCommun {
 
         echo 'Vous êtes déconnecter !';
 
+        echo $this->afficherFooter();
         return ob_get_clean();
     }
 
     public function form_rechargement() {
         ob_start();
+        echo $this->afficherNav();
 
         echo '<form method="post" action="index.php?module=client&action=verif_rechargement"> <br>';
         echo    'Montant à recharger : ' . '<input type="number" name="montant" min="1" max="40" step="1" required> <br>';
@@ -185,11 +222,13 @@ class Vue_client extends VueCommun {
         echo    '<input type="submit" name="bouton" value="Payer"> <br>';
         echo '</form>';
 
+        echo $this->afficherFooter();
         return ob_get_clean();
     }
 
     public function form_plus() {
         ob_start();
+        echo $this->afficherNav();
         ?>
         <nav class="nav-user">
             <ul>
@@ -198,6 +237,7 @@ class Vue_client extends VueCommun {
             </ul>
         </nav>
         <?php
+        echo $this->afficherFooter();
         return ob_get_clean();
     }
 
@@ -206,11 +246,13 @@ class Vue_client extends VueCommun {
 
         echo "Rechargement réussie !";
 
+        echo $this->afficherFooter();
         return ob_get_clean();
     }
 
     public function form_espace($solde, $historique) {
         ob_start();
+        echo $this->afficherNav();
         ?>
         <div class="bfor-card">
             <div class="bfor-top">
@@ -261,11 +303,13 @@ class Vue_client extends VueCommun {
             </div>
         </div>
         <?php
+        echo $this->afficherFooter();
         return ob_get_clean();
     }
 
     public function form_liste_produits($produits) {
         ob_start();
+        echo $this->afficherNav();
         ?>
 
         <h2>Produits disponibles</h2>
@@ -302,11 +346,13 @@ class Vue_client extends VueCommun {
         <?php endif; ?>
 
         <?php
+        echo $this->afficherFooter();
         return ob_get_clean();
     }
 
     public function form_panier_utilisateur($panier_details, $total_general) {
         ob_start();
+        echo $this->afficherNav();
         ?>
         <main>
             <h2> Votre Panier</h2>
@@ -351,12 +397,14 @@ class Vue_client extends VueCommun {
             <?php endif; ?>
         </main>
         <?php
+        echo $this->afficherFooter();
         return ob_get_clean();
     }
 
     public function form_commande_statut_panier($commandes)
     {
         ob_start();
+        echo $this->afficherNav();
         ?>
 
         <h2>Statut de mes commandes</h2>
@@ -395,12 +443,14 @@ class Vue_client extends VueCommun {
     <?php endif; ?>
 
         <?php
+        echo $this->afficherFooter();
         return ob_get_clean();
     }
 
     public function form_historique($commandes)
     {
         ob_start();
+        echo $this->afficherNav();
         ?>
 
         <h2>Mon historique</h2>
@@ -439,6 +489,7 @@ class Vue_client extends VueCommun {
     <?php endif; ?>
 
         <?php
+        echo $this->afficherFooter();
         return ob_get_clean();
     }
 }

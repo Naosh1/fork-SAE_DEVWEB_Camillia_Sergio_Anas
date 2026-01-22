@@ -292,11 +292,10 @@ class ModeleBarman extends ModeleStaff {
                 v.id AS commande_id, 
                 v.date_vente AS date_heure_affichage, 
                 v.montant_total, 
-                v.statut,
-                c.nom, 
+                l.statut,
+                c.nom,
                 c.prenom
-            FROM vente v
-            JOIN compte c ON v.compte_id = c.id
+            FROM ligne_vente l JOIN vente v ON v.id = l.vente_id JOIN compte c ON v.compte_id = c.id
             ORDER BY v.date_vente DESC";
 
         $stmt = self::getBdd()->prepare($sql);

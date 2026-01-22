@@ -32,7 +32,7 @@
         $check->execute([$_SESSION['id'], $assoId]);
 
         if (!$check->fetch()) {
-            $insert = $bdd->prepare("INSERT INTO appartient (compte_id, association_id, role) VALUES (?, ?, 'client')");
+            $insert = $bdd->prepare("INSERT INTO appartient (compte_id, association_id) VALUES (?, ?)");
             $insert->execute([$_SESSION['id'], $assoId]);
         }
         exit("JOINED");
@@ -50,7 +50,7 @@
             exit("OK");
         }
 
-        $stmt = $bdd->prepare("SELECT role FROM appartient WHERE compte_id = ? AND association_id = ?");
+        $stmt = $bdd->prepare("SELECT c.role FROM compte c JOIN appartient a ON c.id = a.compte_id WHERE compte_id = ? AND association_id = ?");
         $stmt->execute([$_SESSION['id'], $assoId]);
         $appartenance = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -67,7 +67,7 @@
         $stmt = $bdd->prepare("
             SELECT a.id, a.nom, a.email,
             (SELECT 1 FROM gestionne WHERE association_id = a.id AND compte_id = ?) as is_gest,
-            (SELECT role FROM appartient WHERE association_id = a.id AND compte_id = ?) as user_role
+            (SELECT c.role FROM compte c JOIN appartient a ON c.id = a.compte_id WHERE association_id = a.id AND compte_id = ?) as user_role
             FROM association a WHERE a.nom LIKE ?");
         $stmt->execute([$_SESSION['id'], $_SESSION['id'], "%".$_GET['search']."%"]);
 
@@ -112,9 +112,19 @@
     if (!$user) { session_destroy(); header('Location: templates/connexion.php'); exit(); }
 
     if (isset($_SESSION['asso_choisi'])) {
-        if ($_SESSION['role_effectif'] === 'gestionnaire') { include_once 'modules/module_gestionnaire/Mod_gestionnaire.php'; new Mod_gestionnaire(); include_once 'templates/template_gestionnaire.php'; }
-        elseif ($_SESSION['role_effectif'] === 'barman') { include_once 'modules/module_barman/Mod_barman.php'; new Mod_barman(); include_once 'templates/template_barman.php'; }
-        else { include_once 'modules/module_client/Mod_client.php'; new Mod_client(); include_once 'templates/template_client.php'; }
+        if ($_SESSION['role_effectif'] === 'gestionnaire') {
+            include_once 'modules/module_gestionnaire/Mod_gestionnaire.php';
+            new Mod_gestionnaire();
+            include_once 'templates/template_gestionnaire.php';
+        } else if ($_SESSION['role_effectif'] === 'barman') {
+            include_once 'modules/module_barman/Mod_barman.php';
+            new Mod_barman();
+            include_once 'templates/template_barman.php';
+        } else {
+            include_once 'modules/module_client/Mod_client.php';
+            new Mod_client();
+            include_once 'templates/template_client.php';
+        }
         exit();
     }
 ?>

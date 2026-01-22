@@ -100,7 +100,7 @@ class ModeleStaff extends ModeleCommun
                     IFNULL(p.type, 'Autre') as type, 
                     SUM(c.quantite) as total 
                 FROM produit p
-                JOIN contient c ON p.id = c.produit_id
+                JOIN ligne_vente c ON p.id = c.produit_id
                 JOIN vente v ON c.vente_id = v.id
                 JOIN appartient a ON v.compte_id = a.compte_id
                 WHERE a.association_id = ?
@@ -149,7 +149,7 @@ class ModeleStaff extends ModeleCommun
         $sql = "SELECT p.nom, 
             SUM(c.quantite) as total_vendu,
             SUM(c.quantite * (p.prix - fp.prix_achat)) as benefice_reel
-            FROM contient c
+            FROM ligne_vente c
             JOIN produit p ON c.produit_id = p.id
             JOIN vente v ON c.vente_id = v.id
             JOIN fournisseur_produit fp ON p.id = fp.id_produit
@@ -177,7 +177,7 @@ class ModeleStaff extends ModeleCommun
             $recettes[] = $r;
 
             $sqlP = "SELECT SUM(c.perte * p.prix) 
-                 FROM concerne c 
+                 FROM ligne_inventaire c
                  JOIN inventaire i ON c.inventaire_id = i.id 
                  JOIN produit p ON c.produit_id = p.id
                  WHERE i.association_id = ? AND DATE(i.date_inventaire) = ?";
@@ -200,7 +200,7 @@ class ModeleStaff extends ModeleCommun
     public function getTotalPertesParAsso($idAsso) {
         try {
             $sql = "SELECT SUM(c.perte * p.prix) 
-                FROM concerne c 
+                FROM ligne_inventaire c
                 JOIN inventaire i ON c.inventaire_id = i.id 
                 JOIN produit p ON c.produit_id = p.id
                 WHERE i.association_id = ?";
@@ -444,7 +444,7 @@ class ModeleStaff extends ModeleCommun
                 $idInventaire = $this->getBdd()->lastInsertId();
 
                 $stmtDetail = $this->getBdd()->prepare("
-            INSERT INTO concerne (produit_id, inventaire_id, stock_theorique, stock_reel, perte) 
+            INSERT INTO ligne_inventaire (produit_id, inventaire_id, stock_theorique, stock_reel, perte)
             VALUES (?, ?, ?, ?, ?)
         ");
                 $stmtUpdateStock = $this->getBdd()->prepare("UPDATE produit SET quantiteActuelle = ? WHERE id = ?");
