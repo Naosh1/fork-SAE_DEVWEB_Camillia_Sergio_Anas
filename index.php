@@ -60,6 +60,16 @@
 
         $assoId = (int) $_POST['choisir_asso'];
 
+        $stmt = $bdd->prepare("SELECT nom FROM association WHERE id = ?");
+
+        $stmt->execute([$assoId]);
+
+        $asso = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$asso) {
+            exit("INVALID_ASSO");
+        }
+
         $stmt = $bdd->prepare(
             "SELECT 1 FROM gestionne WHERE compte_id = ? AND association_id = ?"
         );
@@ -67,6 +77,7 @@
 
         if ($stmt->fetch()) {
             $_SESSION['asso_choisi']   = $assoId;
+            $_SESSION['nom_buvette']   = $asso['nom'];
             $_SESSION['role_effectif'] = 'gestionnaire';
             exit("OK");
         }
@@ -79,6 +90,7 @@
 
         if ($appartenance) {
             $_SESSION['asso_choisi']   = $assoId;
+            $_SESSION['nom_buvette']   = $asso['nom'];
             $_SESSION['role_effectif'] = $appartenance['role'];
             exit("OK");
         }
