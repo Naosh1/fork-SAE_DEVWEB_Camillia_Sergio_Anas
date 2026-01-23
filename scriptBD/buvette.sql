@@ -2,15 +2,11 @@
 -- version 5.2.1deb1+focal2
 -- https://www.phpmyadmin.net/
 --
--- Hôte : localhost
 -- Généré le : ven. 23 jan. 2026 à 12:24
--- Version du serveur : 8.0.42-0ubuntu0.20.04.1
--- Version de PHP : 7.4.3-4ubuntu2.29
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
 SET time_zone = "+00:00";
-
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -28,7 +24,7 @@ SET time_zone = "+00:00";
 --
 
 CREATE TABLE `achat` (
-  `id` bigint UNSIGNED NOT NULL,
+  `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   `date_achat` date NOT NULL,
   `prix_total` decimal(10,0) NOT NULL,
   `fournisseur_id` bigint UNSIGNED NOT NULL
@@ -42,7 +38,8 @@ CREATE TABLE `achat` (
 
 CREATE TABLE `administrateur` (
   `compte_id` bigint UNSIGNED NOT NULL,
-  `niveau_acces` int DEFAULT '1'
+  `niveau_acces` int DEFAULT '1',
+  PRIMARY KEY (`compte_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -54,7 +51,8 @@ CREATE TABLE `administrateur` (
 CREATE TABLE `appartient` (
   `compte_id` bigint UNSIGNED NOT NULL,
   `association_id` bigint UNSIGNED NOT NULL,
-  `role` enum('client','barman') COLLATE utf8mb4_general_ci NOT NULL
+  `role` enum('client','barman') COLLATE utf8mb4_general_ci NOT NULL,
+  PRIMARY KEY (`compte_id`,`association_id`,`role`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -64,7 +62,7 @@ CREATE TABLE `appartient` (
 --
 
 CREATE TABLE `association` (
-  `id` bigint UNSIGNED NOT NULL,
+  `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   `nom` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
   `adresse` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
   `email` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
@@ -75,12 +73,19 @@ CREATE TABLE `association` (
 
 -- --------------------------------------------------------
 
+INSERT INTO association (nom, adresse, email, telephone, solde, status) VALUES
+('BDE Informatique', 'Campus Nord', 'bdeinfo@mail.fr', '0101010101', 500.00, 'validee'),
+('BDE MMI', 'Campus Sud', 'bdemmi@mail.fr', '0202020202', 600.00, 'validee'),
+('BDE TC', 'Campus Ouest', 'bdetc@mail.fr', '0303030303', 550.00, 'validee');
+
+-- --------------------------------------------------------
+
 --
 -- Structure de la table `commande_fournisseur`
 --
 
 CREATE TABLE `commande_fournisseur` (
-  `id` int NOT NULL,
+  `id` int NOT NULL AUTO_INCREMENT PRIMARY KEY,
   `id_fournisseur` int NOT NULL,
   `id_association` int NOT NULL,
   `date_commande` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -98,7 +103,8 @@ CREATE TABLE `comprend` (
   `produit_id` bigint UNSIGNED NOT NULL,
   `achat_id` bigint UNSIGNED NOT NULL,
   `quantite` int NOT NULL,
-  `prix_achat_unitaire` decimal(10,2) NOT NULL
+  `prix_achat_unitaire` decimal(10,2) NOT NULL,
+  PRIMARY KEY (`produit_id`,`achat_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -108,7 +114,7 @@ CREATE TABLE `comprend` (
 --
 
 CREATE TABLE `compte` (
-  `id` bigint UNSIGNED NOT NULL,
+  `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   `nom` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
   `prenom` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
   `date_naissance` date DEFAULT NULL,
@@ -124,6 +130,30 @@ CREATE TABLE `compte` (
 
 -- --------------------------------------------------------
 
+INSERT INTO compte (nom, prenom, email, mdp, solde) VALUES
+-- Association 1
+('Client', 'Alice', 'alice1@mail.fr', '$2y$10$8o7uP5v0Y0bQq4n1pD2gQe3C5l9QJk6R2xMZJwJ0jvZxE7JcM2M3S', 20),
+('Client', 'Bob', 'bob1@mail.fr', '$2y$10$8o7uP5v0Y0bQq4n1pD2gQe3C5l9QJk6R2xMZJwJ0jvZxE7JcM2M3S', 15),
+('Client', 'Chloe', 'chloe1@mail.fr', '$2y$10$8o7uP5v0Y0bQq4n1pD2gQe3C5l9QJk6R2xMZJwJ0jvZxE7JcM2M3S', 30),
+('Barman', 'Lucas', 'barman1@mail.fr', '$2y$10$8o7uP5v0Y0bQq4n1pD2gQe3C5l9QJk6R2xMZJwJ0jvZxE7JcM2M3S', 0),
+('Gestionnaire', 'Emma', 'gest1@mail.fr', '$2y$10$8o7uP5v0Y0bQq4n1pD2gQe3C5l9QJk6R2xMZJwJ0jvZxE7JcM2M3S', 0),
+
+-- Association 2
+('Client', 'David', 'alice2@mail.fr', '$2y$10$8o7uP5v0Y0bQq4n1pD2gQe3C5l9QJk6R2xMZJwJ0jvZxE7JcM2M3S', 25),
+('Client', 'Eva', 'bob2@mail.fr', '$2y$10$8o7uP5v0Y0bQq4n1pD2gQe3C5l9QJk6R2xMZJwJ0jvZxE7JcM2M3S', 10),
+('Client', 'Fanny', 'chloe2@mail.fr', '$2y$10$8o7uP5v0Y0bQq4n1pD2gQe3C5l9QJk6R2xMZJwJ0jvZxE7JcM2M3S', 18),
+('Barman', 'Leo', 'barman2@mail.fr', '$2y$10$8o7uP5v0Y0bQq4n1pD2gQe3C5l9QJk6R2xMZJwJ0jvZxE7JcM2M3S', 0),
+('Gestionnaire', 'Nina', 'gest2@mail.fr', '$2y$10$8o7uP5v0Y0bQq4n1pD2gQe3C5l9QJk6R2xMZJwJ0jvZxE7JcM2M3S', 0),
+
+-- Association 3
+('Client', 'Hugo', 'alice3@mail.fr', '$2y$10$8o7uP5v0Y0bQq4n1pD2gQe3C5l9QJk6R2xMZJwJ0jvZxE7JcM2M3S', 22),
+('Client', 'Iris', 'bob3@mail.fr', '$2y$10$8o7uP5v0Y0bQq4n1pD2gQe3C5l9QJk6R2xMZJwJ0jvZxE7JcM2M3S', 14),
+('Client', 'Jade', 'chloe3@mail.fr', '$2y$10$8o7uP5v0Y0bQq4n1pD2gQe3C5l9QJk6R2xMZJwJ0jvZxE7JcM2M3S', 19),
+('Barman', 'Noah', 'barman3@mail.fr', '$2y$10$8o7uP5v0Y0bQq4n1pD2gQe3C5l9QJk6R2xMZJwJ0jvZxE7JcM2M3S', 0),
+('Gestionnaire', 'Sarah', 'gest3@mail.fr', '$2y$10$8o7uP5v0Y0bQq4n1pD2gQe3C5l9QJk6R2xMZJwJ0jvZxE7JcM2M3S', 0);
+
+-- --------------------------------------------------------
+
 --
 -- Structure de la table `concerne`
 --
@@ -133,7 +163,8 @@ CREATE TABLE `concerne` (
   `inventaire_id` bigint UNSIGNED NOT NULL,
   `stock_theorique` int NOT NULL,
   `stock_reel` int NOT NULL,
-  `perte` int NOT NULL
+  `perte` int NOT NULL,
+  PRIMARY KEY (`produit_id`,`inventaire_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -146,7 +177,8 @@ CREATE TABLE `contient` (
   `produit_id` bigint UNSIGNED NOT NULL,
   `vente_id` bigint UNSIGNED NOT NULL,
   `quantite` int NOT NULL,
-  `prix_unitaire` decimal(10,2) NOT NULL
+  `prix_unitaire` decimal(10,2) NOT NULL,
+  PRIMARY KEY (`produit_id`,`vente_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -156,7 +188,7 @@ CREATE TABLE `contient` (
 --
 
 CREATE TABLE `demandes_association` (
-  `id` int NOT NULL,
+  `id` int NOT NULL AUTO_INCREMENT PRIMARY KEY,
   `id_gestionnaire` bigint UNSIGNED NOT NULL,
   `nom_association` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
   `telephone` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL,
@@ -177,7 +209,7 @@ CREATE TABLE `demandes_association` (
 --
 
 CREATE TABLE `demandes_creation_assos` (
-  `id` int NOT NULL,
+  `id` int NOT NULL AUTO_INCREMENT PRIMARY KEY,
   `id_demandeur` bigint UNSIGNED NOT NULL,
   `nom_association` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
   `pdf_identite` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
@@ -194,7 +226,7 @@ CREATE TABLE `demandes_creation_assos` (
 --
 
 CREATE TABLE `detail_commande_fournisseur` (
-  `id` int NOT NULL,
+  `id` int NOT NULL AUTO_INCREMENT PRIMARY KEY,
   `id_commande` int NOT NULL,
   `id_produit` int NOT NULL,
   `quantite` int NOT NULL,
@@ -209,7 +241,8 @@ CREATE TABLE `detail_commande_fournisseur` (
 
 CREATE TABLE `dispose` (
   `role_id` bigint UNSIGNED NOT NULL,
-  `compte_id` bigint UNSIGNED NOT NULL
+  `compte_id` bigint UNSIGNED NOT NULL,
+  PRIMARY KEY (`role_id`,`compte_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -219,11 +252,25 @@ CREATE TABLE `dispose` (
 --
 
 CREATE TABLE `fournisseur` (
-  `id` bigint UNSIGNED NOT NULL,
+  `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   `nom` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
   `telephone` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
   `email` varchar(50) COLLATE utf8mb4_general_ci NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+INSERT INTO fournisseur (nom, telephone, email) VALUES
+('Metro', '0100000001', 'metro@mail.fr'),
+('Promocash', '0100000002', 'promo@mail.fr'),
+('Transgourmet', '0100000003', 'trans@mail.fr'),
+('Sysco', '0100000004', 'sysco@mail.fr'),
+('CashAlim', '0100000005', 'cash@mail.fr'),
+('FoodPro', '0100000006', 'food@mail.fr'),
+('AlimPlus', '0100000007', 'alim@mail.fr'),
+('Distrifood', '0100000008', 'distri@mail.fr'),
+('SnackSupply', '0100000009', 'snack@mail.fr'),
+('DessertCo', '0100000010', 'dessert@mail.fr');
 
 -- --------------------------------------------------------
 
@@ -235,7 +282,8 @@ CREATE TABLE `fournisseur_produit` (
   `id_fournisseur` bigint UNSIGNED NOT NULL,
   `id_produit` bigint UNSIGNED NOT NULL,
   `prix_achat` decimal(10,2) NOT NULL COMMENT 'Prix proposé par ce fournisseur',
-  `delai_livraison` int DEFAULT '7' COMMENT 'Délai en jours'
+  `delai_livraison` int DEFAULT '7' COMMENT 'Délai en jours',
+  PRIMARY KEY (`id_fournisseur`,`id_produit`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -247,7 +295,8 @@ CREATE TABLE `fournisseur_produit` (
 CREATE TABLE `gere` (
   `association_id` bigint UNSIGNED NOT NULL,
   `produit_id` bigint UNSIGNED NOT NULL,
-  `stock_asso` int NOT NULL DEFAULT '0'
+  `stock_asso` int NOT NULL DEFAULT '0',
+  PRIMARY KEY (`association_id`,`produit_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -258,7 +307,8 @@ CREATE TABLE `gere` (
 
 CREATE TABLE `gestionne` (
   `compte_id` bigint UNSIGNED NOT NULL,
-  `association_id` bigint UNSIGNED NOT NULL
+  `association_id` bigint UNSIGNED NOT NULL,
+  PRIMARY KEY (`compte_id`,`association_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -268,7 +318,7 @@ CREATE TABLE `gestionne` (
 --
 
 CREATE TABLE `inventaire` (
-  `id` bigint UNSIGNED NOT NULL,
+  `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   `date_inventaire` date NOT NULL,
   `association_id` bigint UNSIGNED NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -281,7 +331,8 @@ CREATE TABLE `inventaire` (
 
 CREATE TABLE `lier` (
   `fournisseur_id` bigint UNSIGNED NOT NULL,
-  `association_id` bigint UNSIGNED NOT NULL
+  `association_id` bigint UNSIGNED NOT NULL,
+  PRIMARY KEY (`fournisseur_id`,`association_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -332,7 +383,7 @@ CREATE TABLE `ligne_vente` (
 --
 
 CREATE TABLE `messages` (
-  `id` bigint UNSIGNED NOT NULL,
+  `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   `id_expediteur` bigint UNSIGNED NOT NULL,
   `id_destinataire` bigint UNSIGNED NOT NULL,
   `objet` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
@@ -348,7 +399,7 @@ CREATE TABLE `messages` (
 --
 
 CREATE TABLE `produit` (
-  `id` bigint UNSIGNED NOT NULL,
+  `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   `nom` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
   `type` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
   `description` text COLLATE utf8mb4_general_ci,
@@ -358,12 +409,36 @@ CREATE TABLE `produit` (
 
 -- --------------------------------------------------------
 
+INSERT INTO produit (nom, type, prix, quantiteActuelle) VALUES
+-- Asso 1
+('Burger', 'plat', 6.50, 50),
+('Pizza', 'plat', 7.00, 40),
+('Chips', 'snack', 1.50, 100),
+('Cookie', 'dessert', 2.00, 60),
+('Brownie', 'dessert', 2.50, 50),
+
+-- Asso 2
+('Pasta', 'plat', 6.00, 45),
+('Sandwich', 'plat', 5.50, 55),
+('Barre', 'snack', 1.20, 120),
+('Donut', 'dessert', 2.20, 70),
+('Muffin', 'dessert', 2.40, 65),
+
+-- Asso 3
+('Wrap', 'plat', 6.20, 48),
+('Tacos', 'plat', 6.80, 42),
+('Popcorn', 'snack', 1.00, 130),
+('Tarte', 'dessert', 2.80, 40),
+('Gâteau', 'dessert', 3.00, 35);
+
+-- --------------------------------------------------------
+
 --
 -- Structure de la table `rechargement`
 --
 
 CREATE TABLE `rechargement` (
-  `id` bigint UNSIGNED NOT NULL,
+  `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   `valeur` decimal(10,2) NOT NULL,
   `date_rechargement` date NOT NULL,
   `compte_id` bigint UNSIGNED NOT NULL
@@ -376,7 +451,7 @@ CREATE TABLE `rechargement` (
 --
 
 CREATE TABLE `role` (
-  `id` bigint UNSIGNED NOT NULL,
+  `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   `nom` varchar(50) COLLATE utf8mb4_general_ci NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -387,7 +462,7 @@ CREATE TABLE `role` (
 --
 
 CREATE TABLE `vente` (
-  `id` bigint UNSIGNED NOT NULL,
+  `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   `date_vente` datetime NOT NULL,
   `montant_total` decimal(10,2) NOT NULL,
   `statut` varchar(20) COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'payee',
@@ -395,260 +470,113 @@ CREATE TABLE `vente` (
   `association_id` bigint UNSIGNED DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Index pour les tables déchargées
---
+-- --------------------------------------------------------
+-- AJOUT DES INDEX SECONDAIRES ET CONTRAINTES
+-- --------------------------------------------------------
 
 --
 -- Index pour la table `achat`
 --
 ALTER TABLE `achat`
-  ADD UNIQUE KEY `id` (`id`),
   ADD KEY `FK achat` (`fournisseur_id`);
-
---
--- Index pour la table `administrateur`
---
-ALTER TABLE `administrateur`
-  ADD PRIMARY KEY (`compte_id`);
 
 --
 -- Index pour la table `appartient`
 --
 ALTER TABLE `appartient`
-  ADD PRIMARY KEY (`compte_id`,`association_id`,`role`),
   ADD KEY `fk_appartient_association` (`association_id`);
-
---
--- Index pour la table `association`
---
-ALTER TABLE `association`
-  ADD UNIQUE KEY `id` (`id`);
-
---
--- Index pour la table `commande_fournisseur`
---
-ALTER TABLE `commande_fournisseur`
-  ADD PRIMARY KEY (`id`);
 
 --
 -- Index pour la table `comprend`
 --
 ALTER TABLE `comprend`
-  ADD PRIMARY KEY (`produit_id`,`achat_id`),
   ADD KEY `FK 1 comprend` (`achat_id`);
-
---
--- Index pour la table `compte`
---
-ALTER TABLE `compte`
-  ADD UNIQUE KEY `id` (`id`);
 
 --
 -- Index pour la table `concerne`
 --
 ALTER TABLE `concerne`
-  ADD PRIMARY KEY (`produit_id`,`inventaire_id`),
   ADD KEY `FK 1 concerne` (`inventaire_id`);
 
 --
 -- Index pour la table `contient`
 --
 ALTER TABLE `contient`
-  ADD PRIMARY KEY (`produit_id`,`vente_id`),
   ADD KEY `FK 2 contient` (`vente_id`);
 
 --
 -- Index pour la table `demandes_association`
 --
 ALTER TABLE `demandes_association`
-  ADD PRIMARY KEY (`id`),
   ADD KEY `id_gestionnaire` (`id_gestionnaire`);
 
 --
 -- Index pour la table `demandes_creation_assos`
 --
 ALTER TABLE `demandes_creation_assos`
-  ADD PRIMARY KEY (`id`),
   ADD KEY `id_demandeur` (`id_demandeur`);
 
 --
 -- Index pour la table `detail_commande_fournisseur`
 --
 ALTER TABLE `detail_commande_fournisseur`
-  ADD PRIMARY KEY (`id`),
   ADD KEY `fk_commande` (`id_commande`);
 
 --
 -- Index pour la table `dispose`
 --
 ALTER TABLE `dispose`
-  ADD PRIMARY KEY (`role_id`,`compte_id`),
   ADD KEY `FK 1 dispose` (`compte_id`);
-
---
--- Index pour la table `fournisseur`
---
-ALTER TABLE `fournisseur`
-  ADD UNIQUE KEY `id` (`id`);
 
 --
 -- Index pour la table `fournisseur_produit`
 --
 ALTER TABLE `fournisseur_produit`
-  ADD PRIMARY KEY (`id_fournisseur`,`id_produit`),
   ADD KEY `fk_fp_produit` (`id_produit`);
 
 --
 -- Index pour la table `gere`
 --
 ALTER TABLE `gere`
-  ADD PRIMARY KEY (`association_id`,`produit_id`),
   ADD KEY `FK 2 gere` (`produit_id`);
 
 --
 -- Index pour la table `gestionne`
 --
 ALTER TABLE `gestionne`
-  ADD PRIMARY KEY (`compte_id`,`association_id`),
   ADD KEY `association_id` (`association_id`);
 
 --
 -- Index pour la table `inventaire`
 --
 ALTER TABLE `inventaire`
-  ADD UNIQUE KEY `id` (`id`),
   ADD KEY `FK inventaire` (`association_id`);
 
 --
 -- Index pour la table `lier`
 --
 ALTER TABLE `lier`
-  ADD PRIMARY KEY (`fournisseur_id`,`association_id`),
   ADD KEY `FK 1 lier` (`association_id`);
 
 --
 -- Index pour la table `messages`
 --
 ALTER TABLE `messages`
-  ADD PRIMARY KEY (`id`),
   ADD KEY `FK_expediteur` (`id_expediteur`),
   ADD KEY `FK_destinataire` (`id_destinataire`);
-
---
--- Index pour la table `produit`
---
-ALTER TABLE `produit`
-  ADD UNIQUE KEY `id` (`id`);
 
 --
 -- Index pour la table `rechargement`
 --
 ALTER TABLE `rechargement`
-  ADD UNIQUE KEY `id` (`id`),
   ADD KEY `FK rechargement` (`compte_id`);
-
---
--- Index pour la table `role`
---
-ALTER TABLE `role`
-  ADD UNIQUE KEY `id` (`id`);
 
 --
 -- Index pour la table `vente`
 --
 ALTER TABLE `vente`
-  ADD UNIQUE KEY `id` (`id`),
   ADD KEY `FK vente` (`compte_id`),
   ADD KEY `fk_vente_association` (`association_id`);
-
---
--- AUTO_INCREMENT pour les tables déchargées
---
-
---
--- AUTO_INCREMENT pour la table `achat`
---
-ALTER TABLE `achat`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
-
---
--- AUTO_INCREMENT pour la table `association`
---
-ALTER TABLE `association`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
-
---
--- AUTO_INCREMENT pour la table `commande_fournisseur`
---
-ALTER TABLE `commande_fournisseur`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
-
---
--- AUTO_INCREMENT pour la table `compte`
---
-ALTER TABLE `compte`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
-
---
--- AUTO_INCREMENT pour la table `demandes_association`
---
-ALTER TABLE `demandes_association`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
-
---
--- AUTO_INCREMENT pour la table `demandes_creation_assos`
---
-ALTER TABLE `demandes_creation_assos`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
-
---
--- AUTO_INCREMENT pour la table `detail_commande_fournisseur`
---
-ALTER TABLE `detail_commande_fournisseur`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
-
---
--- AUTO_INCREMENT pour la table `fournisseur`
---
-ALTER TABLE `fournisseur`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
-
---
--- AUTO_INCREMENT pour la table `inventaire`
---
-ALTER TABLE `inventaire`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
-
---
--- AUTO_INCREMENT pour la table `messages`
---
-ALTER TABLE `messages`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
-
---
--- AUTO_INCREMENT pour la table `produit`
---
-ALTER TABLE `produit`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
-
---
--- AUTO_INCREMENT pour la table `rechargement`
---
-ALTER TABLE `rechargement`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT pour la table `role`
---
-ALTER TABLE `role`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
-
---
--- AUTO_INCREMENT pour la table `vente`
---
-ALTER TABLE `vente`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=106;
 
 --
 -- Contraintes pour les tables déchargées

@@ -49,36 +49,43 @@ class Modele_admin extends Connexion
     public function validerCreationAsso($id_demande)
     {
         try {
-            self::getBdd()->beginTransaction();
+            $bdd = self::getBdd();
+            $bdd->beginTransaction();
 
             $sql = "SELECT * FROM demandes_association WHERE id = ?";
-            $stmt = self::getBdd()->prepare($sql);
+            $stmt = $bdd->prepare($sql);
             $stmt->execute([$id_demande]);
             $demande = $stmt->fetch();
 
             if (!$demande) throw new Exception("Demande introuvable");
 
-            $sqlAsso = "INSERT INTO association (nom, status, solde) VALUES (?, 'validee', 0)";
-            $stmtAsso = self::getBdd()->prepare($sqlAsso);
-            $stmtAsso->execute([$demande['nom_association']]);
-            $idNouvelleAsso = self::getBdd()->lastInsertId();
+            $sqlAsso = "INSERT INTO association (nom, adresse, email, telephone, solde, status)
+                        VALUES (?, ?, ?, ?, 0, 'validee')";
+            $stmtAsso = $bdd->prepare($sqlAsso);
+            $stmtAsso->execute([
+                $demande['nom_association'],
+                $demande['adresse'] ?? 'Non précisée',
+                $demande['email_contact'] ?? '',
+                $demande['telephone'] ?? ''
+            ]);
+            $idNouvelleAsso = $bdd->lastInsertId();
 
             $sqlGest = "INSERT INTO gestionne (compte_id, association_id) VALUES (?, ?)";
-            $stmtGest = self::getBdd()->prepare($sqlGest);
+            $stmtGest = $bdd->prepare($sqlGest);
             $stmtGest->execute([$demande['id_gestionnaire'], $idNouvelleAsso]);
 
-            $sqlRole = "INSERT INTO appartient (compte_id, association_id, role) VALUES (?, ?, 'gestionnaire')";
-            $stmtRole = self::getBdd()->prepare($sqlRole);
+            $sqlRole = "INSERT INTO appartient (compte_id, association_id, role) VALUES (?, ?, 'barman')";
+            $stmtRole = $bdd->prepare($sqlRole);
             $stmtRole->execute([$demande['id_gestionnaire'], $idNouvelleAsso]);
 
-            $sqlUpd = "UPDATE demandes_association SET statut = 'acceptee' WHERE id = ?";
-            $stmtUpd = self::getBdd()->prepare($sqlUpd);
+            $sqlUpd = "UPDATE demandes_association SET statut = 'validee' WHERE id = ?";
+            $stmtUpd = $bdd->prepare($sqlUpd);
             $stmtUpd->execute([$id_demande]);
 
-            self::getBdd()->commit();
+            $bdd->commit();
             return true;
         } catch (Exception $e) {
-            self::getBdd()->rollBack();
+            if ($bdd->inTransaction()) $bdd->rollBack();
             error_log("Erreur Validation Asso: " . $e->getMessage());
             return false;
         }
