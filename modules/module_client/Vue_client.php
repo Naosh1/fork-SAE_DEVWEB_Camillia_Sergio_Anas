@@ -156,18 +156,18 @@ public function afficherNav()
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <label class="block text-slate-400 text-xs font-black uppercase tracking-widest mb-2">Numéro de carte</label>
-                                    <input type="text" name="codeCarte" placeholder="XXXX XXXX XXXX XXXX"
+                                    <input type="text" name="codeCarte" placeholder="XXXX XXXX XXXX XXXX" pattern="[0-9]{16}" maxlength="16"
                                            class="w-full bg-[#0f172a]/60 border border-white/10 rounded-xl p-4 text-white focus:border-blue-500 outline-none transition-all" required>
                                 </div>
                                 <div class="grid grid-cols-2 gap-4">
                                     <div>
                                         <label class="block text-slate-400 text-xs font-black uppercase tracking-widest mb-2">Expiration</label>
-                                        <input type="text" name="exp" placeholder="MM/AA"
+                                        <input type="text" name="exp" placeholder="MM/AA" pattern="(0[1-9]|1[0-2])\/[0-9]{2}" maxlength="5"
                                                class="w-full bg-[#0f172a]/60 border border-white/10 rounded-xl p-4 text-white focus:border-blue-500 outline-none transition-all" required>
                                     </div>
                                     <div>
                                         <label class="block text-slate-400 text-xs font-black uppercase tracking-widest mb-2">CVV</label>
-                                        <input type="text" name="cvv" placeholder="123"
+                                        <input type="text" name="cvv" placeholder="123" pattern="[0-9]{3}" maxlength="3"
                                                class="w-full bg-[#0f172a]/60 border border-white/10 rounded-xl p-4 text-white focus:border-blue-500 outline-none transition-all" required>
                                     </div>
                                 </div>

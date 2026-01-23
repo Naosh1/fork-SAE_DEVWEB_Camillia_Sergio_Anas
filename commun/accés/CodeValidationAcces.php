@@ -1,137 +1,130 @@
+
+
 <?php
 
 class CodeValidationAcces
 {
-    private $bdd;
+   private $bdd;
 
-    public function __construct()
-    {
-        $this->bdd = Connexion::getBdd();
-    }
 
-    /**
-     * Génère un code de validation à 4 chiffres
-     * Valide pendant 1 minute
-     */
-    public function genererCode($compteId)
-    {
-        // Générer un code aléatoire à 4 chiffres
-        $code = str_pad(rand(0, 9999), 4, '0', STR_PAD_LEFT);
+   public function __construct()
+   {
+       $this->bdd = Connexion::getBdd();
 
-        // Date d'expiration : 1 minute
-        $dateExpiration = date('Y-m-d H:i:s', strtotime('+1 minute'));
+       if ($this->bdd === null) {
+           throw new Exception("Erreur : Impossible de se connecter à la base de données");
+       }
 
-        // Mettre à jour le compte avec le nouveau code
-        $stmt = $this->bdd->prepare(
-            "UPDATE compte 
-             SET code_validation = :code, 
-                 code_expiration = :expiration
-             WHERE id = :id"
-        );
+       $this->bdd->exec("SET time_zone = '+01:00'");
+   }
 
-        $stmt->execute([
-            ':code' => $code,
-            ':expiration' => $dateExpiration,
-            ':id' => $compteId
-        ]);
+   public function genererCode($compteId)
+   {
+       $code = str_pad(rand(0, 9999), 4, '0', STR_PAD_LEFT);
 
-        return [
-            'code' => $code,
-            'expiration' => $dateExpiration
-        ];
-    }
+       $stmt = $this->bdd->prepare(
+           "UPDATE compte 
+            SET code_validation = :code, 
+                code_expiration = NOW() + INTERVAL 1 MINUTE
+            WHERE id = :id"
+       );
 
-    /**
-     * Récupère le code actuel d'un utilisateur
-     */
-    public function getCodeActuel($compteId)
-    {
-        $stmt = $this->bdd->prepare(
-            "SELECT code_validation, code_expiration 
-             FROM compte 
-             WHERE id = :id 
-             AND code_validation IS NOT NULL 
-             AND code_expiration > NOW()"
-        );
-        $stmt->execute([':id' => $compteId]);
+       $stmt->execute([
+           ':code' => $code,
+           ':id' => $compteId
+       ]);
 
-        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+       $stmt = $this->bdd->prepare(
+           "SELECT code_expiration FROM compte WHERE id = :id"
+       );
+       $stmt->execute([':id' => $compteId]);
+       $result = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if ($result) {
-            return [
-                'code' => $result['code_validation'],
-                'expiration' => $result['code_expiration']
-            ];
-        }
+       return [
+           'code' => $code,
+           'expiration' => $result['code_expiration']
+       ];
+   }
 
-        return null;
-    }
+   public function getCodeActuel($compteId)
+   {
+       $stmt = $this->bdd->prepare(
+           "SELECT code_validation, code_expiration 
+            FROM compte 
+            WHERE id = :id 
+            AND code_validation IS NOT NULL 
+            AND code_expiration > NOW()"
+       );
+       $stmt->execute([':id' => $compteId]);
 
-    /**
-     * Vérifie si un code est valide pour un compte
-     */
-    public function verifierCode($code, $compteId)
-    {
-        $stmt = $this->bdd->prepare(
-            "SELECT id, nom, prenom, solde 
-             FROM compte 
-             WHERE id = :id 
-             AND code_validation = :code 
-             AND code_expiration > NOW()"
-        );
+       $result = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        $stmt->execute([
-            ':id' => $compteId,
-            ':code' => $code
-        ]);
+       if ($result) {
+           return [
+               'code' => $result['code_validation'],
+               'expiration' => $result['code_expiration']
+           ];
+       }
 
-        return $stmt->fetch(PDO::FETCH_ASSOC);
-    }
+       return null;
+   }
 
-    /**
-     * Vérifie un code sans connaître le compte (pour barman)
-     */
-    public function verifierCodeGlobal($code)
-    {
-        $stmt = $this->bdd->prepare(
-            "SELECT id, nom, prenom, solde, code_expiration
-             FROM compte 
-             WHERE code_validation = :code 
-             AND code_expiration > NOW()"
-        );
+   public function verifierCode($code, $compteId)
+   {
+       $stmt = $this->bdd->prepare(
+           "SELECT id, nom, prenom, solde 
+            FROM compte 
+            WHERE id = :id 
+            AND code_validation = :code 
+            AND code_expiration > NOW()"
+       );
 
-        $stmt->execute([':code' => $code]);
+       $stmt->execute([
+           ':id' => $compteId,
+           ':code' => $code
+       ]);
 
-        return $stmt->fetch(PDO::FETCH_ASSOC);
-    }
+       return $stmt->fetch(PDO::FETCH_ASSOC);
+   }
 
-    /**
-     * Invalide le code après utilisation
-     */
-    public function invaliderCode($compteId)
-    {
-        $stmt = $this->bdd->prepare(
-            "UPDATE compte 
-             SET code_validation = NULL, 
-                 code_expiration = NULL 
-             WHERE id = :id"
-        );
 
-        $stmt->execute([':id' => $compteId]);
-    }
+   public function verifierCodeGlobal($code)
+   {
+       $stmt = $this->bdd->prepare(
+           "SELECT id, nom, prenom, solde, code_expiration
+            FROM compte 
+            WHERE code_validation = :code 
+            AND code_expiration > NOW()"
+       );
 
-    /**
-     * Nettoie les codes expirés (optionnel)
-     */
-    public function nettoyerCodesExpires()
-    {
-        $stmt = $this->bdd->prepare(
-            "UPDATE compte 
-             SET code_validation = NULL, 
-                 code_expiration = NULL 
-             WHERE code_expiration < NOW()"
-        );
+       $stmt->execute([':code' => $code]);
 
-        $stmt->execute();
-    }
+       return $stmt->fetch(PDO::FETCH_ASSOC);
+   }
+
+
+   public function invaliderCode($compteId)
+   {
+       $stmt = $this->bdd->prepare(
+           "UPDATE compte 
+            SET code_validation = NULL, 
+                code_expiration = NULL 
+            WHERE id = :id"
+       );
+
+       $stmt->execute([':id' => $compteId]);
+   }
+
+
+   public function nettoyerCodesExpires()
+   {
+       $stmt = $this->bdd->prepare(
+           "UPDATE compte 
+            SET code_validation = NULL, 
+                code_expiration = NULL 
+            WHERE code_expiration < NOW()"
+       );
+
+       $stmt->execute();
+   }
 }
