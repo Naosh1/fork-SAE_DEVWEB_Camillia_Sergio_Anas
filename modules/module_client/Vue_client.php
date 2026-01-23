@@ -302,7 +302,7 @@ public function afficherNav()
             $this->afficherNav();
             ?>
             <div class="bfor-card">
-                <h1 style="margin-bottom: 20px;">
+                <h1 style="margin-bottom: 20px; color: white;">
                     <i class="fa-solid fa-utensils" style="color: #3b82f6;"></i>
                     Carte & Produits
                 </h1>
@@ -409,7 +409,7 @@ public function afficherNav()
         $this->afficherNav();
         ?>
         <div class="bfor-card">
-            <h1 style="margin-bottom: 20px;">
+            <h1 style="margin-bottom: 20px; color: white;">
                 <i class="fa-solid fa-cart-shopping" style="color: #3b82f6;"></i>
                 Mon Panier
             </h1>
@@ -522,7 +522,7 @@ public function afficherNav()
         $this->afficherNav();
         ?>
         <div class="bfor-card">
-            <h1 style="margin-bottom: 20px;">
+            <h1 style="margin-bottom: 20px; color: white;">
                 <i class="fa-solid fa-history" style="color: #3b82f6;"></i>
                 Historique de mes commandes
             </h1>
@@ -595,7 +595,7 @@ public function afficherNav()
         $this->afficherNav();
         ?>
         <div class="bfor-card">
-            <h1 style="margin-bottom: 20px;">
+            <h1 style="margin-bottom: 20px; color: white;">
                 <i class="fa-solid fa-clock" style="color: #3b82f6;"></i>
                 Mes Commandes en Cours
             </h1>
