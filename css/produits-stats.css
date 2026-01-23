@@ -1,0 +1,136 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,600;0,700;0,800;1,800&display=swap');
+
+:root {
+    --accent: #3b82f6;
+    --accent-soft: rgba(59, 130, 246, 0.1);
+    --bg: #020617;
+    --card: rgba(255, 255, 255, 0.03);
+    --border: rgba(255, 255, 255, 0.06);
+}
+
+.stats-container {
+    /* Lumière bleue atténuée et plus diffuse */
+    background: radial-gradient(circle at 2% 2%, #172554 0%, #020617 35%);
+    min-height: 100vh;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    color: #f8fafc;
+}
+
+/* HEADER AGRANDI & BLOQUÉ */
+.stats-header {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background: rgba(2, 6, 23, 0.8);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border-bottom: 1px solid var(--border);
+    padding: 35px 0; /* Header plus haut */
+}
+
+.stats-header-content {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.stats-title {
+    font-weight: 800;
+    font-style: italic;
+    text-transform: uppercase;
+    letter-spacing: -1px;
+    margin: 0;
+    font-size: 2.2rem; /* Titre plus grand */
+}
+
+.asso-name {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    margin-top: 8px;
+}
+
+/* GRILLE */
+.stats-grid {
+    max-width: 1100px;
+    margin: 50px auto; /* Plus d'espace sous le header */
+    padding: 0 40px;
+    display: grid;
+    gap: 15px;
+}
+
+.stats-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 22px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.3s ease;
+}
+
+.stats-card:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(59, 130, 246, 0.3);
+    transform: scale(1.01);
+}
+
+/* ICONES DÉTAILLÉES */
+.icon-container {
+    width: 52px;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 16px;
+    font-size: 1.3rem;
+}
+
+.cat-boisson { background: #1e3a8a; color: #60a5fa; }
+.cat-nourriture { background: #451a03; color: #fb923c; }
+.cat-autre { background: #1e293b; color: #94a3b8; }
+
+.item-name { font-weight: 700; font-size: 1.2rem; color: white; }
+.item-type { font-size: 0.7rem; font-weight: 700; color: #64748b; text-transform: uppercase; }
+
+/* VALEURS */
+.value-total {
+    font-size: 2.5rem;
+    font-weight: 900;
+    font-style: italic;
+    color: white;
+}
+
+.value-unit {
+    font-size: 0.65rem;
+    font-weight: 800;
+    color: #475569;
+    text-transform: uppercase;
+    text-align: right;
+    display: block;
+}
+
+/* BOUTON RETOUR */
+.btn-back {
+    background: white;
+    color: black;
+    padding: 12px 25px;
+    border-radius: 14px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: 0.3s;
+}
+
+.btn-back:hover {
+    background: #3b82f6;
+    color: white;
+}

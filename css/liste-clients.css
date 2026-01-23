@@ -1,0 +1,89 @@
+/* --- Animations --- */
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.cascade-row {
+    opacity: 0;
+    animation: slideInRight 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+/* Génération des délais (jusqu'à 20 clients pour l'exemple) */
+.row-delay-0 { animation-delay: 0.05s; }
+.row-delay-1 { animation-delay: 0.10s; }
+.row-delay-2 { animation-delay: 0.15s; }
+.row-delay-3 { animation-delay: 0.20s; }
+.row-delay-4 { animation-delay: 0.25s; }
+.row-delay-5 { animation-delay: 0.30s; }
+
+/* --- Cartes Clients --- */
+.client-card {
+    position: relative;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+}
+
+.client-card::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; width: 2px; height: 100%;
+    background: #2563eb;
+    transform: scaleY(0);
+    transition: transform 0.3s ease;
+}
+
+.client-card:hover {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(37, 99, 235, 0.3);
+    transform: translateX(5px);
+}
+
+.client-card:hover::after {
+    transform: scaleY(1);
+}
+
+/* --- Boutons d'action --- */
+.blue-btn, .red-btn {
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.blue-btn {
+    background: rgba(37, 99, 235, 0.1);
+    color: #60a5fa;
+    border: 1px solid rgba(37, 99, 235, 0.2);
+}
+
+.blue-btn:hover {
+    background: #2563eb;
+    color: white;
+    box-shadow: 0 0 15px rgba(37, 99, 235, 0.4);
+    transform: translateY(-2px);
+}
+
+.red-btn {
+    background: rgba(239, 68, 68, 0.1);
+    color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.red-btn:hover {
+    background: #ef4444;
+    color: white;
+    box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
+    transform: translateY(-2px);
+}
