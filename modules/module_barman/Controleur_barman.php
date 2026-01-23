@@ -3,19 +3,15 @@
 class Controleur_barman
 {
     private $modele;
-
     private $vue;
-
     private $modeleStaff;
     private $vueStaff;
-
     private $modeleCommun;
     private $vueCommun;
 
     public function __construct()
     {
         $this->modele = new ModeleBarman();
-
         $this->modeleCommun = new ModeleCommun();
         $this->modeleStaff = new ModeleStaff();
         $this->vueCommun = new VueCommun();
@@ -72,16 +68,15 @@ class Controleur_barman
                 $this->vue->afficherNav();
                 $this->vueStaff->afficherFormulaireEnvoi($destinataires, $sujet, $idCible);
                 break;
-
             case 'envoyerMessage':
                 if (!empty($_POST['id_destinataire']) && !empty($_POST['contenu'])) {
                     $id_exp = $_SESSION['id'];
                     $id_dest = $_POST['id_destinataire'];
                     $objet = $_POST['objet'];
                     $contenu = $_POST['contenu'];
-
                     $this->modeleStaff->enregistrerMessage($id_exp, $id_dest, $objet, $contenu);
-                    header("Location: index.php?action=messagerie");                }
+                    header("Location: index.php?action=messagerie");
+                }
                 break;
             case 'listeStaff':
                 $membres = $this->modeleStaff->getToutStaff();
@@ -98,6 +93,12 @@ class Controleur_barman
             case 'annulerTransaction':
                 $this->annulerTransaction();
                 break;
+            case 'changerStatut':
+                $this->changerStatut();
+                break;
+            case 'vendre':
+                $this->afficherPageVente();
+                break;
             default:
                 error_log("Action non reconnue: '$action', affichage accueil par défaut");
                 $this->afficherAccueil();
@@ -107,7 +108,14 @@ class Controleur_barman
 
     private function afficherAccueil()
     {
-        $this->vue->afficherAccueil();
+        // Récupération des données depuis le modèle
+        $stats = $this->modele->getStatsAccueil();
+        $dernierClient = $this->modele->getDernierClientActif();
+        $ventesRecentes = $this->modele->getVentesRecentesTableau();
+        $stockCritiqueListe = $this->modele->getListeStockCritique();
+
+        // Envoi à la vue
+        $this->vue->afficherAccueil($stats, $dernierClient, $ventesRecentes, $stockCritiqueListe);
     }
 
     private function afficherProduits()
@@ -115,18 +123,6 @@ class Controleur_barman
         $produits = $this->modele->listerProduits();
         $assos = $this->modele->getAssociationIdParBarman($_SESSION['id']);
         $this->vue->afficherProduits($produits, $assos);
-    }
-
-    private function rechercherClient()
-    {
-        $clients = [];
-        $search = $_GET['search'] ?? null;
-
-        if ($search) {
-            $clients = $this->modele->rechercherClient($search);
-        }
-
-        $this->vue->afficherClients($clients, $search);
     }
 
     private function afficherCommandes()
@@ -138,12 +134,10 @@ class Controleur_barman
     private function afficherDetailCommande()
     {
         $id = $_GET['id'] ?? null;
-
         if (!$id) {
             $this->vue->afficherErreur("Aucun ID de commande spécifié");
             return;
         }
-
         $commande = $this->modele->getCommande($id);
         $produits = $this->modele->getProduitsCommande($id);
         $this->vue->afficherDetailCommande($commande, $produits);
@@ -164,12 +158,10 @@ class Controleur_barman
     private function annulerTransaction()
     {
         $transaction_id = $_POST['transaction_id'] ?? null;
-
         if (!$transaction_id) {
             $this->vue->afficherErreur("Aucune transaction spécifiée");
             return;
         }
-
         if ($this->modele->annulerTransaction($transaction_id)) {
             $this->vue->afficherConfirmationAnnulation($transaction_id);
         } else {
@@ -179,8 +171,24 @@ class Controleur_barman
 
     private function afficherFormTransaction($erreur = null, $donneesSaisies = null)
     {
-        $produits = $this->modele->listerProduits();
-        $this->vue->afficherFormTransaction($produits, $erreur, $donneesSaisies);
+        $searchProduit = $_GET['search_produit'] ?? null;
+        $typeProduit = $_GET['type_produit'] ?? null;
+        $clientId = $_GET['id_client'] ?? null;
+
+        if (!$clientId) {
+            $this->vue->afficherErreur("Veuillez d'abord sélectionner un client");
+            return;
+        }
+
+        $types = $this->modele->getTypesProduits();
+
+        if ($searchProduit || $typeProduit) {
+            $produits = $this->modele->rechercherProduits($searchProduit, $typeProduit);
+        } else {
+            $produits = $this->modele->listerProduits();
+        }
+
+        $this->vue->afficherFormTransaction($produits, $types, $clientId, $searchProduit, $typeProduit, $erreur, $donneesSaisies);
     }
 
     public function rechercherClientAjax()
@@ -197,46 +205,42 @@ class Controleur_barman
         exit;
     }
 
-    public function rechercherProduitAjax() {
+    public function rechercherProduitAjax()
+    {
         $recherche = $_GET['q'] ?? '';
         $idAsso = 1;
-
         $produits = $this->modele->rechercherProduitsParNom($recherche, $idAsso);
         header('Content-Type: application/json');
         echo json_encode($produits);
         exit;
     }
 
-    public function gererAjoutBarman() {
+    public function gererAjoutBarman()
+    {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (!isset($_SESSION['asso_choisi'])) {
                 header("Location: index.php?reset=1");
                 exit();
             }
-
             $idAsso = $_SESSION['asso_choisi'];
             $nom = $_POST['nom'] ?? '';
             $prenom = $_POST['prenom'] ?? '';
             $email = $_POST['email'] ?? '';
             $mdp = $_POST['mdp'] ?? '123456';
-
             $succes = $this->modeleStaff->ajouterBarmanALAssociation($nom, $prenom, $email, $mdp, $idAsso);
-
             if ($succes) {
                 $_SESSION['success'] = "Le barman a été ajouté avec succès à votre association.";
             } else {
                 $_SESSION['error'] = "Erreur lors de l'ajout du barman.";
             }
-
             header("Location: index.php?module=gestionnaire&action=voirBarmans");
             exit();
         }
     }
+
     private function traiterTransaction()
     {
         try {
-            error_log("DEBUG: POST reçu: " . print_r($_POST, true));
-
             if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
                 $this->vue->afficherErreur("Méthode non autorisée");
                 return;
@@ -244,109 +248,192 @@ class Controleur_barman
 
             $client_id = isset($_POST['client_id']) ? (int)$_POST['client_id'] : 0;
             $produits = $_POST['produits'] ?? [];
+            $codeValidation = $_POST['code_validation'] ?? null;
 
             if ($client_id <= 0) {
-                $this->afficherFormTransaction("L'ID client doit être un nombre positif", $_POST);
+                $this->vue->afficherErreur("L'ID client doit être un nombre positif");
                 return;
             }
 
-            if (empty($produits) || !is_array($produits)) {
-                $this->afficherFormTransaction("Aucun produit sélectionné", $_POST);
+            $produitsFiltered = [];
+            foreach ($produits as $id => $qty) {
+                $qty = (int)$qty;
+                if ($qty > 0) {
+                    $produitsFiltered[$id] = $qty;
+                }
+            }
+
+            if (empty($produitsFiltered)) {
+                $this->vue->afficherErreur("Aucun produit sélectionné");
                 return;
             }
+
+            if (!$codeValidation) {
+                $this->afficherDemandeCode($client_id, $produitsFiltered);
+                return;
+            }
+
+            include_once "commun/accés/CodeValidationAcces.php";
+            $modeleCode = new CodeValidationAcces();
+            $codeValide = $modeleCode->verifierCode($codeValidation, $client_id);
+
+            if (!$codeValide) {
+                $this->afficherDemandeCode($client_id, $produitsFiltered, "Code invalide ou expiré");
+                return;
+            }
+
+            $modeleCode->invaliderCode($client_id);
 
             $soldeClient = $this->modele->getSoldeClient($client_id);
             if ($soldeClient === false) {
-                $this->afficherFormTransaction("Client non trouvé (ID: $client_id)", $_POST);
+                $this->vue->afficherErreur("Client non trouvé");
                 return;
             }
 
-            $resultatValidation = $this->validerProduits($produits);
+            $montantTotal = 0;
+            $produitsValides = [];
+            $erreurs = [];
 
-            if (!empty($resultatValidation['erreurs'])) {
-                $this->afficherFormTransaction(implode("<br>", $resultatValidation['erreurs']), $_POST);
+            foreach ($produitsFiltered as $produit_id => $quantite) {
+                $infoProduit = $this->modele->getInfoProduit($produit_id);
+
+                if (!$infoProduit) {
+                    $erreurs[] = "Produit #$produit_id non trouvé";
+                    continue;
+                }
+
+                if ($infoProduit['disponibilite'] < $quantite) {
+                    $erreurs[] = "{$infoProduit['nom']}: stock insuffisant ({$infoProduit['disponibilite']} disponible)";
+                    continue;
+                }
+
+                $montantTotal += $infoProduit['prix'] * $quantite;
+                $produitsValides[] = [
+                    'id' => $produit_id,
+                    'quantite' => $quantite,
+                    'prix' => $infoProduit['prix']
+                ];
+            }
+
+            if (!empty($erreurs)) {
+                $this->afficherDemandeCode($client_id, $produitsFiltered, implode("<br>", $erreurs));
                 return;
             }
 
-            if (empty($resultatValidation['produitsValides'])) {
-                $this->afficherFormTransaction("Aucun produit valide", $_POST);
-                return;
-            }
-
-            $montantTotal = $resultatValidation['montantTotal'];
             if ($soldeClient < $montantTotal) {
-                $erreurSolde = "Solde insuffisant. Solde du client: $soldeClient €, Total transaction: $montantTotal €";
-                $this->afficherFormTransaction($erreurSolde, $_POST);
+                $this->afficherDemandeCode($client_id, $produitsFiltered,
+                    "Solde insuffisant. Solde: {$soldeClient}€, Total: {$montantTotal}€");
                 return;
             }
 
-            $vente_id = $this->modele->creerTransaction($resultatValidation['produitsValides'], $client_id, $montantTotal);
+            $vente_id = $this->modele->creerTransaction($produitsValides, $client_id, $montantTotal);
 
             if ($vente_id) {
-                error_log("DEBUG: Transaction créée avec ID: " . $vente_id);
                 $this->vue->afficherResultatTransaction($vente_id);
             } else {
-                error_log("DEBUG: Échec de creerTransaction");
-                $this->afficherFormTransaction("Erreur lors de la création de la transaction", $_POST);
+                $this->vue->afficherErreur("Erreur lors de la création de la transaction");
             }
 
         } catch (Exception $e) {
-            error_log("DEBUG: Exception attrapée: " . $e->getMessage());
-            $this->afficherFormTransaction("Erreur technique: " . $e->getMessage(), $_POST);
+            error_log("Erreur traiterTransaction: " . $e->getMessage());
+            $this->vue->afficherErreur("Erreur technique: " . $e->getMessage());
         }
     }
 
-    private function validerProduits($produits)
+    private function changerStatut()
     {
-        $produitsValides = [];
-        $erreurs = [];
-        $produitsIds = [];
-        $montantTotal = 0;
+        $venteId = $_POST['vente_id'] ?? null;
+        $nouveauStatut = $_POST['nouveau_statut'] ?? null;
 
-        foreach ($produits as $index => $produit) {
-            $produit_id = isset($produit['id']) ? (int)$produit['id'] : 0;
-            $quantite = isset($produit['quantite']) ? (int)$produit['quantite'] : 0;
-
-            if ($produit_id <= 0) {
-                $erreurs[] = "Produit #" . ($index + 1) . ": ID invalide";
-                continue;
-            }
-
-            if ($quantite <= 0) {
-                $erreurs[] = "Produit #" . ($index + 1) . ": Quantité invalide";
-                continue;
-            }
-
-            if (in_array($produit_id, $produitsIds)) {
-                $erreurs[] = "Le produit ID $produit_id est en double";
-                continue;
-            }
-            $produitsIds[] = $produit_id;
-
-            $infoProduit = $this->modele->getInfoProduit($produit_id);
-            if (!$infoProduit) {
-                $erreurs[] = "Produit ID $produit_id non trouvé";
-                continue;
-            }
-
-            if ($quantite > $infoProduit['disponibilite']) {
-                $erreurs[] = "Stock insuffisant pour " . $infoProduit['nom'] . " (demandé: $quantite, disponible: " . $infoProduit['disponibilite'] . ")";
-                continue;
-            }
-
-            $produitsValides[] = [
-                'id' => $produit_id,
-                'quantite' => $quantite,
-                'prix' => (float)$infoProduit['prix']
-            ];
-
-            $montantTotal += $quantite * $infoProduit['prix'];
+        if (!$venteId || !$nouveauStatut) {
+            $this->vue->afficherErreur("Paramètres manquants");
+            return;
         }
 
-        return [
-            'produitsValides' => $produitsValides,
-            'erreurs' => $erreurs,
-            'montantTotal' => $montantTotal
-        ];
+        if ($this->modele->changerStatutCommande($venteId, $nouveauStatut)) {
+            header("Location: index.php?module=barman&action=commandesEnCours");
+            exit();
+        } else {
+            $this->vue->afficherErreur("Erreur lors du changement de statut");
+        }
+    }
+
+    private function afficherPageVente()
+    {
+        $searchClient = $_GET['search_client'] ?? null;
+        $clientId = $_GET['id_client'] ?? null;
+        $searchProduit = $_GET['search_produit'] ?? null;
+        $typeProduit = $_GET['type_produit'] ?? null;
+
+        $clients = [];
+        if ($searchClient) {
+            $clients = $this->modele->rechercherClientsDeMonAssociation($searchClient, $_SESSION['id']);
+        }
+
+        $clientSelectionne = null;
+        if ($clientId) {
+            foreach ($clients as $c) {
+                if ($c['id'] == $clientId) {
+                    $clientSelectionne = $c;
+                    break;
+                }
+            }
+            if (!$clientSelectionne) {
+                $stmt = Connexion::getBdd()->prepare('SELECT id, nom, prenom, email, solde FROM compte WHERE id = ?');
+                $stmt->execute([$clientId]);
+                $clientSelectionne = $stmt->fetch(PDO::FETCH_ASSOC);
+            }
+        }
+
+        $types = $this->modele->getTypesProduits();
+        $produits = [];
+
+        if ($clientId) {
+            if ($searchProduit || $typeProduit) {
+                $produits = $this->modele->rechercherProduits($searchProduit, $typeProduit);
+            } else {
+                $produits = $this->modele->listerProduits();
+            }
+        }
+
+        $this->vue->afficherPageVente($clients, $clientSelectionne, $produits, $types, $searchClient, $searchProduit, $typeProduit);
+    }
+
+    private function afficherDemandeCode($client_id, $produits, $erreur = null)
+    {
+        $stmt = Connexion::getBdd()->prepare('SELECT nom, prenom FROM compte WHERE id = ?');
+        $stmt->execute([$client_id]);
+        $client = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        $recap = [];
+        $montantTotal = 0;
+
+        foreach ($produits as $produit_id => $quantite) {
+            $infoProduit = $this->modele->getInfoProduit($produit_id);
+            if ($infoProduit) {
+                $sousTotal = $infoProduit['prix'] * $quantite;
+                $montantTotal += $sousTotal;
+                $recap[] = [
+                    'nom' => $infoProduit['nom'],
+                    'quantite' => $quantite,
+                    'prix_unitaire' => $infoProduit['prix'],
+                    'sous_total' => $sousTotal
+                ];
+            }
+        }
+
+        $this->vue->afficherDemandeCodeValidation($client, $client_id, $produits, $recap, $montantTotal, $erreur);
+    }
+
+    private function rechercherClient()
+    {
+        $clients = [];
+        $search = $_GET['search'] ?? '';
+
+        if ($search) {
+            $clients = $this->modele->rechercherClientsDeMonAssociation($search, $_SESSION['id']);
+        }
+
+        $this->vue->afficherClients($clients, $search);
     }
 }

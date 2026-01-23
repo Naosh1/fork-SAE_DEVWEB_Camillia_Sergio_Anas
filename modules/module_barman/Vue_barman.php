@@ -1,7 +1,7 @@
 <?php
-    include_once 'vue_generique.php';
-    include "modules/module_commun/vue_commun.php";
-    include "modules/module_staff/vue_staff.php";
+include_once 'vue_generique.php';
+include "modules/module_commun/vue_commun.php";
+include "modules/module_staff/vue_staff.php";
 
 class Vue_barman extends VueStaff
 {
@@ -233,7 +233,7 @@ private function afficherHeader($titre = "Gestionnaire de buvette")
 
             <p class="text-[9px] font-black text-slate-600 uppercase tracking-[0.3em] px-4 mb-3 mt-8">Service</p>
             
-            <a href="index.php?module=barman&action=creerTransaction" class="flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all duration-300 ' . ($actionActuelle == 'creerTransaction' ? $activeClass : $inactiveClass) . '">
+            <a href="index.php?module=barman&action=vendre" class="flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all duration-300 ' . ($actionActuelle == 'creerTransaction' ? $activeClass : $inactiveClass) . '">
                 <i class="fa-solid fa-cash-register text-lg"></i>
                 <span class="font-bold text-sm tracking-tight">Vendre / Encaisser</span>
             </a>
@@ -250,7 +250,7 @@ private function afficherHeader($titre = "Gestionnaire de buvette")
                 <span class="font-bold text-sm tracking-tight">Historique Ventes</span>
             </a>
 
-            <a href="index.php?module=barman&action=rechercherClient" class="flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all duration-300 ' . ($actionActuelle == 'rechercherClient' ? $activeClass : $inactiveClass) . '">
+           <a href="index.php?module=barman&action=rechercherClient" class="flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all duration-300 ' . ($actionActuelle == 'rechercherClient' ? $activeClass : $inactiveClass) . '">
                 <i class="fa-solid fa-magnifying-glass text-lg"></i>
                 <span class="font-bold text-sm tracking-tight">Chercher un Client</span>
             </a>
@@ -262,7 +262,7 @@ private function afficherHeader($titre = "Gestionnaire de buvette")
                     <i class="fa-solid fa-paper-plane text-lg"></i>
                     <span class="font-bold text-sm tracking-tight">Messages</span>
                 </div>' .
-                ($nbMessages > 0 ? '<span class="bg-blue-600 text-[10px] font-black text-white px-2 py-0.5 rounded-lg shadow-lg shadow-blue-600/20">' . $nbMessages . '</span>' : '') . '
+            ($nbMessages > 0 ? '<span class="bg-blue-600 text-[10px] font-black text-white px-2 py-0.5 rounded-lg shadow-lg shadow-blue-600/20">' . $nbMessages . '</span>' : '') . '
             </a>
 
             <div class="pt-4 mt-4 border-t border-white/5">
@@ -279,8 +279,8 @@ private function afficherHeader($titre = "Gestionnaire de buvette")
                 <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-blue-400 p-0.5 shadow-lg shadow-blue-600/20">
                     <div class="w-full h-full rounded-[10px] bg-[#020617] overflow-hidden flex items-center justify-center text-white">
                         ' . (($cheminPhoto && file_exists($cheminPhoto))
-                        ? '<img src="' . $cheminPhoto . '" class="w-full h-full object-cover">'
-                        : '<span class="text-xs font-black">' . strtoupper(substr($prenom, 0, 1)) . '</span>') . '
+                ? '<img src="' . $cheminPhoto . '" class="w-full h-full object-cover">'
+                : '<span class="text-xs font-black">' . strtoupper(substr($prenom, 0, 1)) . '</span>') . '
                     </div>
                 </div>
                 <div class="flex-1 min-w-0">
@@ -300,181 +300,186 @@ private function afficherHeader($titre = "Gestionnaire de buvette")
     }
     public function afficherCommandes($commandes)
     {
-        $this->afficherHeader("Commandes du jour");
-        $this->afficherNav();
-        ?>
-        <div class="max-w-6xl mx-auto space-y-8 animate-fadeIn">
-
-            <div class="flex flex-col md:flex-row justify-between items-end gap-6 border-b border-white/5 pb-8">
-                <div>
-                    <p class="text-[10px] font-black text-amber-500 uppercase tracking-[0.4em] mb-2">Service en
-                        cours</p>
-                    <h2 class="text-4xl font-[900] text-white italic uppercase tracking-tighter">
-                        File des <span class="text-amber-500">Commandes</span>
-                    </h2>
-                </div>
-
-                <div class="flex gap-2">
-                    <div class="bg-white/5 border border-white/5 px-4 py-2 rounded-2xl flex items-center gap-3">
-                        <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
-                        <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                        <?= count($commandes) ?> Totales
-                    </span>
-                    </div>
-                </div>
-            </div>
-
-            <?php if (empty($commandes)): ?>
-                <div class="bg-white/[0.02] border border-white/5 p-20 rounded-[2.5rem] text-center">
-                    <div class="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6">
-                        <i class="fa-solid fa-receipt text-slate-700 text-3xl"></i>
-                    </div>
-                    <p class="text-slate-500 font-bold uppercase tracking-[0.2em]">Aucune commande enregistrée
-                        aujourd'hui</p>
-                </div>
-            <?php else: ?>
-                <div class="bg-white/[0.02] border border-white/5 rounded-[2.5rem] overflow-hidden shadow-2xl">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                        <tr class="bg-white/[0.02] text-[9px] font-black text-slate-500 uppercase tracking-[0.2em]">
-                            <th class="p-6">Référence</th>
-                            <th class="p-6">Client</th>
-                            <th class="p-6">Heure</th>
-                            <th class="p-6">Montant</th>
-                            <th class="p-6 text-center">Statut</th>
-                            <th class="p-6 text-right">Action</th>
-                        </tr>
-                        </thead>
-                        <tbody class="divide-y divide-white/5">
-                        <?php foreach ($commandes as $commande):
-                            $statut = $commande['statut'] ?? 'attente';
-                            $isPaid = ($statut == 'payee' || $statut == 'terminee');
-                            $badgeClass = $isPaid ? "bg-emerald-500/10 text-emerald-500" : "bg-amber-500/10 text-amber-500";
-                            $icon = $isPaid ? "fa-check-double" : "fa-clock";
-                            ?>
-                            <tr class="group hover:bg-white/[0.01] transition-all">
-                                <td class="p-6">
-                                <span class="text-white font-black italic tracking-tighter group-hover:text-amber-500 transition-colors">
-                                    #<?= htmlspecialchars($commande['commande_id'] ?? $commande['id']) ?>
-                                </span>
-                                </td>
-                                <td class="p-6">
-                                    <div class="flex items-center gap-3">
-                                        <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-[10px] text-slate-400 font-black">
-                                            <?= strtoupper(substr($commande['prenom'] ?? '?', 0, 1)) ?>
-                                        </div>
-                                        <span class="text-white font-bold text-sm"><?= htmlspecialchars(($commande['prenom'] ?? '') . ' ' . ($commande['nom'] ?? '')) ?></span>
-                                    </div>
-                                </td>
-                                <td class="p-6 text-slate-500 text-xs font-bold italic">
-                                    <?= isset($commande['date_vente']) ? date('H:i', strtotime($commande['date_vente'])) : '--:--' ?>
-                                </td>
-                                <td class="p-6">
-                                    <span class="text-white font-[900]"><?= number_format($commande['montant_total'], 2) ?> €</span>
-                                </td>
-                                <td class="p-6 text-center">
-                                <span class="px-4 py-1.5 rounded-full text-[9px] font-[900] uppercase tracking-widest <?= $badgeClass ?> inline-flex items-center gap-2">
-                                    <i class="fa-solid <?= $icon ?> text-[10px]"></i>
-                                    <?= htmlspecialchars($commande['statut_affichage'] ?? $statut) ?>
-                                </span>
-                                </td>
-                                <td class="p-6 text-right">
-                                    <a href="index.php?module=barman&action=detailCommande&id=<?= $commande['commande_id'] ?? $commande['id'] ?>"
-                                       class="inline-flex items-center justify-center h-10 px-6 rounded-xl bg-white/5 text-white text-[10px] font-black uppercase tracking-widest hover:bg-blue-600 transition-all border border-white/5">
-                                        Détails
-                                    </a>
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
-                        </tbody>
-                    </table>
-                </div>
-            <?php endif; ?>
-        </div>
-
-        <style>
-            .animate-fadeIn {
-                animation: fadeIn 0.4s ease-out;
-            }
-
-            @keyframes fadeIn {
-                from {
-                    opacity: 0;
-                    transform: translateY(10px);
-                }
-                to {
-                    opacity: 1;
-                    transform: translateY(0);
-                }
-            }
-        </style>
-        <?php
-        $this->afficherFooter();
-    }
-
-    private function afficherFooter() {
+    $this->afficherNav();
     ?>
+    <div style="padding: 2rem;">
+        <h1 style="font-size: 2.5rem; font-weight: 900; color: white; margin-bottom: 2rem;">
+            <i class="fa-solid fa-list-check" style="color: #f59e0b;"></i> Commandes du Jour
+        </h1>
+
+        <?php if (empty($commandes)): ?>
+            <div style="text-align: center; padding: 4rem; background: rgba(255,255,255,0.02); border-radius: 20px; border: 2px dashed rgba(255,255,255,0.1);">
+                <i class="fa-solid fa-check-circle" style="font-size: 4rem; color: #10b981; margin-bottom: 1rem;"></i>
+                <p style="color: #94a3b8; font-size: 1.2rem; font-weight: 600;">Aucune commande en cours</p>
+            </div>
+        <?php else: ?>
+            <div style="display: grid; gap: 1.5rem;">
+                <?php foreach ($commandes as $cmd):
+                    // Configuration des statuts
+                    $statutsConfig = [
+                        'en_attente' => [
+                            'label' => 'En attente',
+                            'color' => '#f59e0b',
+                            'bg' => 'rgba(245, 158, 11, 0.1)',
+                            'border' => 'rgba(245, 158, 11, 0.3)',
+                            'icon' => 'clock',
+                            'next' => 'validee',
+                            'nextLabel' => 'Valider'
+                        ],
+                        'validee' => [
+                            'label' => 'Validée',
+                            'color' => '#3b82f6',
+                            'bg' => 'rgba(59, 130, 246, 0.1)',
+                            'border' => 'rgba(59, 130, 246, 0.3)',
+                            'icon' => 'check',
+                            'next' => 'en_preparation',
+                            'nextLabel' => 'Mettre en préparation'
+                        ],
+                        'en_preparation' => [
+                            'label' => 'En préparation',
+                            'color' => '#f59e0b',
+                            'bg' => 'rgba(245, 158, 11, 0.1)',
+                            'border' => 'rgba(245, 158, 11, 0.3)',
+                            'icon' => 'spinner',
+                            'next' => 'prete',
+                            'nextLabel' => 'Marquer comme prête'
+                        ],
+                        'prete' => [
+                            'label' => 'Prête',
+                            'color' => '#10b981',
+                            'bg' => 'rgba(16, 185, 129, 0.1)',
+                            'border' => 'rgba(16, 185, 129, 0.3)',
+                            'icon' => 'check-double',
+                            'next' => 'livree',
+                            'nextLabel' => 'Marquer comme livrée'
+                        ]
+                    ];
+
+                    $statutActuel = $cmd['statut'] ?? 'en_attente';
+                    $config = $statutsConfig[$statutActuel] ?? $statutsConfig['en_attente'];
+                    ?>
+                    <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 20px; padding: 1.5rem;">
+                        <!-- En-tête -->
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                            <div>
+                                <p style="font-size: 1.3rem; font-weight: 900; color: #f59e0b; font-family: monospace;">
+                                    #<?= $cmd['commande_id'] ?? 'N/A' ?>
+                                </p>
+                                <p style="color: #94a3b8; font-size: 0.9rem; margin-top: 0.3rem;">
+                                    <i class="fa-solid fa-user"></i> <?= htmlspecialchars($cmd['prenom'] . ' ' . $cmd['nom']) ?>
+                                </p>
+                                <p style="color: #64748b; font-size: 0.85rem;">
+                                    <i class="fa-solid fa-clock"></i> <?= date('H:i', strtotime($cmd['date_vente'])) ?>
+                                </p>
+                            </div>
+                            <div>
+                                <!-- Badge statut -->
+                                <span style="padding: 0.5rem 1rem; border-radius: 10px; font-weight: 700; font-size: 0.85rem; background: <?= $config['bg'] ?>; color: <?= $config['color'] ?>; border: 1px solid <?= $config['border'] ?>;">
+                                    <i class="fa-solid fa-<?= $config['icon'] ?>"></i> <?= $config['label'] ?>
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Montant -->
+                        <div style="margin-bottom: 1rem;">
+                            <span style="color: #94a3b8; font-size: 0.9rem; text-transform: uppercase; font-weight: 700;">Total : </span>
+                            <span style="font-size: 1.5rem; font-weight: 900; color: #f59e0b;"><?= number_format($cmd['montant_total'], 2) ?> €</span>
+                        </div>
+
+                        <!-- Boutons d'action -->
+                        <div style="display: flex; gap: 0.75rem;">
+                            <!-- Bouton voir détails -->
+                            <a href="index.php?module=barman&action=detailCommande&id=<?= $cmd['commande_id'] ?>"
+                               style="flex: 1; text-align: center; padding: 0.75rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; color: #94a3b8; text-decoration: none; font-weight: 700; font-size: 0.85rem;">
+                                <i class="fa-solid fa-eye"></i> Voir détails
+                            </a>
+
+                            <!-- Bouton changer statut (si pas livree) -->
+                            <?php if (isset($config['next'])): ?>
+                                <form method="POST" action="index.php?module=barman&action=changerStatut" style="flex: 2;">
+                                    <input type="hidden" name="vente_id" value="<?= $cmd['commande_id'] ?>">
+                                    <input type="hidden" name="nouveau_statut" value="<?= $config['next'] ?>">
+                                    <button type="submit" style="width: 100%; padding: 0.75rem; background: #f59e0b; border: none; border-radius: 10px; color: white; font-weight: 900; font-size: 0.85rem; cursor: pointer; text-transform: uppercase;">
+                                        <i class="fa-solid fa-arrow-right"></i> <?= $config['nextLabel'] ?>
+                                    </button>
+                                </form>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        <?php endif; ?>
     </div>
-    <footer style="text-align: center; padding: 40px; color: #94a3b8; font-size: 0.8rem;">
-        &copy; <?= date('Y') ?> - Gestion Buvette Staff - Connecté en tant que Barman
-    </footer>
-    </body>
-    </html>
+    </main></div></body></html>
     <?php
 }
+    private function afficherFooter() {
+        ?>
+        </div>
+        <footer style="text-align: center; padding: 40px; color: #94a3b8; font-size: 0.8rem;">
+            &copy; <?= date('Y') ?> - Gestion Buvette Staff - Connecté en tant que Barman
+        </footer>
+        </body>
+        </html>
+        <?php
+    }
 
 
-    public function afficherAccueil()
+    public function afficherAccueil($stats, $dernierClient, $ventesRecentes, $stockCritiqueListe)
     {
         $this->afficherHeader("Dashboard Barman");
         $this->afficherNav();
 
         $prenom = $_SESSION['prenom'] ?? 'Barman';
+
+        // Formatage des données pour l'affichage
+        $ca = number_format($stats['ca'], 2);
+        $nomClientActif = $dernierClient ? htmlspecialchars($dernierClient['prenom'] . ' ' . $dernierClient['nom']) : 'Aucun';
         ?>
         <div class="max-w-6xl mx-auto space-y-8 animate-fadeIn">
 
-            <div class="flex flex-col md:flex-row justify-between items-end gap-4 border-b border-white/5 pb-6">
-                <div>
-                    <p class="text-[10px] font-black text-blue-500 uppercase tracking-[0.4em] mb-2">Statut du service :
-                        Ouvert</p>
-                    <h1 class="text-5xl font-[900] text-white italic uppercase tracking-tighter">
-                        Dashboard <span class="text-blue-600">Global</span>
-                    </h1>
-                </div>
-                <div class="text-right">
-                    <p class="text-slate-500 text-xs font-bold uppercase tracking-widest">Session de service</p>
-                    <p class="text-white font-black text-xl italic" id="liveClock"><?= date('H:i') ?></p>
-                </div>
+        <div class="flex flex-col md:flex-row justify-between items-end gap-4 border-b border-white/5 pb-6">
+            <div>
+                <p class="text-[10px] font-black text-blue-500 uppercase tracking-[0.4em] mb-2">Statut du service :
+                    Ouvert</p>
+                <h1 class="text-5xl font-[900] text-white italic uppercase tracking-tighter">
+                    Dashboard <span class="text-blue-600">Global</span>
+                </h1>
+            </div>
+            <div class="text-right">
+                <p class="text-slate-500 text-xs font-bold uppercase tracking-widest">Session de service</p>
+                <p class="text-white font-black text-xl italic" id="liveClock"><?= date('H:i') ?></p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="bg-white/[0.02] border border-white/5 p-6 rounded-3xl">
+                <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">Ventes (24h)</p>
+                <p class="text-2xl font-black text-white italic"><?= $ca ?> €</p>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div class="bg-white/[0.02] border border-white/5 p-6 rounded-3xl">
-                    <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">Ventes (24h)</p>
-                    <p class="text-2xl font-black text-white italic">142.50 €</p>
-                </div>
-                <div class="bg-white/[0.02] border border-white/5 p-6 rounded-3xl">
-                    <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">Commandes</p>
-                    <p class="text-2xl font-black text-blue-500 italic">12 Prêtes</p>
-                </div>
-                <div class="bg-white/[0.02] border border-white/5 p-6 rounded-3xl border-red-500/20">
-                    <p class="text-[9px] font-black text-red-500 uppercase tracking-widest mb-1">Stock Critique</p>
-                    <p class="text-2xl font-black text-white italic">3 Articles</p>
-                </div>
-                <div class="bg-[#0f172a] border-2 border-blue-600 p-6 rounded-3xl shadow-[0_0_20px_rgba(37,99,235,0.2)]">
-                    <p class="text-[9px] font-black text-blue-400 uppercase tracking-widest mb-1">Client Actif</p>
-                    <p class="text-lg font-bold text-white truncate">Lucas Morel</p>
-                </div>
+            <div class="bg-white/[0.02] border border-white/5 p-6 rounded-3xl">
+                <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">Commandes</p>
+                <p class="text-2xl font-black text-blue-500 italic"><?= $stats['nb_commandes'] ?> En cours</p>
             </div>
 
+            <div class="bg-white/[0.02] border border-white/5 p-6 rounded-3xl border-red-500/20">
+                <p class="text-[9px] font-black text-red-500 uppercase tracking-widest mb-1">Stock Critique</p>
+                <p class="text-2xl font-black text-white italic"><?= $stats['stock_critique'] ?> Articles</p>
+            </div>
+
+            <div class="bg-[#0f172a] border-2 border-blue-600 p-6 rounded-3xl shadow-[0_0_20px_rgba(37,99,235,0.2)]">
+                <p class="text-[9px] font-black text-blue-400 uppercase tracking-widest mb-1">Dernier Client</p>
+                <p class="text-lg font-bold text-white truncate"><?= $nomClientActif ?></p>
+            </div>
+        </div>
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
                 <div class="lg:col-span-2 space-y-4">
                     <div class="flex justify-between items-center px-2">
-                        <h3 class="text-xs font-black text-white uppercase tracking-[0.2em]">Flux des ventes
-                            récentes</h3>
+                        <h3 class="text-xs font-black text-white uppercase tracking-[0.2em]">Flux des ventes récentes</h3>
                         <a href="index.php?module=barman&action=historiqueCommandes"
-                           class="text-[10px] font-bold text-blue-500 hover:text-white transition-colors uppercase">Voir
-                            tout</a>
+                           class="text-[10px] font-bold text-blue-500 hover:text-white transition-colors uppercase">Voir tout</a>
                     </div>
 
                     <div class="bg-white/[0.02] border border-white/5 rounded-[2rem] overflow-hidden">
@@ -488,24 +493,22 @@ private function afficherHeader($titre = "Gestionnaire de buvette")
                             </tr>
                             </thead>
                             <tbody class="text-sm font-bold text-slate-300 divide-y divide-white/5">
-                            <tr class="hover:bg-white/[0.02] transition-colors">
-                                <td class="p-5 text-white">Emma Petit</td>
-                                <td class="p-5 text-center">3</td>
-                                <td class="p-5 text-right text-blue-400">7.50 €</td>
-                                <td class="p-5 text-right text-slate-500">14:22</td>
-                            </tr>
-                            <tr class="hover:bg-white/[0.02] transition-colors">
-                                <td class="p-5 text-white">Mathieu Blanc</td>
-                                <td class="p-5 text-center">1</td>
-                                <td class="p-5 text-right text-blue-400">2.50 €</td>
-                                <td class="p-5 text-right text-slate-500">14:15</td>
-                            </tr>
-                            <tr class="hover:bg-white/[0.02] transition-colors">
-                                <td class="p-5 text-white">Laura Dupuis</td>
-                                <td class="p-5 text-center">2</td>
-                                <td class="p-5 text-right text-blue-400">5.00 €</td>
-                                <td class="p-5 text-right text-slate-500">13:58</td>
-                            </tr>
+
+                            <?php if (empty($ventesRecentes)): ?>
+                                <tr><td colspan="4" class="p-5 text-center text-slate-500 italic">Aucune vente aujourd'hui</td></tr>
+                            <?php else: ?>
+                                <?php foreach ($ventesRecentes as $vente):
+                                    $heure = date('H:i', strtotime($vente['date_vente']));
+                                    ?>
+                                    <tr class="hover:bg-white/[0.02] transition-colors">
+                                        <td class="p-5 text-white"><?= htmlspecialchars($vente['prenom'] . ' ' . $vente['nom']) ?></td>
+                                        <td class="p-5 text-center"><?= $vente['nb_articles'] ?></td>
+                                        <td class="p-5 text-right text-blue-400"><?= number_format($vente['montant_total'], 2) ?> €</td>
+                                        <td class="p-5 text-right text-slate-500"><?= $heure ?></td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+
                             </tbody>
                         </table>
                     </div>
@@ -515,24 +518,30 @@ private function afficherHeader($titre = "Gestionnaire de buvette")
                     <h3 class="text-xs font-black text-white uppercase tracking-[0.2em] px-2 text-center md:text-left">
                         Infos Buvette</h3>
 
-                    <div class="bg-red-500/5 border border-red-500/20 p-6 rounded-[2rem] space-y-4">
-                        <div class="flex items-center gap-3">
-                            <i class="fa-solid fa-triangle-exclamation text-red-500"></i>
-                            <span class="text-[10px] font-black text-red-500 uppercase tracking-widest">Réapprovisionnement nécessaire</span>
+                    <?php if (!empty($stockCritiqueListe)): ?>
+                        <div class="bg-red-500/5 border border-red-500/20 p-6 rounded-[2rem] space-y-4">
+                            <div class="flex items-center gap-3">
+                                <i class="fa-solid fa-triangle-exclamation text-red-500"></i>
+                                <span class="text-[10px] font-black text-red-500 uppercase tracking-widest">Réapprovisionnement nécessaire</span>
+                            </div>
+                            <ul class="space-y-3">
+                                <?php foreach ($stockCritiqueListe as $produit): ?>
+                                    <li class="flex justify-between items-center text-xs font-bold text-white">
+                                        <span><?= htmlspecialchars($produit['nom']) ?></span>
+                                        <span class="bg-red-500/20 px-2 py-0.5 rounded text-[10px]">Restant: <?= $produit['quantiteActuelle'] ?></span>
+                                    </li>
+                                <?php endforeach; ?>
+                            </ul>
                         </div>
-                        <ul class="space-y-3">
-                            <li class="flex justify-between items-center text-xs font-bold text-white">
-                                <span>Coca-Cola 33cl</span>
-                                <span class="bg-red-500/20 px-2 py-0.5 rounded text-[10px]">Restant: 4</span>
-                            </li>
-                            <li class="flex justify-between items-center text-xs font-bold text-white">
-                                <span>Sandwich Jambon</span>
-                                <span class="bg-red-500/20 px-2 py-0.5 rounded text-[10px]">Restant: 2</span>
-                            </li>
-                        </ul>
-                    </div>
-
-
+                    <?php else: ?>
+                        <div class="bg-emerald-500/5 border border-emerald-500/20 p-6 rounded-[2rem] space-y-4">
+                            <div class="flex items-center gap-3">
+                                <i class="fa-solid fa-check-circle text-emerald-500"></i>
+                                <span class="text-[10px] font-black text-emerald-500 uppercase tracking-widest">Stocks OK</span>
+                            </div>
+                            <p class="text-xs text-slate-400">Aucun produit en rupture critique.</p>
+                        </div>
+                    <?php endif; ?>
                 </div>
 
             </div>
@@ -553,18 +562,13 @@ private function afficherHeader($titre = "Gestionnaire de buvette")
             document.addEventListener('keydown', function (event) {
                 // Détecte CTRL + N (ou CMD + N sur Mac)
                 if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'n') {
-
-                    // Indispensable : empêche le navigateur d'ouvrir une nouvelle fenêtre vide
                     event.preventDefault();
-
-                    // Redirection vers ta page de vente
                     window.location.href = 'index.php?module=barman&action=creerTransaction';
                 }
             });
         </script>
         <?php
     }
-
     public function afficherDerniereTransaction($transaction)
     {
         $this->afficherHeader("Dernière transaction");
@@ -691,13 +695,13 @@ private function afficherHeader($titre = "Gestionnaire de buvette")
                 $totalAnnulees = 0;
                 $montantTotal = 0;
 
-                // Pré-calcul pour le bilan
                 foreach ($commandes as $c) {
-                    if (($c['statut'] ?? '') === 'payee' || ($c['statut'] ?? '') === 'terminee') {
+                    if (($c['statut'] ?? '') === 'annulee') {
+                        $totalAnnulees++;
+                    }
+                    else {
                         $totalTerminees++;
                         $montantTotal += $c['montant_total'];
-                    } elseif (($c['statut'] ?? '') === 'annulee') {
-                        $totalAnnulees++;
                     }
                 }
                 ?>
@@ -749,37 +753,47 @@ private function afficherHeader($titre = "Gestionnaire de buvette")
                         </tr>
                         </thead>
                         <tbody class="divide-y divide-white/5 text-sm font-bold">
-                        <?php foreach ($commandes as $commande):
-                            $statut = $commande['statut'] ?? 'attente';
-                            $badgeClass = "bg-orange-500/10 text-orange-500";
-                            if ($statut === 'payee' || $statut === 'terminee') $badgeClass = "bg-emerald-500/10 text-emerald-500";
-                            if ($statut === 'annulee') $badgeClass = "bg-red-500/10 text-red-500";
-                            ?>
+                        <?php foreach ($commandes as $commande): ?>
                             <tr class="group hover:bg-white/[0.01] transition-all">
                                 <td class="p-6">
-                                    <span class="text-white font-black opacity-40 group-hover:opacity-100 transition-opacity">#<?= htmlspecialchars($commande['commande_id']) ?></span>
+                <span class="text-white font-black opacity-40 group-hover:opacity-100 transition-opacity">
+                    #<?= htmlspecialchars($commande['commande_id'] ?? '') ?>
+                </span>
                                 </td>
+
                                 <td class="p-6 text-slate-400 font-medium">
-                                    <?= htmlspecialchars($commande['date_heure_affichage'] ?? 'Date inconnue') ?>
+                                    <?= htmlspecialchars($commande['date_heure_affichage'] ?? '') ?>
                                 </td>
+
                                 <td class="p-6">
                                     <div class="flex items-center gap-3">
                                         <div class="w-8 h-8 rounded-full bg-blue-600/10 flex items-center justify-center text-[10px] text-blue-500">
-                                            <?= strtoupper(substr($commande['prenom'], 0, 1)) ?>
+                                            <i class="fa-solid fa-user"></i>
                                         </div>
-                                        <span class="text-white"><?= htmlspecialchars($commande['prenom'] . ' ' . $commande['nom']) ?></span>
+                                        <span class="text-white">
+                        <?= htmlspecialchars(($commande['prenom'] ?? '') . ' ' . ($commande['nom'] ?? '')) ?>
+                    </span>
                                     </div>
                                 </td>
+
                                 <td class="p-6 text-blue-400 font-black">
-                                    <?= number_format($commande['montant_total'], 2) ?> €
+                                    <?= number_format($commande['montant_total'] ?? 0, 2) ?> €
                                 </td>
+
                                 <td class="p-6 text-center">
-                            <span class="px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest <?= $badgeClass ?>">
-                                <?= htmlspecialchars($commande['statut_affichage'] ?? $statut) ?>
-                            </span>
+                                    <?php
+                                    if (($commande['statut'] ?? '') === 'annulee') {
+                                        // Si c'est annulé -> Rouge
+                                        echo '<span class="px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest bg-red-500/10 text-red-500">Annulée</span>';
+                                    } else {
+                                        // Sinon (payee, null, etc) -> Vert "Terminée"
+                                        echo '<span class="px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest bg-emerald-500/10 text-emerald-500">Terminée</span>';
+                                    }
+                                    ?>
                                 </td>
+
                                 <td class="p-6 text-right">
-                                    <a href="index.php?action=detailCommande&id=<?= $commande['commande_id'] ?>"
+                                    <a href="index.php?module=barman&action=detailCommande&id=<?= $commande['commande_id'] ?? '' ?>"
                                        class="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-white/5 text-slate-400 hover:bg-blue-600 hover:text-white transition-all shadow-lg">
                                         <i class="fa-solid fa-arrow-right-long"></i>
                                     </a>
@@ -794,143 +808,104 @@ private function afficherHeader($titre = "Gestionnaire de buvette")
         <?php
     }
 
-
     public function afficherClients($clients, $search = null)
     {
-        $this->afficherHeader("Annuaire Clients");
         $this->afficherNav();
         ?>
-        <div class="max-w-6xl mx-auto space-y-8 animate-fadeIn">
+        <div style="padding: 2rem;">
+            <h1 style="font-size: 2.5rem; font-weight: 900; color: white; margin-bottom: 2rem;">
+                <i class="fa-solid fa-users" style="color: #f59e0b;"></i> Rechercher un Client
+            </h1>
 
-            <div class="flex flex-col md:flex-row justify-between items-center gap-6 border-b border-white/5 pb-8">
-                <div>
-                    <p class="text-[10px] font-black text-emerald-500 uppercase tracking-[0.4em] mb-2">Base de
-                        données</p>
-                    <h2 class="text-4xl font-[900] text-white italic uppercase tracking-tighter">
-                        Gestion <span class="text-emerald-500">Clients</span>
-                    </h2>
-                </div>
-
-                <form method="get" class="relative w-full md:w-96 group">
+            <!-- Formulaire de recherche -->
+            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 15px; padding: 1.5rem; margin-bottom: 2rem;">
+                <form method="GET" action="index.php" style="display: flex; gap: 1rem; align-items: end;">
                     <input type="hidden" name="module" value="barman">
                     <input type="hidden" name="action" value="rechercherClient">
-                    <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-emerald-500 transition-colors"></i>
-                    <input type="text" name="search"
-                           placeholder="Nom, prénom ou ID..."
-                           value="<?= htmlspecialchars($search ?? '') ?>"
-                           class="w-full bg-white/[0.02] border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white font-bold focus:outline-none focus:border-emerald-500/50 focus:bg-white/[0.05] transition-all">
-                    <button type="submit" class="hidden">Rechercher</button>
+
+                    <div style="flex: 1;">
+                        <label style="display: block; color: #94a3b8; font-size: 0.85rem; font-weight: 700; margin-bottom: 0.5rem; text-transform: uppercase;">
+                            <i class="fa-solid fa-search"></i> Rechercher par nom, prénom ou email
+                        </label>
+                        <input type="text"
+                               name="search"
+                               value="<?= htmlspecialchars($search ?? '') ?>"
+                               placeholder="Ex: Dupont, Jean, jean@example.com..."
+                               autofocus
+                               style="width: 100%; padding: 1rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: white; font-weight: 600; font-size: 1rem;">
+                    </div>
+
+                    <button type="submit" style="padding: 1rem 2rem; background: #f59e0b; border: none; border-radius: 12px; color: white; font-weight: 900; cursor: pointer; text-transform: uppercase; font-size: 0.9rem;">
+                        <i class="fa-solid fa-search"></i> Rechercher
+                    </button>
+
+                    <?php if ($search): ?>
+                        <a href="index.php?module=barman&action=rechercherClient"
+                           style="padding: 1rem 2rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: #94a3b8; font-weight: 900; text-transform: uppercase; font-size: 0.9rem; text-decoration: none; display: inline-block;">
+                            <i class="fa-solid fa-rotate"></i> Réinitialiser
+                        </a>
+                    <?php endif; ?>
                 </form>
             </div>
 
-            <?php if ($search): ?>
-                <div class="space-y-4">
-                    <div class="flex justify-between items-center px-2">
-                        <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest">
-                            Résultats pour : <span class="text-white">"<?= htmlspecialchars($search) ?>"</span>
-                        </p>
-                        <span class="text-[10px] font-bold text-slate-500 italic"><?= count($clients) ?> client(s) trouvé(s)</span>
-                    </div>
-
-                    <?php if (empty($clients)): ?>
-                        <div class="bg-white/[0.02] border border-white/5 p-16 rounded-[2.5rem] text-center">
-                            <div class="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <i class="fa-solid fa-user-slash text-slate-600 text-2xl"></i>
-                            </div>
-                            <p class="text-slate-500 font-bold uppercase tracking-widest text-sm">Aucun membre ne
-                                correspond à cette recherche.</p>
-                        </div>
-                    <?php else: ?>
-                        <div class="bg-white/[0.02] border border-white/5 rounded-[2.5rem] overflow-hidden shadow-2xl">
-                            <table class="w-full text-left border-collapse">
-                                <thead>
-                                <tr class="bg-white/[0.02] text-[9px] font-black text-slate-500 uppercase tracking-[0.2em]">
-                                    <th class="p-6">Membre</th>
-                                    <th class="p-6 text-center">Identifiant</th>
-                                    <th class="p-6">Solde Actuel</th>
-                                    <th class="p-6 text-right">Actions</th>
-                                </tr>
-                                </thead>
-                                <tbody class="divide-y divide-white/5">
-                                <?php foreach ($clients as $c):
-                                    $solde = (float)($c['solde'] ?? 0);
-                                    // Couleur du solde : Rouge si < 5€, Vert sinon
-                                    $soldeClass = $solde < 5 ? "text-red-500 bg-red-500/10" : "text-emerald-500 bg-emerald-500/10";
-                                    ?>
-                                    <tr class="group hover:bg-white/[0.01] transition-all">
-                                        <td class="p-6">
-                                            <div class="flex items-center gap-4">
-                                                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white font-black shadow-lg shadow-emerald-900/20">
-                                                    <?= strtoupper(substr($c['prenom'], 0, 1)) ?>
-                                                </div>
-                                                <div>
-                                                    <p class="text-white font-bold group-hover:text-emerald-400 transition-colors uppercase tracking-tight">
-                                                        <?= htmlspecialchars($c['nom'] . ' ' . $c['prenom']) ?>
-                                                    </p>
-                                                    <p class="text-[10px] text-slate-500 font-medium">Membre
-                                                        Association</p>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td class="p-6 text-center">
-                                            <span class="text-xs font-mono text-slate-500">#<?= str_pad($c['id'], 4, '0', STR_PAD_LEFT) ?></span>
-                                        </td>
-                                        <td class="p-6">
-                                        <span class="px-3 py-1 rounded-lg font-black text-sm <?= $soldeClass ?>">
-                                            <?= number_format($solde, 2) ?> €
-                                        </span>
-                                        </td>
-                                        <td class="p-6 text-right">
-                                            <div class="flex justify-end gap-2">
-                                                <a href="index.php?module=barman&action=creerTransaction&client_id=<?= $c['id'] ?>"
-                                                   class="h-10 px-4 flex items-center gap-2 bg-emerald-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-500 transition-all shadow-lg shadow-emerald-900/20">
-                                                    <i class="fa-solid fa-cart-plus"></i> Encaisser
-                                                </a>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                <?php endforeach; ?>
-                                </tbody>
-                            </table>
-                        </div>
-                    <?php endif; ?>
+            <!-- Résultats -->
+            <?php if ($search && empty($clients)): ?>
+                <div style="text-align: center; padding: 3rem; background: rgba(255,255,255,0.02); border-radius: 15px; border: 2px dashed rgba(255,255,255,0.1);">
+                    <i class="fa-solid fa-user-slash" style="font-size: 3rem; color: #64748b; margin-bottom: 1rem;"></i>
+                    <p style="color: #94a3b8; font-size: 1.1rem; font-weight: 600;">Aucun client trouvé</p>
+                    <p style="color: #64748b; font-size: 0.9rem; margin-top: 0.5rem;">
+                        Essayez une autre recherche ou vérifiez que le client fait partie de votre association
+                    </p>
                 </div>
+
+            <?php elseif (!$search): ?>
+                <div style="text-align: center; padding: 3rem; background: rgba(255,255,255,0.02); border-radius: 15px; border: 2px dashed rgba(255,255,255,0.1);">
+                    <i class="fa-solid fa-search" style="font-size: 3rem; color: #f59e0b; margin-bottom: 1rem;"></i>
+                    <p style="color: #94a3b8; font-size: 1.1rem; font-weight: 600;">Recherchez un client pour commencer</p>
+                    <p style="color: #64748b; font-size: 0.9rem; margin-top: 0.5rem;">
+                        Entrez le nom, prénom ou email du client de votre association
+                    </p>
+                </div>
+
             <?php else: ?>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 opacity-50">
-                    <div class="border-2 border-dashed border-white/5 rounded-[2.5rem] p-12 text-center">
-                        <i class="fa-solid fa-keyboard text-4xl text-slate-700 mb-4"></i>
-                        <p class="text-slate-500 font-bold uppercase text-[10px] tracking-[0.2em]">Tapez un nom ou un ID
-                            pour commencer</p>
-                    </div>
-                    <div class="border-2 border-dashed border-white/5 rounded-[2.5rem] p-12 text-center">
-                        <i class="fa-solid fa-address-card text-4xl text-slate-700 mb-4"></i>
-                        <p class="text-slate-500 font-bold uppercase text-[10px] tracking-[0.2em]">Les soldes sont mis à
-                            jour en temps réel</p>
+                <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 15px; padding: 1.5rem;">
+                    <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 1.5rem;">
+                        <i class="fa-solid fa-users"></i> <?= count($clients) ?> client(s) trouvé(s)
+                    </p>
+
+                    <div style="display: grid; gap: 1rem;">
+                        <?php foreach ($clients as $client): ?>
+                            <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <h3 style="color: white; font-weight: 900; font-size: 1.2rem; margin-bottom: 0.5rem;">
+                                        <?= htmlspecialchars($client['prenom'] . ' ' . $client['nom']) ?>
+                                    </h3>
+                                    <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 0.25rem;">
+                                        <i class="fa-solid fa-envelope"></i> <?= htmlspecialchars($client['email'] ?? 'N/A') ?>
+                                    </p>
+                                    <?php if (isset($client['nom_association'])): ?>
+                                        <p style="color: #3b82f6; font-size: 0.85rem;">
+                                            <i class="fa-solid fa-building"></i> <?= htmlspecialchars($client['nom_association']) ?>
+                                        </p>
+                                    <?php endif; ?>
+                                    <p style="color: #10b981; font-weight: 700; font-size: 1.1rem; margin-top: 0.5rem;">
+                                        <i class="fa-solid fa-wallet"></i> Solde: <?= number_format($client['solde'] ?? 0, 2) ?> €
+                                    </p>
+                                </div>
+
+                                <a href="index.php?module=barman&action=vendre&search_client=<?= urlencode($search) ?>&id_client=<?= $client['id'] ?>"
+                                   style="padding: 1rem 2rem; background: #f59e0b; border-radius: 12px; color: white; font-weight: 900; text-transform: uppercase; font-size: 0.9rem; text-decoration: none; white-space: nowrap;">
+                                    <i class="fa-solid fa-cash-register"></i> Encaisser
+                                </a>
+                            </div>
+                        <?php endforeach; ?>
                     </div>
                 </div>
             <?php endif; ?>
         </div>
-
-        <style>
-            .animate-fadeIn {
-                animation: fadeIn 0.4s ease-out;
-            }
-
-            @keyframes fadeIn {
-                from {
-                    opacity: 0;
-                    transform: translateY(10px);
-                }
-                to {
-                    opacity: 1;
-                    transform: translateY(0);
-                }
-            }
-        </style>
+        <!-- NE PAS FERMER </main></div></body></html> ICI CAR afficherNav() L'A DÉJÀ OUVERT -->
         <?php
     }
-
-
     public function afficherDetailCommande($commande, $produits)
     {
         $this->afficherHeader("Détail commande");
@@ -1131,221 +1106,208 @@ private function afficherHeader($titre = "Gestionnaire de buvette")
         $this->afficherFooter();
     }
 
-    public function afficherFormTransaction($produits = [], $erreur = null, $donneesSaisies = null)
+    public function afficherFormTransaction($produits = [], $types = [], $clientId = null, $searchProduit = null, $typeProduit = null, $erreur = null, $donneesSaisies = null)
     {
-        $this->afficherHeader("Vente");
         $this->afficherNav();
         ?>
-        <div class="max-w-4xl mx-auto">
-            <h2 class="text-2xl font-[900] text-white italic uppercase tracking-tighter mb-8">
-                Encaisser <span class="text-blue-600">une vente</span>
-            </h2>
+        <div style="padding: 2rem;">
+            <h1 style="font-size: 2.5rem; font-weight: 900; color: white; margin-bottom: 2rem;">
+                <i class="fa-solid fa-cash-register" style="color: #f59e0b;"></i> Nouvelle Transaction
+            </h1>
 
             <?php if ($erreur): ?>
-                <div class="mb-6 p-4 bg-red-500/20 border border-red-500/50 rounded-xl text-red-500 font-bold">
-                    <?= $erreur ?>
+                <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); padding: 1rem; border-radius: 10px; margin-bottom: 1.5rem; color: #ef4444;">
+                    <strong><i class="fa-solid fa-exclamation-triangle"></i> Erreur:</strong> <?= htmlspecialchars($erreur) ?>
                 </div>
             <?php endif; ?>
 
-            <form method="post" action="index.php?module=barman&action=traiterTransaction" class="space-y-6">
-                <div class="bg-white/[0.02] border border-white/5 p-6 rounded-3xl shadow-xl">
-                    <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-4">Rechercher
-                        le client</label>
-                    <div class="relative" id="client_search_container">
-                        <i class="fa-solid fa-search absolute left-4 top-4 text-slate-500"></i>
-                        <input type="text" id="client_input" autocomplete="off" placeholder="Nom, Prénom ou ID..."
-                               class="w-full bg-[#020617] border border-white/10 rounded-xl py-4 pl-12 pr-4 text-white font-bold focus:border-blue-600 outline-none transition-all">
+            <!-- Barre de recherche et filtres -->
+            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 15px; padding: 1.5rem; margin-bottom: 2rem;">
+                <form method="GET" action="index.php" style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: end;">
+                    <input type="hidden" name="module" value="barman">
+                    <input type="hidden" name="action" value="creerTransaction">
+                    <input type="hidden" name="id_client" value="<?= htmlspecialchars($clientId) ?>">
 
-                        <div id="client_results"
-                             class="absolute z-50 w-full mt-2 bg-slate-900 border border-white/10 rounded-xl hidden shadow-2xl overflow-hidden"></div>
-                        <input type="hidden" name="client_id" id="client_id_final" required>
+                    <!-- Recherche par nom -->
+                    <div style="flex: 2; min-width: 250px;">
+                        <label style="display: block; color: #94a3b8; font-size: 0.85rem; font-weight: 700; margin-bottom: 0.5rem; text-transform: uppercase;">
+                            <i class="fa-solid fa-search"></i> Rechercher un produit
+                        </label>
+                        <input type="text" name="search_produit" value="<?= htmlspecialchars($searchProduit ?? '') ?>" placeholder="Nom du produit..."
+                               style="width: 100%; padding: 0.75rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; color: white; font-weight: 600;">
                     </div>
 
-                    <div id="selected_client_badge"
-                         class="mt-4 hidden p-4 bg-blue-600/10 border border-blue-600/20 rounded-xl flex items-center justify-between animate-fadeIn">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-black">
-                                <i class="fa-solid fa-user"></i>
-                            </div>
-                            <span class="text-blue-400 font-bold" id="client_name_display"></span>
+                    <!-- Filtre par type -->
+                    <div style="flex: 1; min-width: 200px;">
+                        <label style="display: block; color: #94a3b8; font-size: 0.85rem; font-weight: 700; margin-bottom: 0.5rem; text-transform: uppercase;">
+                            <i class="fa-solid fa-filter"></i> Type
+                        </label>
+                        <select name="type_produit" style="width: 100%; padding: 0.75rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; color: white; font-weight: 600;">
+                            <option value="tous" <?= !$typeProduit || $typeProduit === 'tous' ? 'selected' : '' ?>>Tous les types</option>
+                            <?php foreach ($types as $type): ?>
+                                <option value="<?= htmlspecialchars($type) ?>" <?= $typeProduit === $type ? 'selected' : '' ?>>
+                                    <?= htmlspecialchars(ucfirst($type)) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
+                    <!-- Boutons -->
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button type="submit" style="padding: 0.75rem 1.5rem; background: #f59e0b; border: none; border-radius: 10px; color: white; font-weight: 900; cursor: pointer; text-transform: uppercase; font-size: 0.85rem;">
+                            <i class="fa-solid fa-search"></i> Filtrer
+                        </button>
+                        <a href="index.php?module=barman&action=creerTransaction&id_client=<?= htmlspecialchars($clientId) ?>"
+                           style="padding: 0.75rem 1.5rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; color: #94a3b8; font-weight: 900; cursor: pointer; text-transform: uppercase; font-size: 0.85rem; text-decoration: none; display: inline-block;">
+                            <i class="fa-solid fa-rotate"></i> Réinitialiser
+                        </a>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Formulaire transaction -->
+            <form method="POST" action="index.php?module=barman&action=traiterTransaction" id="formTransaction">
+                <input type="hidden" name="client_id" value="<?= htmlspecialchars($clientId) ?>">
+
+                <!-- Liste des produits -->
+                <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 15px; padding: 1.5rem; margin-bottom: 2rem;">
+                    <h3 style="color: white; font-weight: 900; margin-bottom: 1.5rem; font-size: 1.2rem;">
+                        <i class="fa-solid fa-box-open" style="color: #f59e0b;"></i> Sélectionner les produits
+                    </h3>
+
+                    <?php if (empty($produits)): ?>
+                        <p style="color: #94a3b8; text-align: center; padding: 2rem;">
+                            <i class="fa-solid fa-box"></i> Aucun produit trouvé
+                        </p>
+                    <?php else: ?>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem;">
+                            <?php foreach ($produits as $p): ?>
+                                <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 1rem; position: relative;">
+                                    <!-- Nom et prix -->
+                                    <div style="margin-bottom: 0.75rem;">
+                                        <h4 style="color: white; font-weight: 900; font-size: 1rem; margin-bottom: 0.25rem;">
+                                            <?= htmlspecialchars($p['nom']) ?>
+                                        </h4>
+                                        <p style="color: #f59e0b; font-weight: 700; font-size: 1.2rem;">
+                                            <?= number_format($p['prix'], 2) ?> €
+                                        </p>
+                                        <?php if (!empty($p['type'])): ?>
+                                            <span style="display: inline-block; padding: 0.25rem 0.5rem; background: rgba(59, 130, 246, 0.1); color: #3b82f6; border-radius: 6px; font-size: 0.7rem; font-weight: 700; margin-top: 0.25rem;">
+                                                         <?= htmlspecialchars(ucfirst($p['type'])) ?>
+                                         </span>
+                                        <?php endif; ?>
+                                    </div>
+
+                                    <!-- Stock -->
+                                    <p style="color: <?= $p['disponibilite'] > 0 ? '#10b981' : '#ef4444' ?>; font-size: 0.85rem; margin-bottom: 0.75rem;">
+                                        <i class="fa-solid fa-box"></i> Stock: <?= $p['disponibilite'] ?>
+                                    </p>
+
+                                    <!-- Quantité -->
+                                    <?php if ($p['disponibilite'] > 0): ?>
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <input type="number"
+                                                   name="produits[<?= $p['id'] ?>]"
+                                                   min="0"
+                                                   max="<?= $p['disponibilite'] ?>"
+                                                   value="0"
+                                                   data-prix="<?= $p['prix'] ?>"
+                                                   data-nom="<?= htmlspecialchars($p['nom']) ?>"
+                                                   class="quantite-input"
+                                                   style="flex: 1; padding: 0.5rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: white; font-weight: 700; text-align: center;">
+                                            <button type="button" onclick="incrementer(<?= $p['id'] ?>, <?= $p['disponibilite'] ?>)"
+                                                    style="padding: 0.5rem 0.75rem; background: #f59e0b; border: none; border-radius: 8px; color: white; font-weight: 900; cursor: pointer;">
+                                                +
+                                            </button>
+                                        </div>
+                                    <?php else: ?>
+                                        <p style="color: #ef4444; font-size: 0.85rem; font-weight: 700;">
+                                            <i class="fa-solid fa-ban"></i> Rupture de stock
+                                        </p>
+                                    <?php endif; ?>
+                                </div>
+                            <?php endforeach; ?>
                         </div>
-                        <button type="button" onclick="resetClient()"
-                                class="text-slate-500 hover:text-white transition-colors">
-                            <i class="fa-solid fa-circle-xmark text-xl"></i>
+                    <?php endif; ?>
+                </div>
+
+                <!-- Récapitulatif et validation -->
+                <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 15px; padding: 1.5rem;">
+                    <h3 style="color: white; font-weight: 900; margin-bottom: 1rem; font-size: 1.2rem;">
+                        <i class="fa-solid fa-receipt" style="color: #f59e0b;"></i> Récapitulatif
+                    </h3>
+
+                    <div id="recap" style="min-height: 50px; margin-bottom: 1rem;">
+                        <p style="color: #94a3b8; font-style: italic;">Aucun produit sélectionné</p>
+                    </div>
+
+                    <div style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem; margin-top: 1rem;">
+                        <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 0.5rem;">Total à encaisser :</p>
+                        <p style="color: #f59e0b; font-size: 2rem; font-weight: 900;" id="totalPrice">0.00 €</p>
+                    </div>
+
+                    <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                        <a href="index.php?module=barman&action=rechercherClient"
+                           style="flex: 1; text-align: center; padding: 1rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: #94a3b8; text-decoration: none; font-weight: 900; text-transform: uppercase; font-size: 0.9rem;">
+                            <i class="fa-solid fa-arrow-left"></i> Annuler
+                        </a>
+                        <button type="submit" id="btnValider"
+                                style="flex: 2; padding: 1rem; background: #10b981; border: none; border-radius: 12px; color: white; font-weight: 900; cursor: pointer; text-transform: uppercase; font-size: 0.9rem;">
+                            <i class="fa-solid fa-check"></i> Valider la transaction
                         </button>
                     </div>
                 </div>
-
-                <div class="bg-white/[0.02] border border-white/5 p-6 rounded-3xl shadow-xl">
-                    <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-4">Ajouter
-                        des produits</label>
-                    <div class="relative mb-6">
-                        <input type="text" id="prod_input" autocomplete="off"
-                               placeholder="Chercher un produit (Bière, Soda...)"
-                               class="w-full bg-[#020617] border border-white/10 rounded-xl py-4 px-6 text-white font-bold focus:border-blue-600 outline-none transition-all">
-                        <div id="prod_results"
-                             class="absolute z-50 w-full mt-2 bg-slate-900 border border-white/10 rounded-xl hidden shadow-2xl overflow-hidden"></div>
-                    </div>
-
-                    <table class="w-full">
-                        <tbody id="panier_list" class="divide-y divide-white/5">
-                        </tbody>
-                    </table>
-                </div>
-
-                <button type="submit"
-                        class="w-full bg-blue-600 py-5 rounded-2xl text-white font-[900] uppercase tracking-widest hover:bg-blue-500 transition-all shadow-lg shadow-blue-600/20 active:scale-95">
-                    Confirmer le paiement
-                </button>
             </form>
-        </div>
 
-        <script>
-            let itemIndex = 0;
-            const baseUrl = "index.php?module=barman&action=";
-
-            // --- RECHERCHE CLIENT ---
-            const clientInput = document.getElementById('client_input');
-            const clientResults = document.getElementById('client_results');
-
-            clientInput.addEventListener('input', async (e) => {
-                const val = e.target.value;
-                if (val.length < 2) {
-                    clientResults.classList.add('hidden');
-                    return;
-                }
-
-                try {
-                    const response = await fetch(`${baseUrl}rechercherClientAjax&q=${encodeURIComponent(val)}`);
-                    const clients = await response.json();
-
-                    clientResults.innerHTML = '';
-                    if (clients && clients.length > 0) {
-                        clients.forEach(c => {
-                            const div = document.createElement('div');
-                            div.className = "p-4 hover:bg-white/5 cursor-pointer border-b border-white/5 flex justify-between items-center";
-                            div.innerHTML = `<div><p class="text-white font-bold">${c.nom} ${c.prenom}</p><p class="text-[10px] text-slate-500 uppercase font-black">ID: ${c.id}</p></div><span class="bg-blue-600/20 text-blue-400 px-3 py-1 rounded-lg font-black text-xs">${c.solde} €</span>`;
-                            div.onclick = () => selectClient(c);
-                            clientResults.appendChild(div);
-                        });
-                        clientResults.classList.remove('hidden');
+            <script>
+                function incrementer(id, max) {
+                    const input = document.querySelector(`input[name="produits[${id}]"]`);
+                    if (parseInt(input.value) < max) {
+                        input.value = parseInt(input.value) + 1;
+                        updateRecap();
                     }
-                } catch (error) {
-                    console.error("Erreur client search:", error);
-                }
-            });
-
-            function selectClient(c) {
-                document.getElementById('client_id_final').value = c.id;
-                document.getElementById('client_name_display').innerText = `${c.nom} ${c.prenom} (Solde: ${c.solde}€)`;
-                document.getElementById('selected_client_badge').classList.remove('hidden');
-                document.getElementById('client_search_container').classList.add('hidden');
-                clientResults.classList.add('hidden');
-            }
-
-            function resetClient() {
-                document.getElementById('client_id_final').value = '';
-                document.getElementById('selected_client_badge').classList.add('hidden');
-                document.getElementById('client_search_container').classList.remove('hidden');
-                clientInput.value = '';
-                clientInput.focus();
-            }
-
-            // --- RECHERCHE PRODUIT ---
-            const prodInput = document.getElementById('prod_input');
-            const prodResults = document.getElementById('prod_results');
-
-            prodInput.addEventListener('input', async (e) => {
-                const val = e.target.value;
-                if (val.length < 1) {
-                    prodResults.classList.add('hidden');
-                    return;
                 }
 
-                try {
-                    const response = await fetch(`${baseUrl}rechercherProduitAjax&q=${encodeURIComponent(val)}`);
-                    const produits = await response.json();
+                // Mise à jour automatique du récap
+                document.querySelectorAll('.quantite-input').forEach(input => {
+                    input.addEventListener('change', updateRecap);
+                });
 
-                    // Debug console pour voir ce que le serveur renvoie vraiment
-                    console.log("Produits reçus:", produits);
+                function updateRecap() {
+                    const inputs = document.querySelectorAll('.quantite-input');
+                    let total = 0;
+                    let recap = [];
 
-                    prodResults.innerHTML = '';
-                    if (produits && produits.length > 0) {
-                        produits.forEach(p => {
-                            const div = document.createElement('div');
-                            div.className = "p-4 hover:bg-white/10 cursor-pointer flex justify-between border-b border-white/5 transition-all";
-                            div.innerHTML = `<span class="text-white font-bold">${p.nom}</span><span class="text-blue-400 font-black">${p.prix}€</span>`;
+                    inputs.forEach(input => {
+                        const qty = parseInt(input.value) || 0;
+                        if (qty > 0) {
+                            const prix = parseFloat(input.dataset.prix);
+                            const nom = input.dataset.nom;
+                            total += prix * qty;
+                            recap.push(`${nom} × ${qty} = ${(prix * qty).toFixed(2)} €`);
+                        }
+                    });
 
-                            // Utilisation de addEventListener pour éviter les conflits
-                            div.addEventListener('click', () => {
-                                addProdToPanier(p);
-                            });
+                    document.getElementById('totalPrice').textContent = total.toFixed(2) + ' €';
 
-                            prodResults.appendChild(div);
-                        });
-                        prodResults.classList.remove('hidden');
+                    if (recap.length > 0) {
+                        document.getElementById('recap').innerHTML = recap.map(r =>
+                            `<p style="color: white; margin: 0.5rem 0;"><i class="fa-solid fa-check" style="color: #10b981;"></i> ${r}</p>`
+                        ).join('');
+                        document.getElementById('btnValider').disabled = false;
                     } else {
-                        prodResults.innerHTML = '<div class="p-4 text-slate-500 italic">Aucun produit trouvé</div>';
-                        prodResults.classList.remove('hidden');
+                        document.getElementById('recap').innerHTML = '<p style="color: #94a3b8; font-style: italic;">Aucun produit sélectionné</p>';
+                        document.getElementById('btnValider').disabled = true;
                     }
-                } catch (error) {
-                    console.error("Erreur produit search:", error);
                 }
-            });
 
-            function addProdToPanier(p) {
-                const list = document.getElementById('panier_list');
-                const row = document.createElement('tr');
-                row.className = "group hover:bg-white/[0.01]";
-                row.innerHTML = `
-                <td class="py-4 font-bold text-white">${p.nom} <span class="text-[10px] text-slate-500 ml-2">(${p.prix}€)</span></td>
-                <td class="py-4">
-                    <div class="flex items-center bg-[#020617] border border-white/10 rounded-lg w-fit">
-                        <input type="number" name="produits[${itemIndex}][quantite]" value="1" min="1"
-                               class="bg-transparent px-3 py-1 text-white w-16 outline-none font-bold">
-                    </div>
-                    <input type="hidden" name="produits[${itemIndex}][id]" value="${p.id}">
-                    <input type="hidden" name="produits[${itemIndex}][prix]" value="${p.prix}">
-                </td>
-                <td class="py-4 text-right">
-                    <button type="button" onclick="this.closest('tr').remove()" class="w-10 h-10 rounded-xl text-red-500 hover:bg-red-500/20 transition-all">
-                        <i class="fa-solid fa-trash-can"></i>
-                    </button>
-                </td>
-            `;
-                list.appendChild(row);
-                itemIndex++;
-                prodResults.classList.add('hidden');
-                prodInput.value = '';
-            }
-
-            // Fermer les fenêtres de résultats au clic extérieur
-            document.addEventListener('click', (e) => {
-                if (!clientInput.contains(e.target) && !clientResults.contains(e.target)) clientResults.classList.add('hidden');
-                if (!prodInput.contains(e.target) && !prodResults.contains(e.target)) prodResults.classList.add('hidden');
-            });
-        </script>
-
-        <style>
-            .animate-fadeIn {
-                animation: fadeIn 0.3s ease-out;
-            }
-
-            @keyframes fadeIn {
-                from {
-                    opacity: 0;
-                    transform: translateY(10px);
-                }
-                to {
-                    opacity: 1;
-                    transform: translateY(0);
-                }
-            }
-        </style>
+                // Init
+                updateRecap();
+            </script>
+        </div>
+        </main></div></body></html>
         <?php
-        $this->afficherFooter();
     }
-
     public function afficherResultatTransaction($vente_id)
     {
         $this->afficherHeader("Transaction réussie");
@@ -1367,4 +1329,387 @@ private function afficherHeader($titre = "Gestionnaire de buvette")
         </div>
         <?php
     }
+    public function afficherPageVente($clients, $clientSelectionne, $produits, $types, $searchClient, $searchProduit, $typeProduit)
+    {
+        $this->afficherNav();
+        ?>
+        <div style="padding: 2rem;">
+            <h1 style="font-size: 2.5rem; font-weight: 900; color: white; margin-bottom: 2rem;">
+                <i class="fa-solid fa-cash-register" style="color: #f59e0b;"></i> Encaissement
+            </h1>
+
+            <!-- ===== SECTION 1 : RECHERCHE CLIENT ===== -->
+            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 15px; padding: 1.5rem; margin-bottom: 2rem;">
+                <h2 style="color: white; font-weight: 900; margin-bottom: 1rem; font-size: 1.2rem;">
+                    <i class="fa-solid fa-user" style="color: #f59e0b;"></i> 1. Sélectionner un client
+                </h2>
+
+                <?php if (!$clientSelectionne): ?>
+                    <!-- Formulaire de recherche -->
+                    <form method="GET" action="index.php" style="margin-bottom: 1rem;">
+                        <input type="hidden" name="module" value="barman">
+                        <input type="hidden" name="action" value="vendre">
+
+                        <div style="display: flex; gap: 1rem; align-items: end;">
+                            <div style="flex: 1;">
+                                <label style="display: block; color: #94a3b8; font-size: 0.85rem; font-weight: 700; margin-bottom: 0.5rem; text-transform: uppercase;">
+                                    <i class="fa-solid fa-search"></i> Nom, prénom ou email
+                                </label>
+                                <input type="text" name="search_client" value="<?= htmlspecialchars($searchClient ?? '') ?>"
+                                       placeholder="Ex: Dupont, Jean..." autofocus
+                                       style="width: 100%; padding: 0.75rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; color: white; font-weight: 600;">
+                            </div>
+                            <button type="submit" style="padding: 0.75rem 1.5rem; background: #f59e0b; border: none; border-radius: 10px; color: white; font-weight: 900; cursor: pointer; text-transform: uppercase; font-size: 0.85rem;">
+                                <i class="fa-solid fa-search"></i> Rechercher
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Résultats de recherche -->
+                    <?php if ($searchClient && !empty($clients)): ?>
+                        <div style="display: grid; gap: 0.75rem; margin-top: 1rem;">
+                            <?php foreach ($clients as $client): ?>
+                                <a href="index.php?module=barman&action=vendre&search_client=<?= urlencode($searchClient) ?>&id_client=<?= $client['id'] ?>"
+                                   style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 10px; padding: 1rem; text-decoration: none; transition: all 0.2s;"
+                                   onmouseover="this.style.background='rgba(245, 158, 11, 0.1)'; this.style.borderColor='rgba(245, 158, 11, 0.3)'"
+                                   onmouseout="this.style.background='rgba(255,255,255,0.02)'; this.style.borderColor='rgba(255,255,255,0.05)'">
+                                    <div>
+                                        <p style="color: white; font-weight: 900; font-size: 1rem; margin-bottom: 0.25rem;">
+                                            <?= htmlspecialchars($client['prenom'] . ' ' . $client['nom']) ?>
+                                        </p>
+                                        <p style="color: #94a3b8; font-size: 0.85rem;">
+                                            <i class="fa-solid fa-envelope"></i> <?= htmlspecialchars($client['email']) ?>
+                                        </p>
+                                        <?php if (isset($client['nom_association'])): ?>
+                                            <p style="color: #3b82f6; font-size: 0.75rem; margin-top: 0.25rem;">
+                                                <i class="fa-solid fa-building"></i> <?= htmlspecialchars($client['nom_association']) ?>
+                                            </p>
+                                        <?php endif; ?>
+                                    </div>
+                                    <div style="text-align: right;">
+                                        <p style="color: #10b981; font-weight: 700; font-size: 1.1rem;">
+                                            <?= number_format($client['solde'], 2) ?> €
+                                        </p>
+                                        <span style="color: #f59e0b; font-size: 0.85rem; font-weight: 700;">
+                                        <i class="fa-solid fa-arrow-right"></i> Sélectionner
+                                    </span>
+                                    </div>
+                                </a>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php elseif ($searchClient && empty($clients)): ?>
+                        <p style="color: #94a3b8; font-style: italic; text-align: center; padding: 1rem;">
+                            <i class="fa-solid fa-user-slash"></i> Aucun client trouvé
+                        </p>
+                    <?php endif; ?>
+
+                <?php else: ?>
+                    <!-- Client sélectionné -->
+                    <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 10px; padding: 1rem; display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <p style="color: #10b981; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; margin-bottom: 0.25rem;">
+                                <i class="fa-solid fa-check-circle"></i> Client sélectionné
+                            </p>
+                            <p style="color: white; font-weight: 900; font-size: 1.2rem; margin-bottom: 0.25rem;">
+                                <?= htmlspecialchars($clientSelectionne['prenom'] . ' ' . $clientSelectionne['nom']) ?>
+                            </p>
+                            <p style="color: #94a3b8; font-size: 0.85rem;">
+                                Solde: <span style="color: #10b981; font-weight: 700;"><?= number_format($clientSelectionne['solde'], 2) ?> €</span>
+                            </p>
+                        </div>
+                        <a href="index.php?module=barman&action=vendre"
+                           style="padding: 0.5rem 1rem; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; color: #94a3b8; font-weight: 700; font-size: 0.85rem; text-decoration: none;">
+                            <i class="fa-solid fa-rotate"></i> Changer
+                        </a>
+                    </div>
+                <?php endif; ?>
+            </div>
+
+            <!-- ===== SECTION 2 : SÉLECTION PRODUITS (uniquement si client sélectionné) ===== -->
+            <?php if ($clientSelectionne): ?>
+                <form method="POST" action="index.php?module=barman&action=traiterTransaction" id="formVente">
+                    <input type="hidden" name="client_id" value="<?= $clientSelectionne['id'] ?>">
+
+                    <!-- Filtres produits -->
+                    <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 15px; padding: 1.5rem; margin-bottom: 2rem;">
+                        <h2 style="color: white; font-weight: 900; margin-bottom: 1rem; font-size: 1.2rem;">
+                            <i class="fa-solid fa-box-open" style="color: #f59e0b;"></i> 2. Sélectionner les produits
+                        </h2>
+
+                        <!-- Barre de recherche -->
+                        <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+                            <div style="flex: 2; min-width: 250px;">
+                                <input type="text" id="searchProduit" placeholder="Rechercher un produit..."
+                                       style="width: 100%; padding: 0.75rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; color: white; font-weight: 600;">
+                            </div>
+                            <div style="flex: 1; min-width: 200px;">
+                                <select id="filterType" style="width: 100%; padding: 0.75rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; color: white; font-weight: 600;">
+                                    <option value="">Tous les types</option>
+                                    <?php foreach ($types as $type): ?>
+                                        <option value="<?= htmlspecialchars($type) ?>"><?= htmlspecialchars(ucfirst($type)) ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Grille produits -->
+                        <div id="gridProduits" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1rem;">
+                            <?php foreach ($produits as $p): ?>
+                                <div class="produit-card" data-nom="<?= strtolower(htmlspecialchars($p['nom'])) ?>" data-type="<?= htmlspecialchars($p['type'] ?? '') ?>"
+                                     style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 1rem;">
+                                    <div style="margin-bottom: 0.75rem;">
+                                        <h4 style="color: white; font-weight: 900; font-size: 1rem; margin-bottom: 0.25rem;">
+                                            <?= htmlspecialchars($p['nom']) ?>
+                                        </h4>
+                                        <p style="color: #f59e0b; font-weight: 700; font-size: 1.2rem;">
+                                            <?= number_format($p['prix'], 2) ?> €
+                                        </p>
+                                        <?php if (!empty($p['type'])): ?>
+                                            <span style="display: inline-block; padding: 0.25rem 0.5rem; background: rgba(59, 130, 246, 0.1); color: #3b82f6; border-radius: 6px; font-size: 0.7rem; font-weight: 700; margin-top: 0.25rem;">
+                                                 <?= htmlspecialchars(ucfirst($p['type'])) ?>
+                                            </span>
+                                        <?php endif; ?>
+                                    </div>
+
+                                    <p style="color: <?= $p['disponibilite'] > 0 ? '#10b981' : '#ef4444' ?>; font-size: 0.85rem; margin-bottom: 0.75rem;">
+                                        <i class="fa-solid fa-box"></i> Stock: <?= $p['disponibilite'] ?>
+                                    </p>
+
+                                    <?php if ($p['disponibilite'] > 0): ?>
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <input type="number" name="produits[<?= $p['id'] ?>]" min="0" max="<?= $p['disponibilite'] ?>" value="0"
+                                                   data-prix="<?= $p['prix'] ?>" data-nom="<?= htmlspecialchars($p['nom']) ?>" class="quantite-input"
+                                                   style="flex: 1; padding: 0.5rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: white; font-weight: 700; text-align: center;">
+                                            <button type="button" onclick="incrementer(<?= $p['id'] ?>, <?= $p['disponibilite'] ?>)"
+                                                    style="padding: 0.5rem 0.75rem; background: #f59e0b; border: none; border-radius: 8px; color: white; font-weight: 900; cursor: pointer;">
+                                                +
+                                            </button>
+                                        </div>
+                                    <?php else: ?>
+                                        <p style="color: #ef4444; font-size: 0.85rem; font-weight: 700; text-align: center;">
+                                            <i class="fa-solid fa-ban"></i> Rupture
+                                        </p>
+                                    <?php endif; ?>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+
+                    <!-- Récapitulatif -->
+                    <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 15px; padding: 1.5rem;">
+                        <h3 style="color: white; font-weight: 900; margin-bottom: 1rem; font-size: 1.2rem;">
+                            <i class="fa-solid fa-receipt" style="color: #f59e0b;"></i> Récapitulatif
+                        </h3>
+
+                        <div id="recap" style="min-height: 50px; margin-bottom: 1rem;">
+                            <p style="color: #94a3b8; font-style: italic;">Aucun produit sélectionné</p>
+                        </div>
+
+                        <div style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem;">
+                            <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 0.5rem;">Total à encaisser :</p>
+                            <p style="color: #f59e0b; font-size: 2rem; font-weight: 900;" id="totalPrice">0.00 €</p>
+                        </div>
+
+                        <button type="submit" id="btnValider" disabled
+                                style="width: 100%; margin-top: 1.5rem; padding: 1rem; background: #10b981; border: none; border-radius: 12px; color: white; font-weight: 900; cursor: pointer; text-transform: uppercase; font-size: 1rem;">
+                            <i class="fa-solid fa-check"></i> Valider la transaction
+                        </button>
+                    </div>
+                </form>
+
+                <script>
+                    // Recherche produits
+                    document.getElementById('searchProduit').addEventListener('input', filterProduits);
+                    document.getElementById('filterType').addEventListener('change', filterProduits);
+
+                    function filterProduits() {
+                        const search = document.getElementById('searchProduit').value.toLowerCase();
+                        const type = document.getElementById('filterType').value.toLowerCase();
+                        const cards = document.querySelectorAll('.produit-card');
+
+                        cards.forEach(card => {
+                            const nom = card.dataset.nom;
+                            const cardType = card.dataset.type.toLowerCase();
+                            const matchSearch = !search || nom.includes(search);
+                            const matchType = !type || cardType === type;
+
+                            card.style.display = (matchSearch && matchType) ? 'block' : 'none';
+                        });
+                    }
+
+                    // Incrémenter quantité
+                    function incrementer(id, max) {
+                        const input = document.querySelector(`input[name="produits[${id}]"]`);
+                        if (parseInt(input.value) < max) {
+                            input.value = parseInt(input.value) + 1;
+                            updateRecap();
+                        }
+                    }
+
+                    // Mise à jour récap
+                    document.querySelectorAll('.quantite-input').forEach(input => {
+                        input.addEventListener('change', updateRecap);
+                    });
+
+                    function updateRecap() {
+                        const inputs = document.querySelectorAll('.quantite-input');
+                        let total = 0;
+                        let recap = [];
+
+                        inputs.forEach(input => {
+                            const qty = parseInt(input.value) || 0;
+                            if (qty > 0) {
+                                const prix = parseFloat(input.dataset.prix);
+                                const nom = input.dataset.nom;
+                                total += prix * qty;
+                                recap.push(`${nom} × ${qty} = ${(prix * qty).toFixed(2)} €`);
+                            }
+                        });
+
+                        document.getElementById('totalPrice').textContent = total.toFixed(2) + ' €';
+
+                        if (recap.length > 0) {
+                            document.getElementById('recap').innerHTML = recap.map(r =>
+                                `<p style="color: white; margin: 0.5rem 0;"><i class="fa-solid fa-check" style="color: #10b981;"></i> ${r}</p>`
+                            ).join('');
+                            document.getElementById('btnValider').disabled = false;
+                            document.getElementById('btnValider').style.opacity = '1';
+                            document.getElementById('btnValider').style.cursor = 'pointer';
+                        } else {
+                            document.getElementById('recap').innerHTML = '<p style="color: #94a3b8; font-style: italic;">Aucun produit sélectionné</p>';
+                            document.getElementById('btnValider').disabled = true;
+                            document.getElementById('btnValider').style.opacity = '0.5';
+                            document.getElementById('btnValider').style.cursor = 'not-allowed';
+                        }
+                    }
+
+                    updateRecap();
+                </script>
+            <?php endif; ?>
+        </div>
+        </main></div></body></html>
+        <?php
+    }
+    public function afficherDemandeCodeValidation($client, $client_id, $produits, $recap, $montantTotal, $erreur = null)
+    {
+        $this->afficherNav();
+        ?>
+        <div style="padding: 2rem;">
+            <h1 style="font-size: 2.5rem; font-weight: 900; color: white; margin-bottom: 2rem;">
+                <i class="fa-solid fa-key" style="color: #f59e0b;"></i> Validation de la Transaction
+            </h1>
+
+            <?php if ($erreur): ?>
+                <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); padding: 1rem; border-radius: 10px; margin-bottom: 1.5rem; color: #ef4444;">
+                    <strong><i class="fa-solid fa-exclamation-triangle"></i> Erreur :</strong> <?= htmlspecialchars($erreur) ?>
+                </div>
+            <?php endif; ?>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                <!-- Colonne gauche : Récapitulatif -->
+                <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 15px; padding: 2rem;">
+                    <h2 style="color: white; font-weight: 900; margin-bottom: 1.5rem; font-size: 1.3rem;">
+                        <i class="fa-solid fa-receipt" style="color: #f59e0b;"></i> Récapitulatif de la commande
+                    </h2>
+
+                    <!-- Client -->
+                    <div style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 10px; padding: 1rem; margin-bottom: 1.5rem;">
+                        <p style="color: #f59e0b; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; margin-bottom: 0.5rem;">
+                            Client
+                        </p>
+                        <p style="color: white; font-weight: 900; font-size: 1.2rem;">
+                            <?= htmlspecialchars($client['prenom'] . ' ' . $client['nom']) ?>
+                        </p>
+                    </div>
+
+                    <!-- Produits -->
+                    <div style="margin-bottom: 1.5rem;">
+                        <h3 style="color: #94a3b8; font-size: 0.85rem; font-weight: 700; text-transform: uppercase; margin-bottom: 1rem;">
+                            Produits
+                        </h3>
+                        <?php foreach ($recap as $item): ?>
+                            <div style="display: flex; justify-between; padding: 0.75rem 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                                <div>
+                                    <p style="color: white; font-weight: 700; margin: 0;">
+                                        <?= htmlspecialchars($item['nom']) ?>
+                                    </p>
+                                    <p style="color: #94a3b8; font-size: 0.85rem; margin: 0;">
+                                        <?= $item['quantite'] ?> × <?= number_format($item['prix_unitaire'], 2) ?> €
+                                    </p>
+                                </div>
+                                <p style="color: #f59e0b; font-weight: 900; font-size: 1.1rem; margin: 0;">
+                                    <?= number_format($item['sous_total'], 2) ?> €
+                                </p>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+
+                    <!-- Total -->
+                    <div style="border-top: 2px solid rgba(245, 158, 11, 0.3); padding-top: 1rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <p style="color: #94a3b8; font-size: 0.9rem; text-transform: uppercase; font-weight: 700; margin: 0;">
+                                Total à payer :
+                            </p>
+                            <p style="color: #f59e0b; font-size: 2.5rem; font-weight: 900; margin: 0;">
+                                <?= number_format($montantTotal, 2) ?> €
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Colonne droite : Saisie du code -->
+                <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 15px; padding: 2rem; display: flex; flex-direction: column; justify-content: center;">
+                    <div style="text-align: center;">
+                        <div style="width: 100px; height: 100px; margin: 0 auto 2rem; background: linear-gradient(135deg, #f59e0b, #d97706); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 30px rgba(245, 158, 11, 0.3);">
+                            <i class="fa-solid fa-key" style="font-size: 3rem; color: white;"></i>
+                        </div>
+
+                        <h2 style="color: white; font-weight: 900; margin-bottom: 1rem; font-size: 1.5rem;">
+                            Demandez le code au client
+                        </h2>
+
+                        <p style="color: #94a3b8; margin-bottom: 2rem; font-size: 0.95rem;">
+                            Le client doit générer un code à 4 chiffres depuis son espace personnel et vous le communiquer
+                        </p>
+
+                        <form method="POST" action="index.php?module=barman&action=traiterTransaction">
+                            <input type="hidden" name="client_id" value="<?= $client_id ?>">
+
+                            <!-- Produits en hidden -->
+                            <?php foreach ($produits as $produit_id => $quantite): ?>
+                                <input type="hidden" name="produits[<?= $produit_id ?>]" value="<?= $quantite ?>">
+                            <?php endforeach; ?>
+
+                            <!-- Champ code -->
+                            <div style="margin-bottom: 2rem;">
+                                <input type="text"
+                                       name="code_validation"
+                                       placeholder="0000"
+                                       maxlength="4"
+                                       pattern="[0-9]{4}"
+                                       required
+                                       autofocus
+                                       style="width: 100%; padding: 1.5rem; background: rgba(0,0,0,0.5); border: 2px solid rgba(245, 158, 11, 0.3); border-radius: 15px; color: #f59e0b; font-weight: 900; font-size: 3rem; text-align: center; letter-spacing: 1rem; font-family: 'Courier New', monospace;">
+                            </div>
+
+                            <!-- Boutons -->
+                            <div style="display: flex; gap: 1rem;">
+                                <a href="index.php?module=barman&action=vendre"
+                                   style="flex: 1; text-align: center; padding: 1rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: #94a3b8; text-decoration: none; font-weight: 900; text-transform: uppercase; font-size: 0.9rem;">
+                                    <i class="fa-solid fa-arrow-left"></i> Annuler
+                                </a>
+                                <button type="submit"
+                                        style="flex: 2; padding: 1rem; background: #10b981; border: none; border-radius: 12px; color: white; font-weight: 900; cursor: pointer; text-transform: uppercase; font-size: 0.9rem;">
+                                    <i class="fa-solid fa-check"></i> Valider la transaction
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </main></div></body></html>
+        <?php
+    }
+
 }

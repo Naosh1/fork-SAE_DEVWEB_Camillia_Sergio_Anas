@@ -6,7 +6,6 @@ class ProduitAcces {
         $this->bdd = Connexion::getBdd();
     }
 
-    // Renommé pour correspondre au Controleur (ligne 46)
     public function liste_produits() {
         $stmt = $this->bdd->prepare(
             "SELECT id, nom, type, prix, quantiteActuelle
@@ -19,10 +18,12 @@ class ProduitAcces {
         return $stmt->fetchAll();
     }
 
-    // Renommé pour correspondre au Controleur (ligne 81)
-    public function ajouter_au_panier($idProduit)
+    /**
+     * ✅ CORRIGÉ : Ajoute le paramètre $quantite
+     */
+    public function ajouter_au_panier($idProduit, $quantite = 1)
     {
-        if (!$idProduit) {
+        if (!$idProduit || $quantite <= 0) {
             return;
         }
 
@@ -32,30 +33,33 @@ class ProduitAcces {
 
         $this->bdd->beginTransaction();
 
+        // Vérifier le stock disponible
         $stmt = $this->bdd->prepare(
             "SELECT quantiteActuelle FROM produit WHERE id = :id FOR UPDATE"
         );
         $stmt->execute([':id' => $idProduit]);
         $produit = $stmt->fetch();
 
-        if (!$produit || $produit['quantiteActuelle'] <= 0) {
+        if (!$produit || $produit['quantiteActuelle'] < $quantite) {
             $this->bdd->rollBack();
             return;
         }
 
+        // Décrémenter le stock
         $stmt = $this->bdd->prepare(
-            "UPDATE produit SET quantiteActuelle = quantiteActuelle - 1 WHERE id = :id"
+            "UPDATE produit SET quantiteActuelle = quantiteActuelle - :quantite WHERE id = :id"
         );
-        $stmt->execute([':id' => $idProduit]);
+        $stmt->execute([':id' => $idProduit, ':quantite' => $quantite]);
 
+        // Ajouter au panier session
         if (!isset($_SESSION['panier'])) {
             $_SESSION['panier'] = [];
         }
 
         if (isset($_SESSION['panier'][$idProduit])) {
-            $_SESSION['panier'][$idProduit]++;
+            $_SESSION['panier'][$idProduit] += $quantite;
         } else {
-            $_SESSION['panier'][$idProduit] = 1;
+            $_SESSION['panier'][$idProduit] = $quantite;
         }
 
         $this->bdd->commit();
@@ -67,18 +71,62 @@ class ProduitAcces {
         if (session_status() === PHP_SESSION_NONE) session_start();
         if (empty($_SESSION['panier']) || !isset($_SESSION['panier'][$idProduit])) return;
 
-        $this->bdd->beginTransaction();
-        $stmt = $this->bdd->prepare("UPDATE produit SET quantiteActuelle = quantiteActuelle + 1 WHERE id = :id");
-        $stmt->execute([':id' => $idProduit]);
+        $quantiteARetirer = $_SESSION['panier'][$idProduit];
 
-        $_SESSION['panier'][$idProduit]--;
-        if ($_SESSION['panier'][$idProduit] <= 0) {
-            unset($_SESSION['panier'][$idProduit]);
-        }
+        $this->bdd->beginTransaction();
+
+        // Réincrémenter le stock
+        $stmt = $this->bdd->prepare("UPDATE produit SET quantiteActuelle = quantiteActuelle + :quantite WHERE id = :id");
+        $stmt->execute([':id' => $idProduit, ':quantite' => $quantiteARetirer]);
+
+        // Retirer du panier
+        unset($_SESSION['panier'][$idProduit]);
+
         $this->bdd->commit();
     }
 
-    // Cette méthode retourne maintenant uniquement les détails (ce qu'attend le contrôleur)
+    /**
+     * ✅ AJOUTÉ : Méthode pour modifier la quantité d'un produit dans le panier
+     */
+    public function modifier_quantite_panier($idProduit, $nouvelleQuantite)
+    {
+        if (!$idProduit || $nouvelleQuantite <= 0) return;
+        if (session_status() === PHP_SESSION_NONE) session_start();
+        if (empty($_SESSION['panier']) || !isset($_SESSION['panier'][$idProduit])) return;
+
+        $ancienneQuantite = $_SESSION['panier'][$idProduit];
+        $difference = $nouvelleQuantite - $ancienneQuantite;
+
+        if ($difference == 0) return;
+
+        $this->bdd->beginTransaction();
+
+        // Vérifier le stock si on augmente
+        if ($difference > 0) {
+            $stmt = $this->bdd->prepare("SELECT quantiteActuelle FROM produit WHERE id = :id FOR UPDATE");
+            $stmt->execute([':id' => $idProduit]);
+            $produit = $stmt->fetch();
+
+            if (!$produit || $produit['quantiteActuelle'] < $difference) {
+                $this->bdd->rollBack();
+                return;
+            }
+
+            // Décrémenter le stock
+            $stmt = $this->bdd->prepare("UPDATE produit SET quantiteActuelle = quantiteActuelle - :diff WHERE id = :id");
+            $stmt->execute([':id' => $idProduit, ':diff' => $difference]);
+        } else {
+            // Réincrémenter le stock
+            $stmt = $this->bdd->prepare("UPDATE produit SET quantiteActuelle = quantiteActuelle + :diff WHERE id = :id");
+            $stmt->execute([':id' => $idProduit, ':diff' => abs($difference)]);
+        }
+
+        // Mettre à jour le panier
+        $_SESSION['panier'][$idProduit] = $nouvelleQuantite;
+
+        $this->bdd->commit();
+    }
+
     public function panier()
     {
         if (session_status() === PHP_SESSION_NONE) session_start();
@@ -86,7 +134,8 @@ class ProduitAcces {
         $panier_details = [];
         if (!empty($_SESSION['panier'])) {
             foreach ($_SESSION['panier'] as $idProduit => $quantite) {
-                $stmt = $this->bdd->prepare("SELECT id, nom, prix FROM produit WHERE id = :id");
+                // ✅ CORRIGÉ : Récupérer aussi quantiteActuelle
+                $stmt = $this->bdd->prepare("SELECT id, nom, prix, quantiteActuelle FROM produit WHERE id = :id");
                 $stmt->execute([':id' => $idProduit]);
                 $produit = $stmt->fetch();
 
@@ -96,6 +145,8 @@ class ProduitAcces {
                         'nom' => $produit['nom'],
                         'prix' => $produit['prix'],
                         'qte' => $quantite,
+                        'quantite' => $quantite,
+                        'stock' => $produit['quantiteActuelle'], // ✅ AJOUTÉ
                         'sous_total' => $produit['prix'] * $quantite
                     ];
                 }
@@ -104,7 +155,6 @@ class ProduitAcces {
         return $panier_details;
     }
 
-    // Ajout de la méthode de calcul du total attendue par le contrôleur (ligne 51)
     public function calculer_total_panier($panier_details) {
         $total = 0;
         foreach ($panier_details as $item) {

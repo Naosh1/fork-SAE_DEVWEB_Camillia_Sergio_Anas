@@ -4,13 +4,14 @@ include_once "Vue_client.php";
 include_once "commun/accés/CompteAcces.php";
 include_once "commun/accés/ProduitAcces.php";
 include_once "commun/accés/ProduitVenduAcces.php";
-
+include_once "commun/accés/CodeValidationAcces.php";
 class Controleur_client
 {
     private $vue;
     private $modeleCompte;
     private $modeleProduit;
     private $modeleProduitVenduAcces;
+    private $modeleCodeValidation;
 
     public function __construct()
     {
@@ -18,6 +19,7 @@ class Controleur_client
         $this->modeleCompte = new CompteAcces();
         $this->modeleProduit = new ProduitAcces();
         $this->modeleProduitVenduAcces = new ProduitVenduAcces();
+        $this->modeleCodeValidation = new CodeValidationAcces();
     }
 
     // Ajout d'un getter pour la vue si nécessaire
@@ -57,17 +59,17 @@ class Controleur_client
                 $this->vue->form_rechargement();
                 break;
 
-            case "form_commande_statut_panier_utilisateur":
-                $commandes = $this->modeleProduitVenduAcces->liste_commandes_utilisateur();
-                $this->vue->form_commande_statut_panier($commandes);
+            case "form_commande_statut_panier_utilisateur" :
+                $contenu = $this->getVue()->form_commande_statut_panier(
+                    $this->modeleProduitVenduAcces->getStatutCommandesClient($_SESSION['id'])
+                );
+                VueGenerique::setAffichage($contenu);
                 break;
-
             case "form_historique_utilisateur":
-                $donnees = $this->modeleProduitVenduAcces->historique_commandes_utilisateur();
+                $donnees = $this->modeleProduitVenduAcces->getCommandesClient($_SESSION['id']);
                 $historique = $this->getHistorique($donnees);
                 $this->vue->form_historique($historique);
                 break;
-
             // Actions de traitement (redirections)
             case "ajouter_panier":
                 $this->ajouter_panier();
@@ -80,7 +82,22 @@ class Controleur_client
             case "verif_rechargement":
                 $this->verif_rechargement();
                 break;
+            case "enlever_panier":
+                $this->enlever_panier();
+                break;
+            case "enlever_commande":
+                $this->enlever_commande();
+                break;
+            case "modifier_quantite_panier":
+                $this->modifier_quantite_panier();
+                break;
+            case "genererCode":
+                $this->genererCode();
+                break;
 
+            case "afficherCode":
+                $this->afficherCode();
+                break;
             default:
                 $this->vue->form_espace($this->soldeEspace(), $this->historiqueRechargements());
                 break;
@@ -99,8 +116,10 @@ class Controleur_client
 
     public function ajouter_panier() {
         $idProduit = isset($_POST['idProduit']) ? (int)$_POST['idProduit'] : null;
-        if ($idProduit) {
-            $this->modeleProduit->ajouter_au_panier($idProduit);
+        $quantite = isset($_POST['quantite']) ? (int)$_POST['quantite'] : 1;
+
+        if ($idProduit && $quantite > 0) {
+            $this->modeleProduit->ajouter_au_panier($idProduit, $quantite);
         }
         header("Location: index.php?module=client&action=form_produits_utilisateur");
         exit();
@@ -138,10 +157,66 @@ class Controleur_client
                 ];
             }
             $commandes[$id]['produits'][] = [
-                'nom' => $ligne['nomProduit'],
-                'quantite' => $ligne['quantite']
+                'nom' => $ligne['nom_produit'],
+                'quantite' => $ligne['quantite'],
+                'prix' => $ligne['prix_unitaire'] ?? 0
             ];
         }
         return $commandes;
+    }
+    public function enlever_panier()
+    {
+        $idProduit = isset($_POST['idProduit']) ? (int)$_POST['idProduit'] : null;
+        if ($idProduit) {
+            $this->modeleProduit->enlever_panier($idProduit);
+        }
+        header("Location: index.php?module=client&action=form_panier_utilisateur");
+        exit();
+    }
+    public function enlever_commande()
+    {
+        $venteId = isset($_POST['vente_id']) ? (int)$_POST['vente_id'] : null;
+        if ($venteId) {
+            $this->modeleProduitVenduAcces->enlever_commande($venteId);
+        }
+        header("Location: index.php?module=client&action=form_commande_statut_panier_utilisateur");
+        exit();
+    }
+    public function modifier_quantite_panier()
+    {
+        $idProduit = isset($_POST['idProduit']) ? (int)$_POST['idProduit'] : null;
+        $quantite = isset($_POST['quantite']) ? (int)$_POST['quantite'] : 1;
+
+        if ($idProduit && $quantite > 0) {
+            $this->modeleProduit->modifier_quantite_panier($idProduit, $quantite);
+        }
+
+        header("Location: index.php?module=client&action=form_panier_utilisateur");
+        exit();
+    }
+    public function genererCode()
+    {
+        $resultat = $this->modeleCodeValidation->genererCode($_SESSION['id']);
+
+        // Stocker en session pour affichage
+        $_SESSION['code_actuel'] = $resultat;
+
+        header("Location: index.php?module=client&action=afficherCode");
+        exit();
+    }
+
+    public function afficherCode()
+    {
+        $codeData = $_SESSION['code_actuel'] ?? null;
+
+        // Si pas de code en session, vérifier s'il y en a un valide en base
+        if (!$codeData) {
+            $codeValide = $this->modeleCodeValidation->getCodeActuel($_SESSION['id']);
+            if ($codeValide) {
+                $codeData = $codeValide;
+            }
+        }
+
+        $this->vue->afficherCodeGenere($codeData);
     }
 }

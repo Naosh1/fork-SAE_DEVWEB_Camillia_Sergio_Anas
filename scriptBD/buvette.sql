@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Hôte : 127.0.0.1
--- Généré le : jeu. 22 jan. 2026 à 22:16
+-- Généré le : ven. 23 jan. 2026 à 09:30
 -- Version du serveur : 10.4.32-MariaDB
 -- Version de PHP : 8.2.12
 
@@ -46,15 +46,7 @@ CREATE TABLE `appartient` (
                               `role` enum('client','barman','gestionnaire') NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Déchargement des données de la table `appartient`
---
 
--- --------------------------------------------------------
-
---
--- Structure de la table `association`
---
 
 CREATE TABLE `association` (
                                `id` bigint(20) UNSIGNED NOT NULL,
@@ -65,10 +57,6 @@ CREATE TABLE `association` (
                                `solde` decimal(10,2) NOT NULL,
                                `status` enum('en_attente','validee','refusee') DEFAULT 'en_attente'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Déchargement des données de la table `association`
---
 
 
 --
@@ -104,8 +92,8 @@ CREATE TABLE `comprend` (
 --
 
 CREATE TABLE `compte` (
-                          `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT
-  `nom` varchar(50) NOT NULL,
+                          `id` bigint(20) UNSIGNED NOT NULL,
+                          `nom` varchar(50) NOT NULL,
                           `prenom` varchar(50) NOT NULL,
                           `date_naissance` date DEFAULT NULL,
                           `email` varchar(50) NOT NULL,
@@ -119,6 +107,10 @@ CREATE TABLE `compte` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 
+
+-- --------------------------------------------------------
+
+--
 -- Structure de la table `concerne`
 --
 
@@ -142,6 +134,12 @@ CREATE TABLE `contient` (
                             `quantite` int(10) NOT NULL,
                             `prix_unitaire` decimal(10,2) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Déchargement des données de la table `contient`
+--
+
+
 
 -- --------------------------------------------------------
 
@@ -239,7 +237,6 @@ CREATE TABLE `gestionne` (
 --
 
 
-
 -- --------------------------------------------------------
 
 --
@@ -301,12 +298,11 @@ CREATE TABLE `ligne_vente` (
                                `vente_id` bigint(20) UNSIGNED NOT NULL,
                                `quantite` int(10) NOT NULL,
                                `prix_unitaire` decimal(10,0) NOT NULL,
-                               `statut` varchar(50) NOT NULL DEFAULT 'en attente'
+                               `statut` enum('en_attente','validee','en_preparation','prete','livree','annulee') DEFAULT 'en_attente'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Déchargement des données de la table `ligne_vente`
---
 
 
 -- --------------------------------------------------------
@@ -325,6 +321,9 @@ CREATE TABLE `messages` (
                             `lu` tinyint(1) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Déchargement des données de la table `messages`
+
 -- --------------------------------------------------------
 
 --
@@ -339,10 +338,9 @@ CREATE TABLE `produit` (
                            `quantiteActuelle` int(10) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Déchargement des données de la table `produit`
---
 
+
+-- --------------------------------------------------------
 
 --
 -- Structure de la table `rechargement`
@@ -354,6 +352,10 @@ CREATE TABLE `rechargement` (
                                 `date_rechargement` date NOT NULL,
                                 `compte_id` bigint(20) UNSIGNED NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Déchargement des données de la table `rechargement`
+--
 
 -- --------------------------------------------------------
 
@@ -376,16 +378,16 @@ CREATE TABLE `vente` (
                          `id` bigint(20) UNSIGNED NOT NULL,
                          `date_vente` datetime NOT NULL,
                          `montant_total` decimal(10,2) NOT NULL,
-                         `statut` varchar(20) NOT NULL DEFAULT 'payee',
                          `compte_id` bigint(20) UNSIGNED NOT NULL,
-                         `association_id` bigint(20) UNSIGNED DEFAULT NULL
+                         `association_id` bigint(20) UNSIGNED DEFAULT NULL,
+                         `statut` enum('en_attente','validee','en_preparation','prete','livree','annulee') DEFAULT 'en_attente'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Déchargement des données de la table `vente`
 --
 
-
+--
 
 --
 -- Index pour la table `achat`
@@ -532,7 +534,7 @@ ALTER TABLE `achat`
 -- AUTO_INCREMENT pour la table `association`
 --
 ALTER TABLE `association`
-    MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+    MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT pour la table `compte`
@@ -556,7 +558,7 @@ ALTER TABLE `produit`
 -- AUTO_INCREMENT pour la table `vente`
 --
 ALTER TABLE `vente`
-    MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+    MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

@@ -8,17 +8,18 @@ include_once 'connexion/Connexion.php';
 Connexion::initConnexion();
 $bdd = Connexion::getBdd();
 
+// ========================================
+// 1. REDIRECTION SI NON CONNECTÉ
+// ========================================
 if (!isset($_SESSION['id'])) {
     header('Location: templates/connexion.php');
     exit();
 }
 
-$stmt = $bdd->prepare("
-    SELECT c.prenom, 
-           (SELECT 1 FROM administrateur WHERE compte_id = c.id) as is_admin
-    FROM compte c 
-    WHERE c.id = ?
-");
+// ========================================
+// 2. RÉCUPÉRATION DES INFOS UTILISATEUR
+// ========================================
+$stmt = $bdd->prepare("SELECT prenom, nom, email FROM compte WHERE id = ?");
 $stmt->execute([$_SESSION['id']]);
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -28,7 +29,19 @@ if (!$user) {
     exit();
 }
 
-if ($user['is_admin']) {
+// Mettre à jour les infos en session
+$_SESSION['prenom'] = $user['prenom'];
+$_SESSION['nom'] = $user['nom'];
+$_SESSION['email'] = $user['email'];
+
+// ========================================
+// 3. GESTION DE L'ADMIN (priorité absolue)
+// ========================================
+$stmtAdmin = $bdd->prepare("SELECT role FROM appartient WHERE compte_id = ? AND role = 'admin' LIMIT 1");
+$stmtAdmin->execute([$_SESSION['id']]);
+$isAdmin = $stmtAdmin->fetch();
+
+if ($isAdmin) {
     $_SESSION['role_effectif'] = 'admin';
     include_once 'modules/module_admin/Mod_admin.php';
     new Mod_admin();
@@ -36,6 +49,11 @@ if ($user['is_admin']) {
     exit();
 }
 
+// ========================================
+// 4. ACTIONS SPÉCIALES
+// ========================================
+
+// Reset de l'association choisie
 if (isset($_GET['reset'])) {
     unset($_SESSION['asso_choisi']);
     unset($_SESSION['role_effectif']);
@@ -43,6 +61,7 @@ if (isset($_GET['reset'])) {
     exit();
 }
 
+// Déconnexion
 if (isset($_GET['action']) && $_GET['action'] === 'deconnexion') {
     session_unset();
     session_destroy();
@@ -50,6 +69,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'deconnexion') {
     exit();
 }
 
+// Rejoindre une association
 if (isset($_POST['rejoindre_asso'])) {
     $assoId = (int) $_POST['rejoindre_asso'];
     $check = $bdd->prepare("SELECT 1 FROM appartient WHERE compte_id = ? AND association_id = ?");
@@ -62,9 +82,11 @@ if (isset($_POST['rejoindre_asso'])) {
     exit("JOINED");
 }
 
+// Choisir une association
 if (isset($_POST['choisir_asso'])) {
     $assoId = (int) $_POST['choisir_asso'];
 
+    // Vérifier si gestionnaire
     $stmt = $bdd->prepare("SELECT 1 FROM gestionne WHERE compte_id = ? AND association_id = ?");
     $stmt->execute([$_SESSION['id'], $assoId]);
 
@@ -74,7 +96,14 @@ if (isset($_POST['choisir_asso'])) {
         exit("OK");
     }
 
-    $stmt = $bdd->prepare("SELECT role FROM appartient WHERE compte_id = ? AND association_id = ?");
+    // Vérifier le rôle dans appartient (PRIORISER barman > client)
+    $stmt = $bdd->prepare("
+        SELECT role 
+        FROM appartient 
+        WHERE compte_id = ? AND association_id = ? 
+        ORDER BY FIELD(role, 'barman', 'gestionnaire', 'client') 
+        LIMIT 1
+    ");
     $stmt->execute([$_SESSION['id'], $assoId]);
     $appartenance = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -86,13 +115,17 @@ if (isset($_POST['choisir_asso'])) {
     exit("NOT_MEMBER");
 }
 
-if (isset($_GET['search'])) {
+// ========================================
+// 5. RECHERCHE AJAX DES ASSOCIATIONS
+// ========================================
+if (isset($_GET['search']) && !isset($_SESSION['asso_choisi']) && !isset($_GET['module']) && !isset($_GET['action'])) {
     $stmt = $bdd->prepare("
         SELECT a.id, a.nom, a.email,
         (SELECT 1 FROM gestionne WHERE association_id = a.id AND compte_id = ?) as is_gest,
-        (SELECT role FROM appartient WHERE association_id = a.id AND compte_id = ?) as user_role
-        FROM association a WHERE a.nom LIKE ?");
-    $stmt->execute([$_SESSION['id'], $_SESSION['id'], "%".$_GET['search']."%"]);
+        (SELECT role FROM appartient WHERE association_id = a.id AND compte_id = ? ORDER BY FIELD(role, 'barman', 'gestionnaire', 'client') LIMIT 1) as user_role
+        FROM association a WHERE a.nom LIKE ?
+    ");
+    $stmt->execute([$_SESSION['id'], $_SESSION['id'], "%" . $_GET['search'] . "%"]);
 
     $results = $stmt->fetchAll();
     if (empty($results)) {
@@ -112,8 +145,8 @@ if (isset($_GET['search'])) {
             $badge = "";
         }
         $action = ($asso['is_gest'] || $asso['user_role'])
-                ? "<button class='enter-btn' data-id='{$asso['id']}'><i class='fa-solid fa-arrow-right-to-bracket'></i> Entrer</button>"
-                : "<button class='join-btn' data-id='{$asso['id']}'><i class='fa-solid fa-plus'></i> Rejoindre</button>";
+            ? "<button class='enter-btn' data-id='{$asso['id']}'><i class='fa-solid fa-arrow-right-to-bracket'></i> Entrer</button>"
+            : "<button class='join-btn' data-id='{$asso['id']}'><i class='fa-solid fa-plus'></i> Rejoindre</button>";
         echo "
         <div class='asso-card'>
             <div class='asso-content'>
@@ -129,7 +162,13 @@ if (isset($_GET['search'])) {
     exit;
 }
 
-if (isset($_SESSION['asso_choisi'])) {
+// ========================================
+// 6. REDIRECTION SELON LE RÔLE EFFECTIF
+// ========================================
+if (isset($_SESSION['asso_choisi']) && isset($_SESSION['role_effectif'])) {
+    // IMPORTANT : Synchroniser role avec role_effectif
+    $_SESSION['role'] = $_SESSION['role_effectif'];
+
     if ($_SESSION['role_effectif'] === 'gestionnaire') {
         include_once 'modules/module_gestionnaire/Mod_gestionnaire.php';
         new Mod_gestionnaire();
@@ -147,7 +186,6 @@ if (isset($_SESSION['asso_choisi'])) {
     }
     exit();
 }
-?>
 ?>
 <!DOCTYPE html>
 <html lang="fr">
