@@ -96,9 +96,5 @@ class VueConnexion extends VueGenerique
         }
     }
 
-//    public function afficherVue()
-//    {
-//        echo $this->getVueGenerique();
-//    }
 }
 

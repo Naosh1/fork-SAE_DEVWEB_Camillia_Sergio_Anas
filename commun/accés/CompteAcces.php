@@ -44,7 +44,6 @@ class CompteAcces {
         exit();
     }
 
-    // Renommé pour correspondre au contrôleur : verif_rechargement -> appelle recharger_solde
     public function recharger_solde($id, $montant) {
         $stmt = $this->bdd->prepare("SELECT solde FROM compte WHERE id = :id");
         $stmt->execute([':id' => $id]);
@@ -63,7 +62,6 @@ class CompteAcces {
         exit();
     }
 
-    // Renommé pour correspondre à Controleur_client:93
     public function get_solde($id) {
         $stmt = $this->bdd->prepare("SELECT solde FROM compte WHERE id = :id");
         $stmt->execute([':id' => $id]);
@@ -80,7 +78,6 @@ class CompteAcces {
         $stmt->execute([':montant' => $montant, ':idCompte' => $idCompte]);
     }
 
-    // Renommé pour correspondre au contrôleur
     public function get_historique_rechargements($idCompte) {
         $stmt = $this->bdd->prepare(
             "SELECT valeur, date_rechargement

@@ -284,7 +284,6 @@ class ControleurGestionnaire
 
 
     private function envoyerDemande() {
-        // 1. Sécurité : Vérification de la session
         if (!isset($_SESSION['id'])) {
             header("Location: index.php?module=gestionnaire&action=connexion");
             exit();
@@ -317,7 +316,7 @@ class ControleurGestionnaire
 
         foreach ($fichiersRequis as $champ => $prefixe) {
             if (!isset($_FILES[$champ]) || $_FILES[$champ]['error'] !== UPLOAD_ERR_OK) {
-                $errCode = $_FILES[$champ]['error'] ?? 4; // 4 = Aucun fichier
+                $errCode = $_FILES[$champ]['error'] ?? 4;
                 $msg = ($errCode === 1 || $errCode === 2) ? "trop volumineux" : "manquant ou invalide";
                 $erreursFichiers[] = "Le fichier $prefixe est $msg (Erreur $errCode).";
                 continue;

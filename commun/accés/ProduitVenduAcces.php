@@ -13,7 +13,6 @@ class ProduitVenduAcces {
             session_start();
         }
 
-        // Sécurité : utilisateur connecté + panier non vide
         if (!isset($_SESSION['id']) || empty($_SESSION['panier'])) {
             return;
         }
@@ -84,7 +83,6 @@ class ProduitVenduAcces {
         // Début transaction
         $this->bdd->beginTransaction();
 
-        // Récupérer les lignes de la commande (uniquement en attente)
         $stmt = $this->bdd->prepare(
             "SELECT produit_id, quantite 
              FROM ligne_vente 
@@ -99,7 +97,6 @@ class ProduitVenduAcces {
             return;
         }
 
-        // Ré-incrémenter le stock
         foreach ($lignes as $ligne) {
             $stmt = $this->bdd->prepare(
                 "UPDATE produit 
@@ -112,13 +109,11 @@ class ProduitVenduAcces {
             ]);
         }
 
-        // Supprimer les lignes de vente
         $stmt = $this->bdd->prepare(
             "DELETE FROM ligne_vente WHERE vente_id = :vente_id"
         );
         $stmt->execute([':vente_id' => $venteId]);
 
-        // Supprimer la vente
         $stmt = $this->bdd->prepare(
             "DELETE FROM vente WHERE id = :vente_id"
         );
@@ -127,9 +122,6 @@ class ProduitVenduAcces {
         $this->bdd->commit();
     }
 
-    /**
-     * ✅ SUIVI COMMANDES - Affiche les commandes en cours (NON livrées, NON annulées)
-     */
     public function getStatutCommandesClient($idCompte)
     {
         $stmt = $this->bdd->prepare(
@@ -153,7 +145,6 @@ class ProduitVenduAcces {
         $stmt->execute([':id' => $idCompte]);
         $ventes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        // Pour chaque vente, récupérer les produits
         $result = [];
         foreach ($ventes as $vente) {
             $stmt2 = $this->bdd->prepare(
@@ -184,9 +175,6 @@ class ProduitVenduAcces {
         return $result;
     }
 
-    /**
-     * ✅ HISTORIQUE - Affiche UNIQUEMENT les commandes livrées
-     */
     public function getCommandesClient($idCompte)
     {
         $stmt = $this->bdd->prepare(
@@ -215,17 +203,11 @@ class ProduitVenduAcces {
         return $stmt->fetchAll();
     }
 
-    /**
-     * Marque une vente comme payée
-     * @param int $venteId ID de la vente
-     * @return bool Succès
-     */
     public function marquerVentePayee($venteId)
     {
         try {
             $this->bdd->beginTransaction();
 
-            // Mettre à jour le statut de la vente
             $stmt = $this->bdd->prepare(
                 "UPDATE vente 
                  SET statut = 'payee' 
@@ -233,7 +215,6 @@ class ProduitVenduAcces {
             );
             $stmt->execute([':vente_id' => $venteId]);
 
-            // Mettre à jour toutes les lignes à "validée"
             $stmt = $this->bdd->prepare(
                 "UPDATE ligne_vente 
                  SET statut = 'validee' 
@@ -251,11 +232,6 @@ class ProduitVenduAcces {
         }
     }
 
-    /**
-     * Marque une vente comme annulée
-     * @param int $venteId ID de la vente
-     * @return bool Succès
-     */
     public function marquerVenteAnnulee($venteId)
     {
         try {

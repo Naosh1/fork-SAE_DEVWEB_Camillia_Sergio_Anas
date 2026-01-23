@@ -18,9 +18,6 @@ class ProduitAcces {
         return $stmt->fetchAll();
     }
 
-    /**
-     * ✅ CORRIGÉ : Ajoute le paramètre $quantite
-     */
     public function ajouter_au_panier($idProduit, $quantite = 1)
     {
         if (!$idProduit || $quantite <= 0) {
@@ -33,7 +30,6 @@ class ProduitAcces {
 
         $this->bdd->beginTransaction();
 
-        // Vérifier le stock disponible
         $stmt = $this->bdd->prepare(
             "SELECT quantiteActuelle FROM produit WHERE id = :id FOR UPDATE"
         );
@@ -45,13 +41,11 @@ class ProduitAcces {
             return;
         }
 
-        // Décrémenter le stock
         $stmt = $this->bdd->prepare(
             "UPDATE produit SET quantiteActuelle = quantiteActuelle - :quantite WHERE id = :id"
         );
         $stmt->execute([':id' => $idProduit, ':quantite' => $quantite]);
 
-        // Ajouter au panier session
         if (!isset($_SESSION['panier'])) {
             $_SESSION['panier'] = [];
         }
@@ -75,19 +69,14 @@ class ProduitAcces {
 
         $this->bdd->beginTransaction();
 
-        // Réincrémenter le stock
         $stmt = $this->bdd->prepare("UPDATE produit SET quantiteActuelle = quantiteActuelle + :quantite WHERE id = :id");
         $stmt->execute([':id' => $idProduit, ':quantite' => $quantiteARetirer]);
 
-        // Retirer du panier
         unset($_SESSION['panier'][$idProduit]);
 
         $this->bdd->commit();
     }
 
-    /**
-     * ✅ AJOUTÉ : Méthode pour modifier la quantité d'un produit dans le panier
-     */
     public function modifier_quantite_panier($idProduit, $nouvelleQuantite)
     {
         if (!$idProduit || $nouvelleQuantite <= 0) return;
@@ -101,7 +90,6 @@ class ProduitAcces {
 
         $this->bdd->beginTransaction();
 
-        // Vérifier le stock si on augmente
         if ($difference > 0) {
             $stmt = $this->bdd->prepare("SELECT quantiteActuelle FROM produit WHERE id = :id FOR UPDATE");
             $stmt->execute([':id' => $idProduit]);
@@ -112,16 +100,13 @@ class ProduitAcces {
                 return;
             }
 
-            // Décrémenter le stock
             $stmt = $this->bdd->prepare("UPDATE produit SET quantiteActuelle = quantiteActuelle - :diff WHERE id = :id");
             $stmt->execute([':id' => $idProduit, ':diff' => $difference]);
         } else {
-            // Réincrémenter le stock
             $stmt = $this->bdd->prepare("UPDATE produit SET quantiteActuelle = quantiteActuelle + :diff WHERE id = :id");
             $stmt->execute([':id' => $idProduit, ':diff' => abs($difference)]);
         }
 
-        // Mettre à jour le panier
         $_SESSION['panier'][$idProduit] = $nouvelleQuantite;
 
         $this->bdd->commit();
@@ -134,7 +119,6 @@ class ProduitAcces {
         $panier_details = [];
         if (!empty($_SESSION['panier'])) {
             foreach ($_SESSION['panier'] as $idProduit => $quantite) {
-                // ✅ CORRIGÉ : Récupérer aussi quantiteActuelle
                 $stmt = $this->bdd->prepare("SELECT id, nom, prix, quantiteActuelle FROM produit WHERE id = :id");
                 $stmt->execute([':id' => $idProduit]);
                 $produit = $stmt->fetch();
@@ -146,7 +130,7 @@ class ProduitAcces {
                         'prix' => $produit['prix'],
                         'qte' => $quantite,
                         'quantite' => $quantite,
-                        'stock' => $produit['quantiteActuelle'], // ✅ AJOUTÉ
+                        'stock' => $produit['quantiteActuelle'],
                         'sous_total' => $produit['prix'] * $quantite
                     ];
                 }

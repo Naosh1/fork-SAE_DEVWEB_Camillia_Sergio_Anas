@@ -1,5 +1,6 @@
 <?php
     class Connexion {
+
         private static $bdd = null;
         private static $dsn = 'mysql:dbname=dutinfopw201633;host=database-etudiants.iut.univ-paris8.fr';
         private static $user = 'dutinfopw201633';
