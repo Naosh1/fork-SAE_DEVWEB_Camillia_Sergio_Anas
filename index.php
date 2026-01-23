@@ -29,20 +29,19 @@ if (!$user) {
     exit();
 }
 
-// Mettre à jour les infos en session
 $_SESSION['prenom'] = $user['prenom'];
 $_SESSION['nom'] = $user['nom'];
 $_SESSION['email'] = $user['email'];
 
-// ========================================
-// 3. GESTION DE L'ADMIN (priorité absolue)
-// ========================================
-$stmtAdmin = $bdd->prepare("SELECT role FROM appartient WHERE compte_id = ? AND role = 'admin' LIMIT 1");
+
+$stmtAdmin = $bdd->prepare("SELECT 1 FROM administrateur WHERE compte_id = ? LIMIT 1");
 $stmtAdmin->execute([$_SESSION['id']]);
 $isAdmin = $stmtAdmin->fetch();
 
 if ($isAdmin) {
     $_SESSION['role_effectif'] = 'admin';
+    $_SESSION['role'] = 'admin';
+
     include_once 'modules/module_admin/Mod_admin.php';
     new Mod_admin();
     include_once 'templates/template_admin.php';

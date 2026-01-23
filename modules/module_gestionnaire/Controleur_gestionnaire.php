@@ -283,47 +283,29 @@ class ControleurGestionnaire
     }
 
 
-    private function envoyerDemande()
-    {
+    private function envoyerDemande() {
+        // 1. Sécurité : Vérification de la session
         if (!isset($_SESSION['id'])) {
             header("Location: index.php?module=gestionnaire&action=connexion");
             exit();
         }
 
         $idGest = $_SESSION['id'];
-
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            $_SESSION['erreur'] = "Méthode non autorisée";
-            header("Location: index.php?module=gestionnaire&action=demanderCreationAsso");
-            exit();
-        }
-
-        $nomAssociation = trim($_POST['nom_association'] ?? '');
-
-        if (empty($nomAssociation) || strlen($nomAssociation) < 3) {
-            $_SESSION['erreur'] = "Le nom de l'association doit contenir au moins 3 caractères";
-            header("Location: index.php?module=gestionnaire&action=demanderCreationAsso");
-            exit();
-        }
-
-        if ($this->modele->demandeExisteDeja($idGest, $nomAssociation)) {
-            $_SESSION['erreur'] = "Vous avez déjà une demande pour ce nom ou une demande en attente.";
-            header("Location: index.php?module=gestionnaire&action=demanderCreationAsso");
-            exit();
-        }
-
-        $demandeEnCours = $this->modele->getDemandeEnCours($idGest);
-        if ($demandeEnCours) {
-            $_SESSION['erreur'] = "Vous avez déjà une demande en cours de traitement.";
-            header("Location: index.php?module=gestionnaire&action=demanderCreationAsso");
-            exit();
-        }
-
         $uploadDir = 'uploads/dossiers_assos/';
-        if (!is_dir($uploadDir)) {
-            mkdir($uploadDir, 0777, true);
-        }
 
+        if (!file_exists($uploadDir)) {
+            if (!mkdir($uploadDir, 0777, true) && !is_dir($uploadDir)) {
+                $_SESSION['erreur'] = "Erreur fatale : Le serveur ne peut pas écrire dans le dossier 'uploads/'. Veuillez créer ce dossier manuellement à la racine et lui donner les droits d'écriture (chmod 777).";
+                header("Location: index.php?module=gestionnaire&action=demanderCreationAsso");
+                exit();
+            }
+        }
+        $nomAssociation = trim($_POST['nom_association'] ?? '');
+        if (empty($nomAssociation) || strlen($nomAssociation) < 3) {
+            $_SESSION['erreur'] = "Le nom de l'association est trop court (min 3 caractères).";
+            header("Location: index.php?module=gestionnaire&action=demanderCreationAsso");
+            exit();
+        }
         $paths = [];
         $fichiersRequis = [
             'pdf_identite' => 'CNI',
@@ -335,61 +317,52 @@ class ControleurGestionnaire
 
         foreach ($fichiersRequis as $champ => $prefixe) {
             if (!isset($_FILES[$champ]) || $_FILES[$champ]['error'] !== UPLOAD_ERR_OK) {
-                $erreursFichiers[] = "Le fichier $prefixe est requis";
+                $errCode = $_FILES[$champ]['error'] ?? 4; // 4 = Aucun fichier
+                $msg = ($errCode === 1 || $errCode === 2) ? "trop volumineux" : "manquant ou invalide";
+                $erreursFichiers[] = "Le fichier $prefixe est $msg (Erreur $errCode).";
                 continue;
             }
+            $finfo = finfo_open(FILEINFO_MIME_TYPE);
+            $mime = finfo_file($finfo, $_FILES[$champ]['tmp_name']);
+            finfo_close($finfo);
 
-            $typeFichier = mime_content_type($_FILES[$champ]['tmp_name']);
-            if ($typeFichier !== 'application/pdf') {
-                $erreursFichiers[] = "Le fichier $prefixe doit être au format PDF";
-                continue;
-            }
-
-            if ($_FILES[$champ]['size'] > 5 * 1024 * 1024) {
-                $erreursFichiers[] = "Le fichier $prefixe est trop volumineux (max 5MB)";
+            if ($mime !== 'application/pdf') {
+                $erreursFichiers[] = "Le document $prefixe doit impérativement être un PDF.";
                 continue;
             }
 
             $extension = pathinfo($_FILES[$champ]['name'], PATHINFO_EXTENSION);
-            $nomFichier = $idGest . '_' . $prefixe . '_' . time() . '_' . bin2hex(random_bytes(8)) . '.' . $extension;
+            $nomFichier = "demande_" . $idGest . "_" . $prefixe . "_" . uniqid() . "." . $extension;
             $destination = $uploadDir . $nomFichier;
 
             if (move_uploaded_file($_FILES[$champ]['tmp_name'], $destination)) {
                 $paths[$champ] = $destination;
             } else {
-                $erreursFichiers[] = "Erreur lors de l'upload du fichier $prefixe";
+                $erreursFichiers[] = "Impossible de sauvegarder le fichier $prefixe. Vérifiez les permissions du dossier.";
             }
         }
-
         if (!empty($erreursFichiers)) {
             $_SESSION['erreur'] = implode('<br>', $erreursFichiers);
             header("Location: index.php?module=gestionnaire&action=demanderCreationAsso");
             exit();
         }
 
-        if (count($paths) === 3) {
-            $success = $this->modele->sauvegarderDemande(
-                $idGest,
-                $nomAssociation,
-                $paths['pdf_identite'],
-                $paths['pdf_pv'],
-                $paths['pdf_ago']
-            );
+        $success = $this->modele->sauvegarderDemande(
+            $idGest,
+            $nomAssociation,
+            $paths['pdf_identite'],
+            $paths['pdf_pv'],
+            $paths['pdf_ago']
+        );
 
-            if ($success) {
-                $_SESSION['success'] = "Votre demande a été envoyée avec succès ! Elle sera traitée par l'administration.";
-                header("Location: index.php?module=gestionnaire&action=mesDemandes");
-                exit();
-            } else {
-                $_SESSION['erreur'] = "Une erreur est survenue lors de l'enregistrement de votre demande";
-                header("Location: index.php?module=gestionnaire&action=demanderCreationAsso");
-                exit();
-            }
+        if ($success) {
+            $_SESSION['success'] = "Votre dossier pour '$nomAssociation' a été envoyé.";
+            header("Location: index.php?module=gestionnaire&action=mesDemandes");
         } else {
-            $_SESSION['erreur'] = "Tous les fichiers PDF sont requis";
+            $_SESSION['erreur'] = "Échec de l'enregistrement en base de données.";
             header("Location: index.php?module=gestionnaire&action=demanderCreationAsso");
-            exit();
         }
+        exit();
     }
 
     private function afficherPageDemandeEnCours()

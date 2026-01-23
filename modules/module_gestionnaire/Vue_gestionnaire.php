@@ -10,15 +10,15 @@ class VueGestionnaire extends VueStaff
     public function afficherFormulaireDemande() {
         if (isset($_SESSION['erreur'])) {
             echo '<div class="mb-4 p-4 bg-rose-600/10 border border-rose-500/20 rounded-2xl text-rose-500">
-                <i class="fa-solid fa-exclamation-circle mr-2"></i>' . $_SESSION['erreur'] . '
-              </div>';
+            <i class="fa-solid fa-exclamation-circle mr-2"></i>' . $_SESSION['erreur'] . '
+          </div>';
             unset($_SESSION['erreur']);
         }
 
         if (isset($_SESSION['success'])) {
             echo '<div class="mb-4 p-4 bg-emerald-600/10 border border-emerald-500/20 rounded-2xl text-emerald-500">
-                <i class="fa-solid fa-check-circle mr-2"></i>' . $_SESSION['success'] . '
-              </div>';
+            <i class="fa-solid fa-check-circle mr-2"></i>' . $_SESSION['success'] . '
+          </div>';
             unset($_SESSION['success']);
         }
         ?>
@@ -37,9 +37,9 @@ class VueGestionnaire extends VueStaff
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <?php
                     $files = [
-                            'pdf_identite' => 'Carte d\'identité',
-                            'pdf_pv' => 'Procès-Verbal',
-                            'pdf_ago' => 'Statuts / AGO'
+                        'pdf_identite' => 'Carte d\'identité',
+                        'pdf_pv' => 'Procès-Verbal',
+                        'pdf_ago' => 'Statuts / AGO'
                     ];
                     foreach ($files as $name => $label): ?>
                         <div class="relative group">
@@ -73,10 +73,8 @@ class VueGestionnaire extends VueStaff
             document.getElementById('formDemandeAsso').onsubmit = function() {
                 const btn = document.getElementById('btnEnvoyer');
                 const txt = document.getElementById('btnText');
-
                 btn.disabled = true;
                 btn.style.opacity = "0.7";
-                btn.style.cursor = "not-allowed";
                 txt.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Envoi en cours...';
             };
         </script>
@@ -762,10 +760,6 @@ class VueGestionnaire extends VueStaff
                 ($nb > 0 ? '<span class="bg-blue-600 text-[10px] font-black text-white px-2 py-0.5 rounded-lg shadow-lg shadow-blue-600/20">' . $nb . '</span>' : '') . '
             </a>
 
-            <a href="index.php?action=monPlanning" class="flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all duration-300 ' . ($actionActuelle == 'monPlanning' ? $activeClass : $inactiveClass) . '">
-                <i class="fa-solid fa-calendar-day text-lg"></i>
-                <span class="font-bold text-sm tracking-tight">Mon Planning</span>
-            </a>
 
             <p class="text-[9px] font-black text-slate-600 uppercase tracking-[0.3em] px-4 mt-8 mb-3">Gestion Globale</p>
 
