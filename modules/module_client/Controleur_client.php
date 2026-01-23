@@ -1,10 +1,10 @@
 <?php
 
 include_once "Vue_client.php";
-include_once "commun/accés/CompteAcces.php";
-include_once "commun/accés/ProduitAcces.php";
-include_once "commun/accés/ProduitVenduAcces.php";
-include_once "commun/accés/CodeValidationAcces.php";
+include_once "commun/modele/CompteAcces.php";
+include_once "commun/modele/ProduitAcces.php";
+include_once "commun/modele/ProduitVenduAcces.php";
+include_once "commun/modele/CodeValidationAcces.php";
 class Controleur_client
 {
     private $vue;

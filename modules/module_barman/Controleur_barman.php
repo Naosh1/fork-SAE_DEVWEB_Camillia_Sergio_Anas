@@ -273,7 +273,7 @@ class Controleur_barman
                 return;
             }
 
-            include_once "commun/accés/CodeValidationAcces.php";
+            include_once "commun/modele/CodeValidationAcces.php";
             $modeleCode = new CodeValidationAcces();
             $codeValide = $modeleCode->verifierCode($codeValidation, $client_id);
 
