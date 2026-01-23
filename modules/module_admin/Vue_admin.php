@@ -684,7 +684,6 @@ class Vue_admin {
                 </div>
                 
                 <div class="p-6">
-                    <!-- Section Documents -->
                     <div class="mb-8">
                         <h4 class="text-lg font-black text-white mb-4">Documents à vérifier</h4>
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -694,11 +693,9 @@ class Vue_admin {
                         </div>
                     </div>
                     
-                    <!-- Section Décision -->
                     <div class="pt-6 border-t border-white/10">
                         <h4 class="text-lg font-black text-white mb-4">Décision</h4>
                         <div class="flex flex-col sm:flex-row gap-4">
-                            <!-- Bouton Accepter -->
                             <form action="index.php?module=admin&action=accepterAsso" method="POST" class="flex-1">
                                 <input type="hidden" name="id" value="' . $id . '">
                                 <button type="submit" 
@@ -709,7 +706,6 @@ class Vue_admin {
                                 </button>
                             </form>
                             
-                            <!-- Bouton Refuser -->
                             <form action="index.php?module=admin&action=refuserAsso" method="POST" class="flex-1">
                                 <input type="hidden" name="id" value="' . $id . '">
                                 <button type="submit" 
@@ -719,8 +715,7 @@ class Vue_admin {
                                     <span>Refuser l\'association</span>
                                 </button>
                             </form>
-                            
-                            <!-- Bouton Voir Détails -->
+                           
                             <button type="button" 
                                     onclick="ouvrirModalDetails(' . $id . ')"
                                     class="flex-1 flex items-center justify-center gap-3 bg-white/5 hover:bg-white/10 text-white px-6 py-4 rounded-2xl font-black text-sm uppercase transition-all">
@@ -732,12 +727,10 @@ class Vue_admin {
                 </div>
             </div>';
             }
-
             echo '</div>';
         }
 
         echo '
-        <!-- Modal pour détails -->
         <div id="modalDetails" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4 z-[9999]">
             <div class="bg-[#020617] border border-white/10 rounded-3xl p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
                 <div class="flex justify-between items-center mb-8">
@@ -747,7 +740,6 @@ class Vue_admin {
                     </button>
                 </div>
                 <div id="modalContent" class="space-y-6">
-                    <!-- Contenu chargé dynamiquement -->
                 </div>
             </div>
         </div>
@@ -775,9 +767,6 @@ class Vue_admin {
     </div>';
     }
 
-    /**
-     * Méthode helper pour générer les cartes de documents
-     */
     private function genererCarteDocument($demande, $champ, $titre, $icone, $type) {
         $fichier = $demande[$champ] ?? '';
         $disponible = !empty($fichier);
@@ -829,16 +818,11 @@ class Vue_admin {
 
         return $contenu;
     }
-
-    /**
-     * Méthode pour afficher les détails d'une demande (utilisée dans le modal)
-     */
     public function afficherDetailsDemande($demande) {
         $id = $demande['id'] ?? 0;
 
         echo '
     <div class="space-y-6">
-        <!-- Informations de base -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="bg-white/5 border border-white/10 rounded-2xl p-5">
                 <div class="flex items-center gap-3 mb-4">
@@ -865,7 +849,6 @@ class Vue_admin {
             </div>
         </div>
         
-        <!-- Documents -->
         <div class="bg-white/5 border border-white/10 rounded-2xl p-5">
             <h4 class="text-lg font-black text-white mb-4">Documents fournis</h4>
             <div class="space-y-4">';
@@ -911,11 +894,9 @@ class Vue_admin {
         echo '
             </div>
         </div>
-        
-        <!-- Actions -->
+      
         <div class="pt-6 border-t border-white/10">
             <div class="flex gap-4">
-                <!-- Bouton Accepter -->
                 <form action="index.php?module=admin&action=accepterAsso" method="POST" class="flex-1">
                     <input type="hidden" name="id" value="' . $id . '">
                     <button type="submit" 
@@ -925,8 +906,7 @@ class Vue_admin {
                     </button>
                 </form>
                 
-                <!-- Bouton Refuser (ouvre modal) -->
-                <button type="button" 
+                                <button type="button" 
                         onclick="ouvrirModalRefus(' . $id . ')"
                         class="w-full bg-red-600 hover:bg-red-500 text-white px-6 py-3 rounded-xl font-black text-sm uppercase transition-all">
                     <i class="fa-solid fa-times mr-2"></i> Refuser
@@ -935,7 +915,6 @@ class Vue_admin {
         </div>
     </div>
     
-    <!-- Modal pour la raison du refus -->
     <div id="modalRefus" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4 z-[9999]">
         <div class="bg-[#020617] border border-white/10 rounded-3xl p-8 max-w-md w-full">
             <div class="flex justify-between items-center mb-8">
@@ -1057,7 +1036,6 @@ class Vue_admin {
 
         echo '
     <div class="p-8">
-        <!-- En-tête avec bouton retour -->
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
             <div class="flex items-center gap-4">
                 <a href="index.php?module=admin&action=gestionAssos" 
@@ -1070,7 +1048,6 @@ class Vue_admin {
                 </div>
             </div>
             
-            <!-- Actions -->
             <div class="flex items-center gap-4">
                 <a href="index.php?module=admin&action=modifierAsso&id=' . $id . '" 
                    class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-all flex items-center gap-2">
@@ -1079,7 +1056,6 @@ class Vue_admin {
             </div>
         </div>
         
-        <!-- Statistiques principales -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <div class="bg-white/5 border border-white/10 p-6 rounded-3xl">
                 <div class="flex items-center gap-3 mb-4">
@@ -1118,12 +1094,10 @@ class Vue_admin {
             </div>
         </div>
         
-        <!-- Informations de contact -->
         <div class="bg-white/5 border border-white/10 p-6 rounded-3xl mb-8">
             <h3 class="text-lg font-black text-white mb-4">Informations de contact</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="space-y-4">
-                    <!-- Email -->
                     <div class="flex items-center gap-3">
                         <div class="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-slate-400">
                             <i class="fa-solid fa-envelope"></i>
@@ -1133,8 +1107,7 @@ class Vue_admin {
                             <p class="text-white font-medium">' . $email . '</p>
                         </div>
                     </div>
-                    
-                    <!-- Téléphone -->
+                  
                     <div class="flex items-center gap-3">
                         <div class="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-slate-400">
                             <i class="fa-solid fa-phone"></i>
@@ -1147,7 +1120,6 @@ class Vue_admin {
                 </div>
                 
                 <div class="space-y-4">
-                    <!-- Adresse -->
                     <div class="flex items-center gap-3">
                         <div class="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-slate-400">
                             <i class="fa-solid fa-location-dot"></i>
@@ -1158,7 +1130,6 @@ class Vue_admin {
                         </div>
                     </div>
                     
-                    <!-- Date de création -->
                     <div class="flex items-center gap-3">
                         <div class="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-slate-400">
                             <i class="fa-solid fa-calendar"></i>
@@ -1172,7 +1143,6 @@ class Vue_admin {
             </div>
         </div>
         
-        <!-- Bouton supprimer en bas -->
         <div class="mt-8 pt-8 border-t border-white/10 text-center">
             <form method="POST" action="index.php?module=admin&action=detailsAsso&id=' . $id . '" onsubmit="return confirm(\'Êtes-vous sûr de vouloir supprimer cette association ?\')">
                 <input type="hidden" name="action" value="supprimer">
@@ -1207,7 +1177,6 @@ class Vue_admin {
 
         echo '
     <div class="p-8">
-        <!-- En-tête -->
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
             <div class="flex items-center gap-4">
                 <a href="index.php?module=admin&action=detailsAsso&id=' . $id . '" 
@@ -1221,14 +1190,12 @@ class Vue_admin {
             </div>
         </div>
         
-        <!-- Formulaire -->
         <div class="max-w-3xl mx-auto">
             <form method="POST" action="index.php?module=admin&action=modifierAsso&id=' . $id . '" class="space-y-6">
                 <div class="bg-white/5 border border-white/10 p-8 rounded-3xl">
                     <h3 class="text-xl font-black text-white mb-6">Informations générales</h3>
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <!-- Nom -->
                         <div class="space-y-2">
                             <label class="text-sm font-bold text-slate-400 block">Nom de l\'association *</label>
                             <input type="text" 
@@ -1238,7 +1205,6 @@ class Vue_admin {
                                    class="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-blue-500 transition-all">
                         </div>
                         
-                        <!-- Solde -->
                         <div class="space-y-2">
                             <label class="text-sm font-bold text-slate-400 block">Trésorerie (€)</label>
                             <input type="number" 
@@ -1250,7 +1216,6 @@ class Vue_admin {
                     </div>
                     
                     <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <!-- Email -->
                         <div class="space-y-2">
                             <label class="text-sm font-bold text-slate-400 block">Email</label>
                             <input type="email" 
@@ -1259,7 +1224,6 @@ class Vue_admin {
                                    class="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-blue-500 transition-all">
                         </div>
                         
-                        <!-- Téléphone -->
                         <div class="space-y-2">
                             <label class="text-sm font-bold text-slate-400 block">Téléphone</label>
                             <input type="tel" 
@@ -1268,8 +1232,7 @@ class Vue_admin {
                                    class="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-blue-500 transition-all">
                         </div>
                     </div>
-                    
-                    <!-- Adresse -->
+                 
                     <div class="mt-6 space-y-2">
                         <label class="text-sm font-bold text-slate-400 block">Adresse</label>
                         <textarea name="adresse" 
@@ -1277,8 +1240,7 @@ class Vue_admin {
                                   class="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-blue-500 transition-all">' . $adresse . '</textarea>
                     </div>
                 </div>
-                
-                <!-- Boutons -->
+               
                 <div class="flex justify-end gap-4">
                     <a href="index.php?module=admin&action=detailsAsso&id=' . $id . '" 
                        class="px-6 py-3 bg-white/5 border border-white/10 text-white font-bold rounded-xl transition-all hover:bg-white/10">
@@ -1302,13 +1264,11 @@ class Vue_admin {
 
         echo '
     <div class="p-8">
-        <!-- En-tête avec compteur à droite -->
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
             <div class="w-full md:w-auto">
                 <h2 class="text-3xl font-black text-white italic uppercase">Associations Partenaires</h2>
             </div>
-            
-            <!-- Compteur en haut à droite -->
+           
             <div class="flex items-center gap-3 bg-white/5 border border-white/10 rounded-2xl px-4 py-3">
                 <div class="w-10 h-10 rounded-xl bg-blue-600/20 flex items-center justify-center">
                     <i class="fa-solid fa-building text-blue-400"></i>
@@ -1320,7 +1280,6 @@ class Vue_admin {
             </div>
         </div>
         
-        <!-- Barre de recherche centrée -->
         <div class="max-w-2xl mx-auto mb-8">
             <div class="relative">
                 <input type="text" 
@@ -1337,7 +1296,6 @@ class Vue_admin {
             </div>
         </div>
         
-        <!-- Liste des associations -->
         <div id="associationsList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">';
 
         if (empty($assosValidees)) {
@@ -1367,7 +1325,6 @@ class Vue_admin {
                  data-nom="' . strtolower($nom) . '"
                  data-status="' . $status . '">
                 
-                <!-- En-tête de la carte -->
                 <div class="mb-4">
                     <div class="flex justify-between items-start mb-3">
                         <div class="flex-1">
@@ -1378,19 +1335,16 @@ class Vue_admin {
                         </span>
                     </div>
                     
-                    <!-- Adresse -->
                     ' . (!empty($adresse) ? '
                     <div class="flex items-center gap-2 text-slate-500 text-sm mb-3">
                         <i class="fa-solid fa-location-dot text-xs"></i>
                         <span class="truncate">' . $adresse . '</span>
                     </div>' : '') . '
                     
-                    <!-- Description (si disponible) -->
                     ' . (!empty($description) ? '
                     <p class="text-slate-400 text-sm line-clamp-2 mb-4">' . $description . '</p>' : '') . '
                 </div>
                 
-                <!-- Pied de carte avec solde et actions -->
                 <div class="pt-4 border-t border-white/10">
                     <div class="flex justify-between items-center">
                         <div>
@@ -1398,7 +1352,6 @@ class Vue_admin {
                             <div class="text-2xl font-black ' . ($solde >= 0 ? 'text-blue-400' : 'text-rose-500') . '">' . $solde . ' €</div>
                         </div>
                         
-                        <!-- Actions -->
                         <div class="flex gap-2">
                             <a href="index.php?module=admin&action=detailsAsso&id=' . $id . '" 
                                class="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 hover:text-white hover:border-blue-500/30 hover:bg-blue-500/10 transition-all"

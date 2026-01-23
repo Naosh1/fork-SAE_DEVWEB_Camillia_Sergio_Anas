@@ -8,7 +8,6 @@ class ModeleStaff extends ModeleCommun
     public function getTousLesClients()
     {
         try {
-            // Récupérer les clients via la table appartient
             $stmt = self::getBdd()->prepare("
                 SELECT DISTINCT c.id, c.nom, c.prenom, c.email, c.solde 
                 FROM compte c
