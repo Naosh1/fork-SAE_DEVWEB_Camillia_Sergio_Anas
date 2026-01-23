@@ -16,18 +16,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (!empty($email) && !empty($mdp)) {
         $bdd = Connexion::getBdd();
-        $requete = $bdd->prepare("SELECT id, prenom, nom, email, mdp, role FROM compte INNER JOIN appartient WHERE email = ?");
+        $requete = $bdd->prepare("
+            SELECT c.id, c.prenom, c.nom, c.email, c.mdp, a.role 
+            FROM compte c 
+            LEFT JOIN appartient a ON c.id = a.compte_id 
+            WHERE c.email = ?
+        ");
+
         $requete->execute([$email]);
         $user = $requete->fetch(PDO::FETCH_ASSOC);
 
         if ($user && password_verify($mdp, $user['mdp'])) {
             session_regenerate_id(true);
 
+            // Stockage des informations en session
             $_SESSION['id'] = $user['id'];
             $_SESSION['prenom'] = $user['prenom'];
             $_SESSION['nom'] = $user['nom'];
             $_SESSION['email'] = $user['email'];
-            $_SESSION['role'] = $user['role'];
+            $_SESSION['role'] = $user['role'] ?? 'client';
             $_SESSION['login'] = $user['email'];
 
             header('Location: ../index.php');
@@ -58,26 +65,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             background-size: 400% 400%;
             animation: gradient 15s ease infinite;
         }
-        /* Style du Loader */
-        #loader-overlay {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: #020617;
-            z-index: 9999;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .animate-pulse-slow {
-            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: .5; }
-        }
 
         @keyframes gradient {
             0% { background-position: 0% 50%; }
@@ -104,7 +91,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             box-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
         }
 
-        /* Styles du Loader */
         #loader-overlay {
             display: none;
             position: fixed;
@@ -207,11 +193,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         setTimeout(function() {
             form.submit();
-        }, 1500);
+        }, 1200);
     });
 </script>
-
-</body>
 
 </body>
 </html>

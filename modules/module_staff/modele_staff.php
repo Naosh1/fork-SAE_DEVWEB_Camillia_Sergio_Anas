@@ -368,30 +368,16 @@ class ModeleStaff extends ModeleCommun
             return $stmt->fetchAll();
         }
 
-        public
-        function getClientsParAssociation($associationId)
-        {
-            try {
-                $stmt = self::getBdd()->prepare("
-            SELECT c.id, c.nom, c.prenom, c.email, c.solde, c.role
-            FROM compte c
-            JOIN appartient a ON c.id = a.compte_id
-            WHERE a.association_id = :id
-            AND c.role = 'client'
-        ");
-                $stmt->execute(['id' => $associationId]);
-                $clients = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-                foreach ($clients as &$client) {
-                    if (!isset($client['solde'])) $client['solde'] = 0;
-                }
-
-                return $clients;
-            } catch (PDOException $e) {
-                error_log("Erreur getClientsParAssociation: " . $e->getMessage());
-                return [];
-            }
-        }
+    public function getClientsParAssociation($idAsso)
+    {
+        $sql = "SELECT c.* FROM compte c 
+            JOIN appartient a ON c.id = a.compte_id 
+            WHERE a.association_id = ? AND a.role = 'client'
+            ORDER BY c.nom ASC";
+        $stmt = self::getBdd()->prepare($sql);
+        $stmt->execute([$idAsso]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 
         public
         function rechercherClients($q = '')

@@ -8,7 +8,21 @@ class VueGestionnaire extends VueStaff
     private $nbMessages = 0;
 
     public function afficherFormulaireDemande() {
+        if (isset($_SESSION['erreur'])) {
+            echo '<div class="mb-4 p-4 bg-rose-600/10 border border-rose-500/20 rounded-2xl text-rose-500">
+                <i class="fa-solid fa-exclamation-circle mr-2"></i>' . $_SESSION['erreur'] . '
+              </div>';
+            unset($_SESSION['erreur']);
+        }
+
+        if (isset($_SESSION['success'])) {
+            echo '<div class="mb-4 p-4 bg-emerald-600/10 border border-emerald-500/20 rounded-2xl text-emerald-500">
+                <i class="fa-solid fa-check-circle mr-2"></i>' . $_SESSION['success'] . '
+              </div>';
+            unset($_SESSION['success']);
+        }
         ?>
+
         <div class="max-w-4xl mx-auto p-8 bg-white/5 border border-white/10 rounded-[3rem] shadow-2xl mt-10">
             <h1 class="text-4xl font-black text-white italic mb-8 uppercase tracking-tighter">Créer une Association</h1>
 
@@ -68,7 +82,62 @@ class VueGestionnaire extends VueStaff
         </script>
         <?php
     }
+    public function afficherHistoriqueDemandes($historique) {
+        $this->afficherNav();
+        ?>
+        <div class="max-w-5xl mx-auto p-8 mt-10">
+            <div class="flex items-center justify-between mb-12">
+                <div>
+                    <h1 class="text-4xl font-black text-white italic uppercase tracking-tighter">Historique de mes demandes</h1>
+                    <p class="text-slate-500 text-sm">Suivi de vos demandes de création d'association</p>
+                </div>
 
+                <a href="index.php?module=gestionnaire&action=demanderCreationAsso&nouveau=1"
+                   class="bg-emerald-500 hover:bg-emerald-400 text-black px-6 py-3 rounded-2xl font-black uppercase text-[10px] tracking-widest transition-all shadow-lg shadow-emerald-500/20">
+                    + Nouvelle demande
+                </a>
+            </div>
+
+            <?php if (empty($historique)): ?>
+                <div class="bg-white/5 border border-dashed border-white/10 rounded-[3rem] p-20 text-center">
+                    <i class="fa-solid fa-folder-open text-white/10 text-6xl mb-6"></i>
+                    <p class="text-slate-400 font-bold">Aucune demande envoyée.</p>
+                    <a href="index.php?module=gestionnaire&action=demanderCreationAsso&nouveau=1"
+                       class="inline-block mt-6 bg-emerald-500 hover:bg-emerald-400 text-black px-6 py-3 rounded-2xl font-black uppercase text-[10px] tracking-widest transition-all">
+                        Créer ma première demande
+                    </a>
+                </div>
+            <?php else: ?>
+                <div class="grid gap-6">
+                    <?php foreach ($historique as $d):
+                        $statut = $d['statut'] ?? 'en_attente';
+                        $config = [
+                                'en_attente' => ['label' => 'En attente', 'class' => 'bg-amber-500/10 text-amber-500 border-amber-500/20', 'icon' => 'fa-hourglass-half'],
+                                'validee'    => ['label' => 'Acceptée', 'class' => 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20', 'icon' => 'fa-check-circle'],
+                                'refusee'    => ['label' => 'Refusée', 'class' => 'bg-rose-500/10 text-rose-500 border-rose-500/20', 'icon' => 'fa-times-circle']
+                        ];
+                        $current = $config[$statut] ?? $config['en_attente'];
+                        ?>
+                        <div class="bg-white/5 border border-white/10 rounded-[2rem] p-6 flex items-center justify-between hover:bg-white/[0.08] transition-all">
+                            <div class="flex items-center gap-6">
+                                <div class="w-16 h-16 bg-black/40 rounded-2xl flex items-center justify-center text-emerald-500">
+                                    <i class="fa-solid fa-building text-2xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-xl font-black text-white uppercase italic"><?= htmlspecialchars((string)$d['nom_association']) ?></h3>
+                                    <p class="text-xs text-slate-500">Envoyée le <?= date('d/m/Y à H:i', strtotime($d['date_soumission'])) ?></p>
+                                </div>
+                            </div>
+                            <span class="px-5 py-2 rounded-full border text-[10px] font-black uppercase tracking-widest <?= $current['class'] ?>">
+                            <i class="fa-solid <?= $current['icon'] ?> mr-2"></i> <?= $current['label'] ?>
+                        </span>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
+        </div>
+        <?php
+    }
     public function afficherDemandeEnCours($demandes = []) {
         $this->afficherNav();
         ?>
@@ -2230,14 +2299,10 @@ class VueGestionnaire extends VueStaff
     public function afficherStatsDetails($evolution, $topProduits, $pertesTotales, $nomAsso, $topClients, $statsHoraires) {
         $this->afficherNav();
         echo '<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&display=swap" rel="stylesheet">';
-
-        // 1. Initialisation des heures
         $heuresCompletes = [];
         for ($h = 8; $h <= 23; $h++) {
             $heuresCompletes[$h] = $statsHoraires[$h] ?? 0;
         }
-
-        // 2. SÉCURISATION DES DIVISEURS (Empêche le DivisionByZeroError)
         $maxVentesHeure = max($heuresCompletes);
         $maxVentesHeure = ($maxVentesHeure > 0) ? $maxVentesHeure : 1;
 
@@ -2276,9 +2341,7 @@ class VueGestionnaire extends VueStaff
                         <?php
                         if (!empty($evolution['dates'])):
                             foreach($evolution['dates'] as $i => $date):
-                                $val = $evolution['recettes'][$i] ?? 0;
-                                // Utilisation du maxRecette sécurisé
-                                $h_bar = ($val / $maxRecette) * 100;
+                                $val = $evolution['recettes'][$i] ?? 0;                             $h_bar = ($val / $maxRecette) * 100;
                                 ?>
                                 <div class="flex-1 flex flex-col items-center gap-4 h-full justify-end group/bar relative">
                                     <div class="absolute -top-10 bg-blue-600 text-white text-[10px] font-black px-2 py-1 rounded-lg opacity-0 group-hover/bar:opacity-100 transition-all">
@@ -2299,7 +2362,6 @@ class VueGestionnaire extends VueStaff
                     </h2>
                     <div class="flex-1 flex items-end justify-between gap-1 px-1">
                         <?php foreach($heuresCompletes as $h_idx => $valeur):
-                            // Utilisation du maxVentesHeure sécurisé
                             $hauteur = ($valeur / $maxVentesHeure) * 100;
                             ?>
                             <div class="flex-1 flex flex-col items-center gap-3 h-full justify-end group/h relative">

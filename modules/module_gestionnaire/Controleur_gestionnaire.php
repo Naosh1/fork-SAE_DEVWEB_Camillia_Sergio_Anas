@@ -15,12 +15,13 @@ class ControleurGestionnaire
 
     public function __construct()
     {
-        $this->modeleCommun = new ModeleCommun();
-        $this->modeleStaff = new ModeleStaff();
+
         $this->modele = new ModeleGestionnaire();
         $this->vue = new VueGestionnaire();
         $this->vueCommun = new VueCommun();
         $this->vueStaff = new VueStaff();
+        $this->modeleCommun = new ModeleCommun();
+        $this->modeleStaff = new ModeleStaff();
 
     }
 
@@ -32,9 +33,6 @@ class ControleurGestionnaire
                 break;
             case 'voirProduits':
                 $this->afficherProduits();
-                break;
-            case 'mesDemandes':
-                $this->afficherDemandesEnCours();
                 break;
             case 'ajouterProduit':
                 $this->gererAjoutProduit();
@@ -199,8 +197,9 @@ class ControleurGestionnaire
             case 'envoyerDemande':
                 $this->envoyerDemande();
                 break;
-            case 'demandeEnCours':
-                $this->afficherPageDemandeEnCours();
+
+            case 'mesDemandes':
+                $this->mesDemandes();
                 break;
             case 'mesMessages':
                 $this->afficherMessages();
@@ -244,67 +243,154 @@ class ControleurGestionnaire
         }
     }
 
-    private function afficherFormulaireDemandeAsso() {
+    private function afficherFormulaireDemandeAsso()
+    {
         $idGest = $_SESSION['id'] ?? null;
         $historique = $this->modele->getDemandesGestionnaire($idGest);
-        if (isset($_GET['action']) && $_GET['action'] == 'demanderCreationAsso' && isset($_GET['nouveau'])) {
-            $this->vue->afficherFormulaireDemande();
-        } elseif (empty($historique)) {
+
+        $demandeEnAttente = false;
+        foreach ($historique as $demande) {
+            if ($demande['statut'] === 'en_attente') {
+                $demandeEnAttente = true;
+                break;
+            }
+        }
+        if ((isset($_GET['nouveau']) && $_GET['nouveau'] == 1) || empty($historique) || !$demandeEnAttente) {
             $this->vue->afficherFormulaireDemande();
         } else {
-            $this->vue->afficherDemandeEnCours($historique);
+            $this->vue->afficherHistoriqueDemandes($historique);
         }
     }
 
+    public function mesDemandes()
+    {
+        if (!isset($_SESSION['id'])) {
+            header("Location: index.php?module=gestionnaire&action=connexion");
+            exit();
+        }
 
-    private function envoyerDemande() {
         $idGest = $_SESSION['id'];
-        $nomAsso = $_POST['nom_association'] ?? '';
+        error_log("Affichage mesDemandes pour id: $idGest");
 
-        if ($this->modele->demandeExisteDeja($idGest, $nomAsso)) {
-            echo "Erreur : Vous avez déjà une demande pour ce nom ou une demande en attente.";
-            return;
+        $demandes = $this->modele->getDemandesGestionnaire($idGest);
+
+        error_log("Demandes récupérées dans contrôleur: " . count($demandes));
+        foreach ($demandes as $d) {
+            error_log("Demande ID: " . $d['id'] . " - " . $d['nom_association']);
+        }
+
+        $this->vue->afficherDemandeEnCours($demandes);
+    }
+
+
+    private function envoyerDemande()
+    {
+        if (!isset($_SESSION['id'])) {
+            header("Location: index.php?module=gestionnaire&action=connexion");
+            exit();
+        }
+
+        $idGest = $_SESSION['id'];
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $_SESSION['erreur'] = "Méthode non autorisée";
+            header("Location: index.php?module=gestionnaire&action=demanderCreationAsso");
+            exit();
+        }
+
+        $nomAssociation = trim($_POST['nom_association'] ?? '');
+
+        if (empty($nomAssociation) || strlen($nomAssociation) < 3) {
+            $_SESSION['erreur'] = "Le nom de l'association doit contenir au moins 3 caractères";
+            header("Location: index.php?module=gestionnaire&action=demanderCreationAsso");
+            exit();
+        }
+
+        if ($this->modele->demandeExisteDeja($idGest, $nomAssociation)) {
+            $_SESSION['erreur'] = "Vous avez déjà une demande pour ce nom ou une demande en attente.";
+            header("Location: index.php?module=gestionnaire&action=demanderCreationAsso");
+            exit();
+        }
+
+        $demandeEnCours = $this->modele->getDemandeEnCours($idGest);
+        if ($demandeEnCours) {
+            $_SESSION['erreur'] = "Vous avez déjà une demande en cours de traitement.";
+            header("Location: index.php?module=gestionnaire&action=demanderCreationAsso");
+            exit();
         }
 
         $uploadDir = 'uploads/dossiers_assos/';
-        if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0777, true);
+        }
 
         $paths = [];
-        $filesToUpload = [
+        $fichiersRequis = [
             'pdf_identite' => 'CNI',
-            'pdf_pv'       => 'PV',
-            'pdf_ago'      => 'AGO'
+            'pdf_pv' => 'PV',
+            'pdf_ago' => 'AGO'
         ];
 
-        foreach ($filesToUpload as $key => $prefix) {
-            if (isset($_FILES[$key]) && $_FILES[$key]['error'] === UPLOAD_ERR_OK) {
-                $extension = pathinfo($_FILES[$key]['name'], PATHINFO_EXTENSION);
-                $filename = $idGest . "_" . $prefix . "_" . time() . "." . $extension;
-                $destination = $uploadDir . $filename;
+        $erreursFichiers = [];
 
-                if (move_uploaded_file($_FILES[$key]['tmp_name'], $destination)) {
-                    $paths[$key] = $destination;
-                }
+        foreach ($fichiersRequis as $champ => $prefixe) {
+            if (!isset($_FILES[$champ]) || $_FILES[$champ]['error'] !== UPLOAD_ERR_OK) {
+                $erreursFichiers[] = "Le fichier $prefixe est requis";
+                continue;
             }
+
+            $typeFichier = mime_content_type($_FILES[$champ]['tmp_name']);
+            if ($typeFichier !== 'application/pdf') {
+                $erreursFichiers[] = "Le fichier $prefixe doit être au format PDF";
+                continue;
+            }
+
+            if ($_FILES[$champ]['size'] > 5 * 1024 * 1024) {
+                $erreursFichiers[] = "Le fichier $prefixe est trop volumineux (max 5MB)";
+                continue;
+            }
+
+            $extension = pathinfo($_FILES[$champ]['name'], PATHINFO_EXTENSION);
+            $nomFichier = $idGest . '_' . $prefixe . '_' . time() . '_' . bin2hex(random_bytes(8)) . '.' . $extension;
+            $destination = $uploadDir . $nomFichier;
+
+            if (move_uploaded_file($_FILES[$champ]['tmp_name'], $destination)) {
+                $paths[$champ] = $destination;
+            } else {
+                $erreursFichiers[] = "Erreur lors de l'upload du fichier $prefixe";
+            }
+        }
+
+        if (!empty($erreursFichiers)) {
+            $_SESSION['erreur'] = implode('<br>', $erreursFichiers);
+            header("Location: index.php?module=gestionnaire&action=demanderCreationAsso");
+            exit();
         }
 
         if (count($paths) === 3) {
             $success = $this->modele->sauvegarderDemande(
                 $idGest,
-                $nomAsso,
+                $nomAssociation,
                 $paths['pdf_identite'],
                 $paths['pdf_pv'],
                 $paths['pdf_ago']
             );
+
             if ($success) {
+                $_SESSION['success'] = "Votre demande a été envoyée avec succès ! Elle sera traitée par l'administration.";
+                header("Location: index.php?module=gestionnaire&action=mesDemandes");
+                exit();
+            } else {
+                $_SESSION['erreur'] = "Une erreur est survenue lors de l'enregistrement de votre demande";
                 header("Location: index.php?module=gestionnaire&action=demanderCreationAsso");
                 exit();
             }
         } else {
-            echo "Erreur lors de l'upload des fichiers.";
+            $_SESSION['erreur'] = "Tous les fichiers PDF sont requis";
+            header("Location: index.php?module=gestionnaire&action=demanderCreationAsso");
+            exit();
         }
     }
-
 
     private function afficherPageDemandeEnCours()
     {
@@ -313,12 +399,8 @@ class ControleurGestionnaire
         unset($_SESSION['nom_association_demandee']);
     }
 
-    private function afficherDemandesEnCours() {
-        $idGest = $_SESSION['id'];
-        $demandes = $this->modele->getDemandesGestionnaire($idGest);
-        $this->vue->afficherDemandeEnCours($demandes);
-    }
-    private function afficherDetailsProduits() {
+    private function afficherDetailsProduits()
+    {
         $idAsso = $_SESSION['asso_choisi'] ?? null;
         if ($idAsso) {
             $produits = $this->modele->getTopProduitsParAsso($idAsso);
@@ -341,6 +423,7 @@ class ControleurGestionnaire
         header("Location: index.php?module=gestionnaire&action=distribuer");
         exit();
     }
+
     private function afficherTableauDeBord()
     {
         if (!isset($_SESSION['asso_choisi'])) {
@@ -763,8 +846,16 @@ class ControleurGestionnaire
 
     private function afficherClients()
     {
-        $utilisateurs = $this->modele->getTousLesClients();
-        $this->vue->afficherUtilisateurs($utilisateurs);
+        $idAsso = $_GET['id'] ?? $_SESSION['asso_choisi'] ?? null;
+
+        if ($idAsso) {
+            $utilisateurs = $this->modele->getClientsParAssociation($idAsso);
+            $nomAsso = $this->modele->getNomAsso($idAsso);
+            $this->vue->afficherClients($utilisateurs, $nomAsso);
+        } else {
+            header("Location: index.php?action=accueil&error=no_asso");
+            exit();
+        }
     }
 
     public function gestionAjoutClient()
@@ -821,7 +912,7 @@ class ControleurGestionnaire
         }
 
         $clients = $this->modele->getClientsParAssociation($idAsso);
-        $asso    = $this->modele->getAssociationParId($idAsso);
+        $asso = $this->modele->getAssociationParId($idAsso);
 
         $nomAsso = $asso['nom'] ?? 'Association';
 
@@ -1015,6 +1106,7 @@ class ControleurGestionnaire
             exit();
         }
     }
+
     public function afficherDetailsCommande()
     {
         $idCommande = $_GET['id'] ?? null;
@@ -1141,32 +1233,32 @@ class ControleurGestionnaire
     }
 
 
-private
-function afficherTousProduits()
-{
-    $id_assos = $_SESSION['id'] ?? '';
-    $produits = $this->modele->getProduitsParAssociation($id_assos);
-    $this->vue->afficherProduits($produits, $id_assos);
-}
+    private
+    function afficherTousProduits()
+    {
+        $id_assos = $_SESSION['id'] ?? '';
+        $produits = $this->modele->getProduitsParAssociation($id_assos);
+        $this->vue->afficherProduits($produits, $id_assos);
+    }
 
-private
-function afficherStockGeneral()
-{
-    $stocks = $this->modele->getStock();
-    $this->vue->afficherStock($stocks);
-}
+    private
+    function afficherStockGeneral()
+    {
+        $stocks = $this->modele->getStock();
+        $this->vue->afficherStock($stocks);
+    }
 
-private
-function afficherVentes()
-{
-    $ventes = $this->modele->getVentes();
-    $this->vue->afficherVentes($ventes);
-}
+    private
+    function afficherVentes()
+    {
+        $ventes = $this->modele->getVentes();
+        $this->vue->afficherVentes($ventes);
+    }
 
-private
-function afficherErreurAction()
-{
-    $message = "L'action demandée n'existe pas.";
-    include 'templates/template_erreur.php';
-}
+    private
+    function afficherErreurAction()
+    {
+        $message = "L'action demandée n'existe pas.";
+        include 'templates/template_erreur.php';
+    }
 }

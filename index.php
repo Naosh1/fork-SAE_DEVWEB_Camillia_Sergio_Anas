@@ -13,7 +13,12 @@ if (!isset($_SESSION['id'])) {
     exit();
 }
 
-$stmt = $bdd->prepare("SELECT prenom, role FROM compte INNER JOIN appartient WHERE id = ?");
+$stmt = $bdd->prepare("
+    SELECT c.prenom, 
+           (SELECT 1 FROM administrateur WHERE compte_id = c.id) as is_admin
+    FROM compte c 
+    WHERE c.id = ?
+");
 $stmt->execute([$_SESSION['id']]);
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -23,12 +28,11 @@ if (!$user) {
     exit();
 }
 
-if (isset($user['role']) && $user['role'] === 'admin') {
+if ($user['is_admin']) {
     $_SESSION['role_effectif'] = 'admin';
     include_once 'modules/module_admin/Mod_admin.php';
     new Mod_admin();
     include_once 'templates/template_admin.php';
-
     exit();
 }
 
@@ -82,7 +86,6 @@ if (isset($_POST['choisir_asso'])) {
     exit("NOT_MEMBER");
 }
 
-// Recherche AJAX des associations
 if (isset($_GET['search'])) {
     $stmt = $bdd->prepare("
         SELECT a.id, a.nom, a.email,
@@ -144,6 +147,7 @@ if (isset($_SESSION['asso_choisi'])) {
     }
     exit();
 }
+?>
 ?>
 <!DOCTYPE html>
 <html lang="fr">

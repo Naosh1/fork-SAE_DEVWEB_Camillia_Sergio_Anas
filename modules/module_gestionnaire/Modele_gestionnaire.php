@@ -12,25 +12,51 @@ class ModeleGestionnaire extends ModeleStaff
         return $req->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function sauvegarderDemande($idGest, $nomAsso, $pdfIdentite, $pdfPv, $pdfAgo) {
+
+    public function sauvegarderDemande($idGest, $nomAssociation, $pdfIdentite, $pdfPv, $pdfAgo) {
         try {
             $sql = "INSERT INTO demandes_association 
-            (id_gestionnaire, nom_association, pdf_identite, pdf_pv_creation, pdf_ago, statut, date_soumission) 
-            VALUES (?, ?, ?, ?, ?, 'en_attente', NOW())";
+            (id_gestionnaire, nom_association, pdf_identite, pdf_pv_creation, pdf_statut, date_soumission, statut) 
+            VALUES (?, ?, ?, ?, ?, NOW(), 'en_attente')";
+
             $stmt = self::getBdd()->prepare($sql);
-            return $stmt->execute([$idGest, $nomAsso, $pdfIdentite, $pdfPv, $pdfAgo]);
-        } catch (PDOException $e) {
-            error_log("Erreur sauvegarderDemande: " . $e->getMessage());
+
+            $result = $stmt->execute([
+                $idGest,
+                $nomAssociation,
+                $pdfIdentite,
+                $pdfPv,
+                $pdfAgo
+            ]);
+
+            error_log("Tentative d'insertion pour id_gestionnaire: $idGest");
+            error_log("Nom association: $nomAssociation");
+            error_log("Résultat insertion: " . ($result ? "SUCCÈS" : "ÉCHEC"));
+
+            if ($result) {
+                error_log("ID de la nouvelle demande: " . self::getBdd()->lastInsertId());
+            } else {
+                error_log("Erreur SQL: " . json_encode($stmt->errorInfo()));
+            }
+
+            return $result;
+
+        } catch (Exception $e) {
+            error_log("Erreur sauvegarde demande: " . $e->getMessage());
             return false;
         }
     }
 
-    public function demandeExisteDeja($idGest, $nomAsso) {
-        $sql = "SELECT COUNT(*) FROM demandes_association 
+    public function demandeExisteDeja($idGest, $nomAssociation) {
+        $sql = "SELECT COUNT(*) as count FROM demandes_association 
             WHERE id_gestionnaire = ? AND nom_association = ?";
         $stmt = self::getBdd()->prepare($sql);
-        $stmt->execute([$idGest, $nomAsso]);
-        return $stmt->fetchColumn() > 0;
+        $stmt->execute([$idGest, $nomAssociation]);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        error_log("Vérification existence demande - Count: " . $result['count']);
+
+        return $result['count'] > 0;
     }
     public function getBenefices($associationId)
     {
@@ -80,10 +106,20 @@ class ModeleGestionnaire extends ModeleStaff
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
     public function getDemandesGestionnaire($idGest) {
+        error_log("Recherche des demandes pour id_gestionnaire: $idGest");
+
         $sql = "SELECT * FROM demandes_association WHERE id_gestionnaire = ? ORDER BY date_soumission DESC";
         $stmt = self::getBdd()->prepare($sql);
         $stmt->execute([$idGest]);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $resultats = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        error_log("Nombre de demandes trouvées: " . count($resultats));
+
+        foreach ($resultats as $demande) {
+            error_log("Demande trouvée - ID: " . $demande['id'] . ", Nom: " . $demande['nom_association']);
+        }
+
+        return $resultats;
     }
     public function rechercherProduitGlobal($nomProduit)
     {
@@ -528,7 +564,12 @@ class ModeleGestionnaire extends ModeleStaff
         $stmt->execute([$id]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
-
+    public function getNomAsso($idAsso) {
+        $sql = "SELECT nom FROM association WHERE id = ?";
+        $stmt = self::getBdd()->prepare($sql);
+        $stmt->execute([$idAsso]);
+        return $stmt->fetchColumn();
+    }
     public function ajouterClientCommeBarman($clientId, $assoId) {
         try {
             $sql = "INSERT INTO appartient (compte_id, association_id, role) 
