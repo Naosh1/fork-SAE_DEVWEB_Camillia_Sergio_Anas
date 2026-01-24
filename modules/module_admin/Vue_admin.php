@@ -156,7 +156,7 @@ class Vue_admin {
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-bold text-slate-400 mb-2">Type/Catégorie *</label>
-                        <select name="type" required class="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white focus:border-blue-500 focus:outline-none">
+                        <select name="type" required class="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-black focus:border-blue-500 focus:outline-none">
                             <option value="" disabled ' . (empty($produit['type']) ? 'selected' : '') . '>Sélectionner...</option>
                             <option value="alimentaire" ' . ($produit['type'] == 'alimentaire' ? 'selected' : '') . '>Alimentaire</option>
                             <option value="textile" ' . ($produit['type'] == 'textile' ? 'selected' : '') . '>Textile</option>
@@ -183,7 +183,7 @@ class Vue_admin {
                     <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-2xl font-black text-sm uppercase transition-all">
                         ' . ($isEdit ? 'Mettre à jour' : 'Créer le produit') . '
                     </button>
-                    <button type="button" onclick="closeModalProduit()" class="px-6 py-3 bg-white/5 hover:bg-white/10 text-white rounded-2xl font-bold transition-all">
+                    <button type="button" onclick="closeModalProduit(); return false" class="px-6 py-3 bg-white/5 hover:bg-white/10 text-white rounded-2xl font-bold transition-all">
                         Annuler
                     </button>
                 </div>
@@ -584,34 +584,6 @@ class Vue_admin {
             if (notification) notification.remove();
         }, 5000);
         </script>';
-    }
-
-    public function afficherListeDemandes($demandes) {
-        echo '<div class="space-y-6">';
-        echo '<h2 class="text-2xl font-black text-white uppercase italic tracking-tighter">Demandes en attente</h2>';
-
-        if (empty($demandes)) {
-            echo '<p class="text-slate-500 italic">Aucune demande pour le moment.</p>';
-        } else {
-            foreach ($demandes as $d) {
-                echo '
-            <div class="bg-white/5 border border-white/10 p-6 rounded-3xl flex items-center justify-between group hover:border-blue-500/50 transition-all">
-                <div>
-                    <h3 class="text-xl font-bold text-white">' . htmlspecialchars($d['nom_association']) . '</h3>
-                    <p class="text-slate-400 text-sm">Demandé par : <span class="text-blue-400">' . htmlspecialchars($d['prenom'] . ' ' . $d['nom']) . '</span></p>
-                    <div class="flex gap-4 mt-2">
-                        ' . (!empty($d['pdf_pv_creation']) ? '<a href="' . htmlspecialchars($d['pdf_pv_creation']) . '" target="_blank" class="text-[10px] font-black text-emerald-500 uppercase tracking-widest hover:underline italic">Voir PV Creation</a>' : '') . '
-                        ' . (!empty($d['pdf_identite']) ? '<a href="' . htmlspecialchars($d['pdf_identite']) . '" target="_blank" class="text-[10px] font-black text-emerald-500 uppercase tracking-widest hover:underline italic">Pièce d\'identité</a>' : '') . '
-                    </div>
-                </div>
-                <div class="flex gap-3">
-                    <a href="index.php?module=admin&action=accepterAsso&id=' . $d['id'] . '" class="px-6 py-3 bg-emerald-600/20 text-emerald-500 rounded-xl font-black text-xs uppercase hover:bg-emerald-600 hover:text-white transition-all">Accepter</a>
-                    <a href="index.php?module=admin&action=refuserAsso&id=' . $d['id'] . '" class="px-6 py-3 bg-red-600/20 text-red-500 rounded-xl font-black text-xs uppercase hover:bg-red-600 hover:text-white transition-all">Refuser</a>
-                </div>
-            </div>';
-            }
-        }
-        echo '</div>';
     }
 
     public function afficherDemandesAssociation($demandes) {

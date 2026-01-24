@@ -46,18 +46,6 @@ class ModeleGestionnaire extends ModeleStaff
             return false;
         }
     }
-
-    public function demandeExisteDeja($idGest, $nomAssociation) {
-        $sql = "SELECT COUNT(*) as count FROM demandes_association 
-            WHERE id_gestionnaire = ? AND nom_association = ?";
-        $stmt = self::getBdd()->prepare($sql);
-        $stmt->execute([$idGest, $nomAssociation]);
-        $result = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        error_log("Vérification existence demande - Count: " . $result['count']);
-
-        return $result['count'] > 0;
-    }
     public function getBenefices($associationId)
     {
         try {
@@ -99,12 +87,6 @@ class ModeleGestionnaire extends ModeleStaff
         }
     }
 
-    public function getDemandeEnCours($idGest) {
-        $sql = "SELECT * FROM demandes_association WHERE id_gestionnaire = ? AND statut = 'en_attente' LIMIT 1";
-        $stmt = self::getBdd()->prepare($sql);
-        $stmt->execute([$idGest]);
-        return $stmt->fetch(PDO::FETCH_ASSOC);
-    }
     public function getDemandesGestionnaire($idGest) {
         error_log("Recherche des demandes pour id_gestionnaire: $idGest");
 
@@ -333,14 +315,6 @@ class ModeleGestionnaire extends ModeleStaff
             HAVING quantite_achetee > 0
             ORDER BY p.nom ASC";
 
-        $stmt = self::getBdd()->prepare($sql);
-        $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
-
-    public function getTousLesProduits()
-    {
-        $sql = "SELECT * FROM produit";
         $stmt = self::getBdd()->prepare($sql);
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -616,36 +590,6 @@ class ModeleGestionnaire extends ModeleStaff
         }
     }
 
-    public function getNbBarmans()
-    {
-        try {
-            $stmt = self::getBdd()->prepare("SELECT COUNT(*) as nb FROM compte WHERE role = 'barman'");
-            $stmt->execute();
-            $result = $stmt->fetch(PDO::FETCH_ASSOC);
-            return $result['nb'];
-        } catch (PDOException $e) {
-            return 0;
-        }
-    }
-
-    public function estBarmanActif($id): bool
-    {
-        try {
-            $requete = self::getBdd()->prepare(
-                "SELECT COUNT(*) 
-             FROM dispose d 
-             JOIN role r ON d.role_id = r.id 
-             WHERE d.compte_id = ? AND r.nom = 'barman'"
-            );
-            $requete->execute([$id]);
-            return $requete->fetchColumn() > 0;
-        } catch (PDOException $e) {
-            error_log("Erreur estBarmanActif: " . $e->getMessage());
-            return false;
-        }
-    }
-
-
     public function accepterAssociation($assoId, $idGestionnaire)
     {
         $sql = "INSERT INTO gestionne (compte_id, association_id) VALUES (:compte_id, :association_id)";
@@ -707,7 +651,6 @@ class ModeleGestionnaire extends ModeleStaff
         return $assos;
     }
 
-
     public function supprimerProduit($id)
     {
         try {
@@ -716,31 +659,6 @@ class ModeleGestionnaire extends ModeleStaff
         } catch (PDOException $e) {
             error_log("Erreur supprimerProduit: " . $e->getMessage());
             return false;
-        }
-    }
-
-    public function getStockCritique($idGestionnaire, $seuil = 15)
-    {
-        try {
-            $sql = "SELECT p.id, p.nom, p.quantiteActuelle, a.nom as nom_association
-                FROM produit p
-                JOIN gere g ON p.id = g.produit_id
-                JOIN association a ON g.association_id = a.id
-                JOIN gestionne gest ON a.id = gest.association_id
-                WHERE gest.compte_id = :id_gest 
-                AND p.quantiteActuelle <= :seuil
-                ORDER BY p.quantiteActuelle ASC";
-
-            $stmt = self::getBdd()->prepare($sql);
-            $stmt->execute([
-                'id_gest' => $idGestionnaire,
-                'seuil' => $seuil
-            ]);
-
-            return $stmt->fetchAll(PDO::FETCH_ASSOC);
-        } catch (PDOException $e) {
-            error_log("Erreur getStockCritique : " . $e->getMessage());
-            return [];
         }
     }
 
@@ -772,32 +690,6 @@ class ModeleGestionnaire extends ModeleStaff
             return false;
         }
     }
-
-
-    public function getNbUtilisateurs()
-    {
-        try {
-            $requete = self::getBdd()->query("SELECT COUNT(*) as nb FROM compte");
-            $result = $requete->fetch(PDO::FETCH_ASSOC);
-            return $result['nb'];
-        } catch (PDOException $e) {
-            error_log("Erreur getNbUtilisateurs: " . $e->getMessage());
-            return 0;
-        }
-    }
-
-    public function getNbAssociations()
-    {
-        try {
-            $requete = self::getBdd()->query("SELECT COUNT(*) as nb FROM association");
-            $result = $requete->fetch(PDO::FETCH_ASSOC);
-            return $result['nb'];
-        } catch (PDOException $e) {
-            error_log("Erreur getNbAssociations: " . $e->getMessage());
-            return 0;
-        }
-    }
-
 
     public function getAssociationParId($id)
     {

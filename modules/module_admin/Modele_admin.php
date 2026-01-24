@@ -101,14 +101,6 @@ class Modele_admin extends Connexion
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    public function getUtilisateurParId($id)
-    {
-        $sql = "SELECT * FROM compte WHERE id = ?";
-        $stmt = self::getBdd()->prepare($sql);
-        $stmt->execute([$id]);
-        return $stmt->fetch(PDO::FETCH_ASSOC);
-    }
-
     public function activerDesactiverUtilisateur($id)
     {
         $sql = "UPDATE compte SET actif = NOT actif WHERE id = ?";
@@ -179,12 +171,6 @@ class Modele_admin extends Connexion
         $stmt = self::getBdd()->prepare($sql);
         $stmt->execute([$jours]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
-
-    public function inverserStatutUtilisateur($id) {
-        $sql = "UPDATE compte SET actif = NOT actif WHERE id = ?";
-        $stmt = self::getBdd()->prepare($sql);
-        return $stmt->execute([$id]);
     }
 
     public function supprimerProduitReferent($id) {

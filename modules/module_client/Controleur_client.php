@@ -29,7 +29,6 @@ class Controleur_client
 
     public function gererAction($action)
     {
-        // On ne fait plus de "return", on appelle directement les méthodes qui font "echo"
         switch ($action) {
             case "accueil":
                 $this->vue->afficherNav();
