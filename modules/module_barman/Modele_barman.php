@@ -81,40 +81,6 @@ class ModeleBarman extends ModeleStaff {
         }
     }
 
-
-    private function verifierCompteExiste($compte_id) {
-        try {
-            $requete = self::getBdd()->prepare('SELECT id FROM compte WHERE id = ?');
-            $requete->execute([$compte_id]);
-            return $requete->fetch() !== false;
-        } catch (PDOException $e) {
-            error_log("Erreur vérification compte: " . $e->getMessage());
-            return false;
-        }
-    }
-
-    private function insererProduitsVente($vente_id, $produits) {
-        try {
-            $requeteContient = self::getBdd()->prepare("
-                INSERT INTO contient (produit_id, vente_id, quantite, prix_unitaire) 
-                VALUES (?, ?, ?, ?)
-            ");
-
-            foreach ($produits as $produit) {
-                $requeteContient->execute([
-                    $produit['id'],
-                    $vente_id,
-                    $produit['quantite'],
-                    $produit['prix']
-                ]);
-            }
-        } catch (PDOException $e) {
-            error_log("Erreur insertion produits vente: " . $e->getMessage());
-            throw $e;
-        }
-    }
-
-
     public function annulerTransaction($transaction_id) {
         try {
             self::getBdd()->beginTransaction();
@@ -246,7 +212,6 @@ class ModeleBarman extends ModeleStaff {
     // Dans Modele_barman.php
 
     public function getHistoriqueCommandes() {
-        // CORRECTION : On enlève la jointure avec ligne_vente pour éviter les doublons
         // On récupère directement le statut de la table VENTE
         $sql = "SELECT 
             v.id AS commande_id, 
@@ -338,87 +303,93 @@ class ModeleBarman extends ModeleStaff {
             return null;
         }
     }
+
     /**
      * Change le statut d'une commande
      * en_attente → validee → en_preparation → prete → livree
      */
     public function changerStatutCommande($venteId, $nouveauStatut)
     {
-        // Statuts que le barman peut envoyer
         $statutsAutorises = ['en_attente', 'validee', 'en_preparation', 'prete', 'livree'];
 
         if (!in_array($nouveauStatut, $statutsAutorises, true)) {
-            error_log("Statut non autorisé: " . $nouveauStatut);
             return false;
         }
-
-        // Traduction métier barman → client
-        $statutVente = ($nouveauStatut === 'livree') ? 'payee' : $nouveauStatut;
 
         $bdd = self::getBdd();
         $bdd->beginTransaction();
 
         try {
-            // 1️⃣ Statut des lignes (cuisine / bar)
+            // Mise à jour des lignes (barman)
             $stmt1 = $bdd->prepare(
-                "UPDATE ligne_vente 
-             SET statut = :statut 
-             WHERE vente_id = :vente_id"
+                "UPDATE ligne_vente SET statut = :statut WHERE vente_id = :vente_id"
             );
             $stmt1->execute([
                 ':statut' => $nouveauStatut,
                 ':vente_id' => $venteId
             ]);
 
-            // 2️⃣ Statut de la commande (client)
-            $stmt2 = $bdd->prepare(
-                "UPDATE vente 
-             SET statut = :statut 
-             WHERE id = :vente_id"
-            );
-            $stmt2->execute([
-                ':statut' => $statutVente,
-                ':vente_id' => $venteId
-            ]);
+            // Si LIVRÉE → paiement client
+            if ($nouveauStatut === 'livree') {
+
+                // récupérer montant + client
+                $stmtInfo = $bdd->prepare(
+                    "SELECT compte_id, montant_total FROM vente WHERE id = :id FOR UPDATE"
+                );
+                $stmtInfo->execute([':id' => $venteId]);
+                $vente = $stmtInfo->fetch(PDO::FETCH_ASSOC);
+
+                if (!$vente) {
+                    throw new Exception("Vente introuvable");
+                }
+
+                // vérifier solde
+                $stmtSolde = $bdd->prepare(
+                    "SELECT solde FROM compte WHERE id = :id FOR UPDATE"
+                );
+                $stmtSolde->execute([':id' => $vente['compte_id']]);
+                $solde = (float)$stmtSolde->fetchColumn();
+
+                if ($solde < $vente['montant_total']) {
+                    throw new Exception("Solde insuffisant");
+                }
+
+                // débiter
+                $stmtDebit = $bdd->prepare(
+                    "UPDATE compte SET solde = solde - :montant WHERE id = :id"
+                );
+                $stmtDebit->execute([
+                    ':montant' => $vente['montant_total'],
+                    ':id' => $vente['compte_id']
+                ]);
+
+                // statut client = payee
+                $stmtVente = $bdd->prepare(
+                    "UPDATE vente SET statut = 'payee' WHERE id = :id"
+                );
+                $stmtVente->execute([':id' => $venteId]);
+
+            } else {
+                // autres statuts normaux
+                $stmtVente = $bdd->prepare(
+                    "UPDATE vente SET statut = :statut WHERE id = :id"
+                );
+                $stmtVente->execute([
+                    ':statut' => $nouveauStatut,
+                    ':id' => $venteId
+                ]);
+            }
 
             $bdd->commit();
             return true;
 
-        } catch (PDOException $e) {
+        } catch (Exception $e) {
             $bdd->rollBack();
-            error_log("Erreur changement statut: " . $e->getMessage());
+            error_log("Erreur changement statut + paiement: " . $e->getMessage());
             return false;
         }
     }
 
-    /**
-     * Récupère le statut actuel d'une commande
-     */
-    public function getStatutCommande($venteId)
-    {
-        try {
-            $requete = self::getBdd()->prepare(
-                "SELECT 
-                CASE 
-                    WHEN SUM(statut = 'en attente') > 0 THEN 'en attente'
-                    WHEN SUM(statut = 'validee') > 0 THEN 'validee'
-                    WHEN SUM(statut = 'en_preparation') > 0 THEN 'en_preparation'
-                    WHEN SUM(statut = 'prete') > 0 THEN 'prete'
-                    ELSE 'livree'
-                END AS statut
-             FROM ligne_vente 
-             WHERE vente_id = :vente_id"
-            );
-
-            $requete->execute([':vente_id' => $venteId]);
-            $result = $requete->fetch(PDO::FETCH_ASSOC);
-
-            return $result ? $result['statut'] : null;
-        } catch (PDOException $e) {
-            error_log("Erreur get statut: " . $e->getMessage());
-            return null;
-        }
-    }
     public function getTypesProduits() {
         try {
             $requete = self::getBdd()->prepare('
