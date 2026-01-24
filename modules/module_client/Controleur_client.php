@@ -60,9 +60,7 @@ class Controleur_client
                 break;
 
             case "form_commande_statut_panier_utilisateur" :
-                $contenu = $this->getVue()->form_commande_statut_panier(
-                    $this->modeleProduitVenduAcces->getStatutCommandesClient($_SESSION['id'])
-                );
+                $contenu = $this->getVue()->form_commande_statut_panier($this->modeleProduitVenduAcces->getStatutCommandesClient($_SESSION['id']));
                 VueGenerique::setAffichage($contenu);
                 break;
             case "form_historique_utilisateur":

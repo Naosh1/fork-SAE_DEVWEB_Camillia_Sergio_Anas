@@ -37,32 +37,6 @@ class ModeleBarman extends ModeleStaff {
         }
     }
 
-
-    public function listerCommandesParAssociation($idAsso) {
-        $sql = "SELECT v.id, v.date_vente, v.montant_total, c.nom, c.prenom 
-            FROM vente v 
-            JOIN compte c ON v.compte_id = c.id
-            JOIN appartient a ON v.compte_id = a.compte_id
-            WHERE a.association_id = ? 
-            AND a.role = 'barman'
-            ORDER BY v.date_vente DESC";
-
-        $stmt = self::getBdd()->prepare($sql);
-        $stmt->execute([$idAsso]);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
-    private function getStatutAffichage($statut) {
-        $statuts = [
-            'payee' => 'Terminée',
-            'annulee' => 'Annulée',
-            'en_attente' => 'En attente',
-            'echouee' => 'Échouée'
-        ];
-
-        return $statuts[$statut] ?? 'Terminée';
-    }
-
-
     public function getProduitsCommande($id) {
         try {
             // CORRECTION : On remplace 'contient' par 'ligne_vente'
@@ -370,25 +344,48 @@ class ModeleBarman extends ModeleStaff {
      */
     public function changerStatutCommande($venteId, $nouveauStatut)
     {
+        // Statuts que le barman peut envoyer
         $statutsAutorises = ['en_attente', 'validee', 'en_preparation', 'prete', 'livree'];
 
-        if (!in_array($nouveauStatut, $statutsAutorises)) {
+        if (!in_array($nouveauStatut, $statutsAutorises, true)) {
             error_log("Statut non autorisé: " . $nouveauStatut);
             return false;
         }
 
+        // Traduction métier barman → client
+        $statutVente = ($nouveauStatut === 'livree') ? 'payee' : $nouveauStatut;
+
+        $bdd = self::getBdd();
+        $bdd->beginTransaction();
+
         try {
-            $requete = self::getBdd()->prepare(
+            // 1️⃣ Statut des lignes (cuisine / bar)
+            $stmt1 = $bdd->prepare(
                 "UPDATE ligne_vente 
              SET statut = :statut 
              WHERE vente_id = :vente_id"
             );
-
-            return $requete->execute([
+            $stmt1->execute([
                 ':statut' => $nouveauStatut,
                 ':vente_id' => $venteId
             ]);
+
+            // 2️⃣ Statut de la commande (client)
+            $stmt2 = $bdd->prepare(
+                "UPDATE vente 
+             SET statut = :statut 
+             WHERE id = :vente_id"
+            );
+            $stmt2->execute([
+                ':statut' => $statutVente,
+                ':vente_id' => $venteId
+            ]);
+
+            $bdd->commit();
+            return true;
+
         } catch (PDOException $e) {
+            $bdd->rollBack();
             error_log("Erreur changement statut: " . $e->getMessage());
             return false;
         }
@@ -403,7 +400,7 @@ class ModeleBarman extends ModeleStaff {
             $requete = self::getBdd()->prepare(
                 "SELECT 
                 CASE 
-                    WHEN SUM(statut = 'en_attente') > 0 THEN 'en_attente'
+                    WHEN SUM(statut = 'en attente') > 0 THEN 'en attente'
                     WHEN SUM(statut = 'validee') > 0 THEN 'validee'
                     WHEN SUM(statut = 'en_preparation') > 0 THEN 'en_preparation'
                     WHEN SUM(statut = 'prete') > 0 THEN 'prete'
@@ -474,7 +471,7 @@ class ModeleBarman extends ModeleStaff {
         try {
             $requete = self::getBdd()->prepare("
             INSERT INTO ligne_vente (produit_id, vente_id, quantite, prix_unitaire, statut) 
-            VALUES (:produit_id, :vente_id, :quantite, :prix, 'en_attente')
+            VALUES (:produit_id, :vente_id, :quantite, :prix, 'en attente')
         ");
 
             foreach ($produits as $produit) {

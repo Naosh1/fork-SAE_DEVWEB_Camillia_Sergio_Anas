@@ -514,7 +514,6 @@ public function afficherNav()
                 </div>
             <?php endif; ?>
         </div>
-        </main></div>
         <?php
     }
     public function form_historique($commandes)
@@ -564,12 +563,8 @@ public function afficherNav()
                                 <?php foreach ($cmd['produits'] as $p): ?>
                                     <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.03);">
                                     <span style="color: #94a3b8;">
-                                        <?= htmlspecialchars($p['nom'] ?? 'Produit') ?> × <?= $p['quantite'] ?? 1 ?>
+                                        <?= htmlspecialchars($p['nom']) ?> × <?= $p['quantite'] ?>
                                     </span>
-                                        <span style="color: white; font-weight: 700;">
-                                        <?= number_format(($p['prix'] ?? 0) * ($p['quantite'] ?? 1), 2) ?> €
-                                    </span>
-                                    </div>
                                 <?php endforeach; ?>
                             </div>
                         <?php endif; ?>
@@ -587,9 +582,9 @@ public function afficherNav()
                 <?php endforeach; ?>
             <?php endif; ?>
         </div>
-        </main></div>
         <?php
     }
+
     public function form_commande_statut_panier($commandes)
     {
         $this->afficherNav();
@@ -708,7 +703,6 @@ public function afficherNav()
                 </div>
             <?php endif; ?>
         </div>
-        </main></div>
         <?php
     }
     public function afficherCodeGenere($codeData)
@@ -727,7 +721,6 @@ public function afficherNav()
                     <i class="fa-solid fa-rotate"></i> Générer un code
                 </a>
             </div>
-            </main></div>
             <?php
         } else {
             $code = $codeData['code'];

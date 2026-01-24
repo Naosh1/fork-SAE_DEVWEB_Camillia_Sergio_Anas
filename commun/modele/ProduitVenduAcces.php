@@ -126,19 +126,13 @@ class ProduitVenduAcces {
     {
         $stmt = $this->bdd->prepare(
             "SELECT 
-                v.id AS vente_id,
-                v.date_vente AS dateVente,
-                v.montant_total AS montant,
-                v.statut AS statut_vente,
-                CASE 
-                    WHEN v.statut = 'prete' THEN 'prete'
-                    WHEN v.statut = 'en_preparation' THEN 'en_preparation'
-                    WHEN v.statut = 'validee' THEN 'validee'
-                    ELSE 'en_attente'
-                END AS statut
+                    v.id AS vente_id,
+                    v.date_vente AS dateVente,
+                    v.montant_total AS montant,
+                    v.statut AS statut
              FROM vente v
              WHERE v.compte_id = :id
-             AND v.statut NOT IN ('livree', 'annulee')
+             AND v.statut NOT IN ('payee', 'annulee')
              ORDER BY v.date_vente DESC"
         );
 
@@ -182,7 +176,7 @@ class ProduitVenduAcces {
                 v.id AS vente_id,
                 v.date_vente AS dateVente,
                 v.montant_total AS montant,
-                v.statut AS statut_vente,
+                v.statut AS statut,
                 l.produit_id,
                 l.prix_unitaire,
                 p.nom AS nom_produit,
@@ -192,7 +186,7 @@ class ProduitVenduAcces {
              JOIN ligne_vente l ON l.vente_id = v.id
              JOIN produit p ON p.id = l.produit_id
              WHERE v.compte_id = :idCompte
-             AND v.statut = 'livree'
+             AND v.statut = 'payee'
              ORDER BY v.date_vente DESC"
         );
 
