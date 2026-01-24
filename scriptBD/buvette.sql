@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Hôte : 127.0.0.1
--- Généré le : sam. 24 jan. 2026 à 02:54
+-- Généré le : dim. 25 jan. 2026 à 00:27
 -- Version du serveur : 10.4.32-MariaDB
 -- Version de PHP : 8.2.12
 
@@ -45,6 +45,13 @@ CREATE TABLE `administrateur` (
                                   `niveau_acces` int(11) DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Déchargement des données de la table `administrateur`
+--
+
+INSERT INTO `administrateur` (`compte_id`, `niveau_acces`) VALUES
+    (7, 1);
+
 -- --------------------------------------------------------
 
 --
@@ -63,7 +70,8 @@ CREATE TABLE `appartient` (
 
 INSERT INTO `appartient` (`compte_id`, `association_id`, `role`) VALUES
                                                                      (4, 2, 'client'),
-                                                                     (5, 2, 'barman');
+                                                                     (5, 2, 'barman'),
+                                                                     (7, 2, 'client');
 
 -- --------------------------------------------------------
 
@@ -155,9 +163,10 @@ CREATE TABLE `compte` (
 --
 
 INSERT INTO `compte` (`id`, `nom`, `prenom`, `date_naissance`, `email`, `tel`, `mdp`, `solde`, `photo`, `actif`, `code_validation`, `code_expiration`) VALUES
-                                                                                                                                                           (4, 's', 'client', '2000-04-01', 'client@gmail.com', NULL, '$2y$10$b.lvHpA/2S/lAGlkcnrAi.RGkUqByFXHn.2PMMRcg4R4zSZR8Rhkm', 7.50, NULL, 1, NULL, NULL),
+                                                                                                                                                           (4, 's', 'client', '2000-04-01', 'client@gmail.com', NULL, '$2y$10$b.lvHpA/2S/lAGlkcnrAi.RGkUqByFXHn.2PMMRcg4R4zSZR8Rhkm', 5.50, NULL, 1, NULL, NULL),
                                                                                                                                                            (5, 'b', 'barman', '2000-02-27', 'barman@gmail.com', NULL, '$2y$10$rvcnEN9vuBINqZo4IXEO6uqJto8T3RGMgZEIJRuyd.XdX76vcFrde', 10.00, NULL, 1, NULL, NULL),
-                                                                                                                                                           (6, 'G', 'Gestionnaire', '2002-12-01', 'Gestionnaire@gmail.com', NULL, '$2y$10$0TpocQq.Oyl7hNGSFtkFKuq/6v5nE6XdYLemDj1n/TAhxz3Vq8xPe', 10.00, NULL, 1, NULL, NULL);
+                                                                                                                                                           (6, 'G', 'Gestionnaire', '2002-12-01', 'Gestionnaire@gmail.com', NULL, '$2y$10$0TpocQq.Oyl7hNGSFtkFKuq/6v5nE6XdYLemDj1n/TAhxz3Vq8xPe', 10.00, NULL, 1, NULL, NULL),
+                                                                                                                                                           (7, 'A', 'Admin', '2001-05-15', 'admin@gmail.com', NULL, '$2y$10$BNAHR.HTaj9DdTW9RfWixODSiYBi59n/tAhqvSg5.pzM0qw2G4ZU6', 0.00, NULL, 1, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -315,6 +324,7 @@ INSERT INTO `fournisseur_produit` (`id_fournisseur`, `id_produit`, `prix_achat`,
                                                                                                         (1, 13, 2.00, 7),
                                                                                                         (1, 14, 2.00, 7),
                                                                                                         (1, 15, 2.00, 7),
+                                                                                                        (1, 16, 2.00, 7),
                                                                                                         (2, 1, 1.00, 7),
                                                                                                         (2, 2, 3.00, 7),
                                                                                                         (2, 3, 2.00, 7),
@@ -330,6 +340,7 @@ INSERT INTO `fournisseur_produit` (`id_fournisseur`, `id_produit`, `prix_achat`,
                                                                                                         (2, 13, 1.00, 7),
                                                                                                         (2, 14, 1.00, 7),
                                                                                                         (2, 15, 2.00, 7),
+                                                                                                        (2, 16, 2.00, 7),
                                                                                                         (3, 1, 1.00, 7),
                                                                                                         (3, 2, 2.00, 7),
                                                                                                         (3, 3, 1.00, 7),
@@ -343,7 +354,8 @@ INSERT INTO `fournisseur_produit` (`id_fournisseur`, `id_produit`, `prix_achat`,
                                                                                                         (3, 11, 2.00, 7),
                                                                                                         (3, 12, 2.00, 7),
                                                                                                         (3, 13, 2.00, 7),
-                                                                                                        (3, 14, 3.00, 7);
+                                                                                                        (3, 14, 3.00, 7),
+                                                                                                        (3, 16, 1.00, 7);
 
 -- --------------------------------------------------------
 
@@ -461,6 +473,8 @@ CREATE TABLE `ligne_vente` (
 
 INSERT INTO `ligne_vente` (`produit_id`, `vente_id`, `quantite`, `prix_unitaire`, `statut`) VALUES
                                                                                                 (1, 5, 1, 7, 'livree'),
+                                                                                                (4, 7, 1, 2, 'livree'),
+                                                                                                (4, 8, 1, 2, 'livree'),
                                                                                                 (5, 1, 1, 3, 'livree'),
                                                                                                 (5, 2, 2, 3, 'livree'),
                                                                                                 (5, 3, 1, 3, 'livree'),
@@ -507,7 +521,7 @@ INSERT INTO `produit` (`id`, `nom`, `type`, `description`, `prix`, `quantiteActu
                                                                                            (1, 'Burger', 'plat', NULL, 6.50, 49),
                                                                                            (2, 'Pizza', 'plat', NULL, 7.00, 40),
                                                                                            (3, 'Chips', 'snack', NULL, 1.50, 100),
-                                                                                           (4, 'Cookie', 'dessert', NULL, 2.00, 60),
+                                                                                           (4, 'Cookie', 'dessert', NULL, 2.00, 58),
                                                                                            (5, 'Brownie', 'dessert', NULL, 2.50, 46),
                                                                                            (6, 'Pasta', 'plat', NULL, 6.00, 45),
                                                                                            (7, 'Sandwich', 'plat', NULL, 5.50, 55),
@@ -518,7 +532,8 @@ INSERT INTO `produit` (`id`, `nom`, `type`, `description`, `prix`, `quantiteActu
                                                                                            (12, 'Tacos', 'plat', NULL, 6.80, 42),
                                                                                            (13, 'Popcorn', 'snack', NULL, 1.00, 130),
                                                                                            (14, 'Tarte', 'dessert', NULL, 2.80, 40),
-                                                                                           (15, 'Gâteau', 'dessert', NULL, 3.00, 35);
+                                                                                           (15, 'Gâteau', 'dessert', NULL, 3.00, 35),
+                                                                                           (16, 'Red Bull', 'alimentaire', '', 3.00, 40);
 
 -- --------------------------------------------------------
 
@@ -569,7 +584,9 @@ INSERT INTO `vente` (`id`, `date_vente`, `montant_total`, `statut`, `compte_id`,
                                                                                                        (3, '2026-01-24 01:26:45', 2.50, 'payee', 4, 2),
                                                                                                        (4, '2026-01-24 02:20:26', 2.40, 'payee', 4, NULL),
                                                                                                        (5, '2026-01-24 02:42:14', 6.50, 'payee', 4, NULL),
-                                                                                                       (6, '2026-01-24 02:49:27', 2.20, 'payee', 4, NULL);
+                                                                                                       (6, '2026-01-24 02:49:27', 2.20, 'payee', 4, NULL),
+                                                                                                       (7, '2026-01-24 23:12:51', 2.00, 'payee', 4, NULL),
+                                                                                                       (8, '2026-01-24 23:35:25', 2.00, 'payee', 4, NULL);
 
 --
 -- Index pour les tables déchargées
@@ -782,7 +799,7 @@ ALTER TABLE `commande_fournisseur`
 -- AUTO_INCREMENT pour la table `compte`
 --
 ALTER TABLE `compte`
-    MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+    MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT pour la table `demandes_association`
@@ -824,7 +841,7 @@ ALTER TABLE `messages`
 -- AUTO_INCREMENT pour la table `produit`
 --
 ALTER TABLE `produit`
-    MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+    MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
 -- AUTO_INCREMENT pour la table `rechargement`
@@ -842,7 +859,7 @@ ALTER TABLE `role`
 -- AUTO_INCREMENT pour la table `vente`
 --
 ALTER TABLE `vente`
-    MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+    MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- Contraintes pour les tables déchargées
