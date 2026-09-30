@@ -37,7 +37,14 @@ Sans session, `index.php` redirige vers `templates/connexion.php`.
 Alternative : XAMPP (dossier dans `htdocs`, cf. dump phpMyAdmin).
 
 ## Tests
-Aucun test. Vérifier manuellement dans le navigateur, et au minimum `php -l <fichier>` sur les fichiers modifiés.
+Aucun test automatisé. Vérifier manuellement dans le navigateur, et au minimum `php -l <fichier>` sur les fichiers modifiés.
+
+### Dernière exécution (PHP 8.4.19, extensions `PDO`, `pdo_mysql` présentes)
+- Installation : aucun `composer.json`, `package.json` ni verrou : **rien à installer**, aucune commande lancée.
+- `find . -name '*.php' -not -path './.git/*' -print0 | xargs -0 -n1 php -l` : 38 fichiers, **0 erreur de syntaxe**.
+- Tests unitaires/fonctionnels : aucun existant, donc non exécutés. `mysql`/`mariadb` absents du conteneur : import du dump et lancement de l'app **non testés**.
+- Configuration : `.env.example` fourni (modèle sans secret) ; `.env` est ignoré par git mais **n'est pas encore lu** par `Connexion.php`.
+- Branche par défaut : `master` (pas de `main`).
 
 ## Conventions observées
 - Routage par paramètre GET `?action=...` : `Mod_x` lit l'action et appelle `Controleur_x::gererAction()`
