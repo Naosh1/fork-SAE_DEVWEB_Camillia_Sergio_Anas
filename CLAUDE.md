@@ -51,3 +51,36 @@ Aucun test. Vérifier manuellement dans le navigateur, et au minimum `php -l <fi
 ## Points d'attention
 - Les identifiants BD sont en clair dans `Connexion.php` (plusieurs jeux commentés) : ne pas y committer de vrais secrets
 - `index.php` active `display_errors` : à désactiver en production
+
+## Règles de travail
+1. Ne jamais committer de secrets (mots de passe, clés API, jetons, identifiants BD réels).
+2. Une branche dédiée et une Pull Request par modification.
+3. Tout correctif de sécurité est accompagné d'au moins un test pertinent (le dépôt n'a pas encore de framework de test : le signaler et proposer un script de test minimal).
+4. Lancer les tests appropriés avant d'ouvrir une PR ; signaler clairement tout échec.
+5. Tout changement de dépendance est expliqué : justification et conséquences.
+6. Répondre en français.
+7. Travailler sur **un seul périmètre fonctionnel** (une ligne du tableau ci-dessous) à la fois, et en respecter strictement les limites.
+8. Ne pas lire les dépendances installées, fichiers de verrouillage, données (`scriptBD/`, `uploads/`), logs ni fichiers générés.
+9. Ne pas explorer tout le frontend et tout le backend pour une tâche limitée à un périmètre.
+10. Pour le contrat d'API frontend/backend, consulter `docs/API.md` (à créer s'il est absent, dans une PR dédiée).
+
+## Domaines et périmètres
+Il n'existe pas de dossiers `frontend/` ni `backend/` : les deux parties cohabitent dans `modules/`,
+séparées par nom de fichier (`Vue_*`/`vue_*` = frontend ; `Mod_*`, `Controleur_*`, `Modele_*`/`modele_*` = backend).
+
+| Domaine | Partie | Dossiers / fichiers | Responsabilité |
+| --- | --- | --- | --- |
+| Authentification | Frontend | `modules/mod_connexion/vue.connexion.php`, `templates/connexion.php`, `templates/inscription.php`, `css/connexion.css`, `js/connexion.js` | Formulaires de connexion et d'inscription |
+| Authentification | Backend | `modules/mod_connexion/` (`mod_`, `cont_`, `modele_`), `connexion/`, `index.php` | Session, contrôle d'accès, accès PDO |
+| Espace client | Frontend | `modules/module_client/Vue_client.php`, `templates/template_client.php` | Interface client |
+| Espace client | Backend | `modules/module_client/` (`Mod_`, `Controleur_`, `Modele_`) | Logique client |
+| Espace barman | Frontend | `modules/module_barman/Vue_barman.php`, `templates/template_barman.php` | Interface barman |
+| Espace barman | Backend | `modules/module_barman/` (`Mod_`, `Controleur_`, `Modele_`) | Logique barman |
+| Gestion d'association | Frontend | `modules/module_gestionnaire/Vue_gestionnaire.php`, `templates/template_gestionnaire.php` | Interface gestionnaire |
+| Gestion d'association | Backend | `modules/module_gestionnaire/` (`Mod_`, `Controleur_`, `Modele_`) | Logique gestionnaire |
+| Administration | Frontend | `modules/module_admin/Vue_admin.php`, `templates/template_admin.php` | Interface administrateur |
+| Administration | Backend | `modules/module_admin/` (`Mod_`, `Controleur_`, `Modele_`) | Logique administrateur |
+| Staff et éléments communs | Frontend | `modules/module_staff/vue_staff.php`, `modules/module_commun/vue_commun.php`, `vue_generique.php`, `templates/template_erreur.php` | Vues partagées |
+| Staff et éléments communs | Backend | `modules/module_staff/modele_staff.php`, `modules/module_commun/modele_commun.php`, `commun/modele/` | Accès BD partagés |
+
+`css/`, `js/` et `style.css` sont du frontend partagé : le rattachement de chaque fichier à un domaine reste à confirmer (hors `connexion.*`).
