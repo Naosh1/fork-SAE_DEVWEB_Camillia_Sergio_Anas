@@ -734,7 +734,7 @@ class ControleurGestionnaire
     private function supprimerBarman()
     {
         if (isset($_GET['id'])) {
-            $success = $this->modele->supprimerBarman($_GET['id']);
+            $success = $this->modele->supprimerBarman($_GET['id'], $_SESSION['id']);
             if ($success) {
                 $_SESSION['success'] = "Barman supprimé avec succès";
             } else {
