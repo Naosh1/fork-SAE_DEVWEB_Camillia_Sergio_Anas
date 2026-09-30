@@ -56,8 +56,8 @@ $modGest    = 'modules/module_gestionnaire/Modele_gestionnaire.php';
 
 // ---------- Tests sur les failles identifiées ----------
 $c = corps($ctrlClient, 'verif_rechargement');
-test('S-01', 'Rechargement de solde réservé à un rôle habilité ou lié à un paiement',
-    $c !== '' && (bool)preg_match('/role_effectif|paiement|payment/i', $c),
+test('S-01', 'Un client ne peut pas créditer lui-même son compte (pas de recharger_solde ni de $_POST[montant])',
+    $c !== '' && !str_contains($c, 'recharger_solde') && !preg_match('/\$_(POST|GET|REQUEST)\s*\[\s*[\'"]montant[\'"]\s*\]/', $c),
     'verif_rechargement() (Controleur_client.php) crédite le compte depuis $_POST[\'montant\'] sans contrôle de rôle ni de paiement.');
 
 $c = corps($ctrlGest, 'supprimerBarman');

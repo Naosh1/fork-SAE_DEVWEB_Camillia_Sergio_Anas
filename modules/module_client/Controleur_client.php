@@ -133,10 +133,8 @@ class Controleur_client
     }
 
     public function verif_rechargement() {
-        $montant = $_POST['montant'] ?? 0;
-        if ($montant > 0) {
-            $this->modeleCompte->recharger_solde($_SESSION['id'], $montant);
-        }
+        // Un client ne peut pas créditer lui-même son compte (aucun paiement n'est vérifié) :
+        // le rechargement est effectué par un barman ou un gestionnaire.
         header("Location: index.php?module=client&action=espace");
         exit();
     }
