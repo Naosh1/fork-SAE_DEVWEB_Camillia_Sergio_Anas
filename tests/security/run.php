@@ -67,8 +67,12 @@ test('S-02', 'Suppression d\'un barman : contrôle d\'appartenance à l\'associa
     'supprimerBarman() supprime une ligne de la table compte à partir de $_GET[\'id\'] sans vérifier le rôle de la cible ni l\'association.');
 
 $c = corps($ctrlGest, 'modifierPhotoProfil');
-test('S-03', 'Photo de profil : liste blanche d\'extensions et vérification du type réel',
-    $c !== '' && (bool)preg_match('/in_array|getimagesize|finfo_/', $c),
+$h = corps($ctrlGest, 'extensionImageValide');
+test('S-03', 'Photo de profil : contenu vérifié (helper getimagesize + liste blanche), extension serveur, nom aléatoire',
+    $c !== '' && $h !== ''
+        && str_contains($c, 'extensionImageValide') && str_contains($c, 'random_bytes')
+        && !str_contains($c, 'PATHINFO_EXTENSION') && !str_contains($c, '0777')
+        && str_contains($h, 'getimagesize') && str_contains($h, 'IMAGETYPE_'),
     'modifierPhotoProfil() garde l\'extension fournie par le client et ne vérifie pas le contenu.');
 
 $m = corps('commun/modele/ProduitVenduAcces.php', 'enlever_commande');

@@ -584,6 +584,29 @@ class ControleurGestionnaire
         }
     }
 
+    // Retourne l'extension ("jpg", "png" ou "webp") déduite du contenu réel du fichier téléversé,
+    // ou null s'il n'est pas une image autorisée ou dépasse 2 Mo. Le nom fourni par le client est ignoré.
+    private function extensionImageValide(array $fichier): ?string
+    {
+        $chemin = $fichier['tmp_name'] ?? '';
+        if ($chemin === '' || !is_file($chemin)) {
+            return null;
+        }
+
+        $taille = filesize($chemin);
+        if ($taille === false || $taille < 1 || $taille > 2 * 1024 * 1024) {
+            return null;
+        }
+
+        $infos = @getimagesize($chemin);
+        if ($infos === false) {
+            return null;
+        }
+
+        $formats = [IMAGETYPE_JPEG => 'jpg', IMAGETYPE_PNG => 'png', IMAGETYPE_WEBP => 'webp'];
+        return $formats[$infos[2]] ?? null;
+    }
+
     private function modifierPhotoProfil()
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['profile_picture'])) {
@@ -591,12 +614,18 @@ class ControleurGestionnaire
             $file = $_FILES['profile_picture'];
 
             if ($file['error'] === 0) {
-                $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-                if (!is_dir("uploads/profiles/")) {
-                    mkdir("uploads/profiles/", 0777, true);
+                $ext = $this->extensionImageValide($file);
+                if ($ext === null) {
+                    $_SESSION['error'] = "Image invalide : JPEG, PNG ou WebP, 2 Mo maximum.";
+                    header("Location: index.php?action=profil");
+                    exit();
                 }
 
-                $nom_image = "pp_" . $id_user . "_" . time() . "." . $ext;
+                if (!is_dir("uploads/profiles/")) {
+                    mkdir("uploads/profiles/", 0755, true);
+                }
+
+                $nom_image = "pp_" . $id_user . "_" . bin2hex(random_bytes(8)) . "." . $ext;
 
                 if (move_uploaded_file($file['tmp_name'], "uploads/profiles/" . $nom_image)) {
                     $this->modele->updateUserPhoto($id_user, $nom_image);
