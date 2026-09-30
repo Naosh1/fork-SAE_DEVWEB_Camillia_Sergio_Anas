@@ -576,14 +576,19 @@ class ModeleGestionnaire extends ModeleStaff
         }
     }
 
-    public function supprimerBarman($id)
+    public function supprimerBarman($idBarman, $idGestionnaire)
     {
         try {
-            $requeteLien = self::getBdd()->prepare("DELETE FROM dispose WHERE compte_id = ?");
-            $requeteLien->execute([$id]);
-
-            $requete = self::getBdd()->prepare("DELETE FROM compte WHERE id = ?");
-            return $requete->execute([$id]);
+            // Retire uniquement le rôle barman, et seulement dans les associations gérées par le
+            // gestionnaire connecté. Le compte et ses autres rattachements ne sont pas touchés.
+            $requete = self::getBdd()->prepare(
+                "DELETE FROM appartient
+                 WHERE compte_id = ?
+                   AND role = 'barman'
+                   AND association_id IN (SELECT association_id FROM gestionne WHERE compte_id = ?)"
+            );
+            $requete->execute([$idBarman, $idGestionnaire]);
+            return $requete->rowCount() > 0;
         } catch (PDOException $e) {
             error_log("Erreur supprimerBarman: " . $e->getMessage());
             return false;

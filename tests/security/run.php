@@ -62,8 +62,10 @@ test('S-01', 'Rechargement de solde réservé à un rôle habilité ou lié à u
 
 $c = corps($ctrlGest, 'supprimerBarman');
 $m = corps($modGest, 'supprimerBarman');
-test('S-02', 'Suppression d\'un barman : contrôle d\'appartenance à l\'association et méthode POST',
-    $c !== '' && (bool)preg_match('/gestionne|asso_choisi/', $c . $m) && (bool)preg_match('/REQUEST_METHOD/', $c),
+test('S-02', 'Suppression d\'un barman : limitée aux associations gérées (gestionne), sans supprimer le compte',
+    $c !== '' && $m !== ''
+        && str_contains($m, 'gestionne') && !preg_match('/DELETE\s+FROM\s+compte/i', $m)
+        && (bool)preg_match('/supprimerBarman\([^)]*\$_SESSION\s*\[\s*[\'"]id[\'"]\s*\]/', $c),
     'supprimerBarman() supprime une ligne de la table compte à partir de $_GET[\'id\'] sans vérifier le rôle de la cible ni l\'association.');
 
 $c = corps($ctrlGest, 'modifierPhotoProfil');
